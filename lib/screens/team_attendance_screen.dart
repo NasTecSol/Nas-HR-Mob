@@ -21,260 +21,220 @@ class TeamAttendanceScreen extends StatefulWidget {
   State<TeamAttendanceScreen> createState() => _TeamAttendanceScreenState();
 }
 
-class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
-  final SingletonClass singletonClass = SingletonClass();
+class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> with SingleTickerProviderStateMixin {
+
+
+  /// ─────────────────────── Singleton & Data ────────────────────────
+  final SingletonClass _singleton = SingletonClass();
+  /// ─────────────────────── State Flags ─────────────────────────────
   bool _isChecked = false;
   bool _isTeamChecked = true;
-  late String reportingManagerId;
-  late List<Teams> filteredUnderTeams;
-  List<TeamAttendanceData> filteredAttendanceDataList = [];
-  String? selectedEmployeeId;
-  DateTime? _selectedDate;
-  int? _selectedDateIndex;
-  Set<String> selectedBranchIds = {};
-  DateTime? _startDate;
-  DateTime? _endDate;
-  int _selectedOptionIndex = 0;
-  bool isSearching = false;
+  bool _isInitialLoading = true;
   bool _isLoadingBranchData = false;
+  bool _isOnlyMeLoading = false;
+  bool isSearching = false;
+  bool isDateRangeSelected = false;
   bool showDropdown = false;
   bool showTeamCheckbox = false;
   bool showOnlyMeCheckbox = false;
-  TextEditingController searchController = TextEditingController();
+  /// ─────────────────────── Filter State ────────────────────────────
+  int _selectedOptionIndex = 0;
+  String? selectedEmployeeId;
+  Set<String> selectedBranchIds = {};
+  DateTime? _selectedDate;
+  int? _selectedDateIndex;
+  DateTime? _startDate;
+  DateTime? _endDate;
   late List<DateTime> _dates;
-  bool _isInitialLoading = true;
-  final ScrollController _scrollController = ScrollController();
-  bool isDateRangeSelected = false;
-  bool _isLoading = false;
+  /// ─────────────────────── Data ────────────────────────────────────
+  late String reportingManagerId;
+  late List<Teams> filteredUnderTeams;
+  List<TeamAttendanceData> filteredAttendanceDataList = [];
 
+  /// ─────────────────────── Controllers ─────────────────────────────
+  TextEditingController searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  late AnimationController _fadeController;
+
+  /// ══════════════════════════════════════════════════════════════════
+  ///  LIFECYCLE
+  /// ══════════════════════════════════════════════════════════════════
 
   @override
-   void initState() {
+  void initState() {
     super.initState();
-    _isInitialLoading = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try{
-        _teamCheck();
-
-        if (singletonClass.getJWTModel()?.grade == 'L4') {
-          _isChecked = true;
-        }
-        reportingManagerId = singletonClass.getJWTModel()?.empId ?? '';
-        log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
-        await singletonClass.getTeamBranchData();
-        await singletonClass.getBranchData();
-        List<BranchData> branchDataList = singletonClass.branchDataList;
-        var filteredData = getFilteredTeams(branchDataList, reportingManagerId);
-        filteredUnderTeams = filteredData['underTeams']!;
-        log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
-        await loadData();
-      } catch (e, s) {
-        log("❌ initState error: $e\n$s");
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isInitialLoading = false;
-          });
-        }
-      }
-    });
-    final today = DateTime.now();
-    _dates = List.generate(today.day, (index) {
-      return DateTime(today.year, today.month, index + 1);
-    });
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
     _setDefaultDates();
     _initDates(start: _startDate!, end: _endDate!);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _initialize();
       _scrollToSelectedDate();
     });
   }
 
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _scrollController.dispose();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  /// ══════════════════════════════════════════════════════════════════
+  /// INIT
+  /// ══════════════════════════════════════════════════════════════════
+
+  Future<void> _initialize() async {
+    try {
+      _teamCheck();
+      if (_singleton.getJWTModel()?.grade == 'L4') _isChecked = true;
+
+      reportingManagerId = _singleton.getJWTModel()?.empId ?? '';
+      log("🟢 Reporting Manager ID: $reportingManagerId");
+
+      await _singleton.getTeamBranchData();
+      await _singleton.getBranchData();
+
+      final branchDataList = _singleton.branchDataList;
+      final filteredData = _getFilteredTeams(branchDataList, reportingManagerId);
+      filteredUnderTeams = filteredData['underTeams']!;
+      log("🔍 Filtered ${filteredUnderTeams.length} underTeams");
+
+      await _loadData();
+      _fadeController.forward();
+    } catch (e, s) {
+      log("❌ initState error: $e\n$s");
+    } finally {
+      if (mounted) setState(() => _isInitialLoading = false);
+    }
+  }
+
+  /// ══════════════════════════════════════════════════════════════════
+  ///  DATE HELPERS
+  /// ══════════════════════════════════════════════════════════════════
+
+  void _setDefaultDates() {
+    final now = DateTime.now();
+    _startDate = DateTime(now.year, now.month, 1);
+    _endDate = DateTime(now.year, now.month, now.day);
+  }
+
+  void _initDates({required DateTime start, required DateTime end}) {
+    _dates = [];
+    final today = DateTime.now();
+    for (var d = start; !d.isAfter(end); d = d.add(const Duration(days: 1))) {
+      _dates.add(d);
+    }
+    _selectedDateIndex = _dates.indexWhere(
+          (d) => d.year == today.year && d.month == today.month && d.day == today.day,
+    );
+    if (_selectedDateIndex != -1) _selectedDate = today;
+  }
+
   void _scrollToSelectedDate() {
-    if (_scrollController.hasClients && _selectedDateIndex! >= 0) {
+    if (_scrollController.hasClients &&
+        _selectedDateIndex != null &&
+        _selectedDateIndex! >= 0) {
       _scrollController.animateTo(
-        _selectedDateIndex! * 60,
+        _selectedDateIndex! * 60.0,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     }
   }
 
-  void _teamCheck() {
-    /// Safely get Dashboard module
-    final manageTimeModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
-        .firstWhere((e) => (e.title == "ManageTime" || e.name == "ManageTime"),
-    );
-    final attendanceHistoryMenu = manageTimeModule.subMenu!.firstWhere((submenu) =>
-    submenu.title == "Attendance History" ||
-        submenu.name == "Attendance History",
-    );
+  /// ══════════════════════════════════════════════════════════════════
+  ///  ACCESS LOGIC
+  /// ══════════════════════════════════════════════════════════════════
 
+  void _teamCheck() {
+    final manageTimeModule =
+    _singleton.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere((e) => e.title == "ManageTime" || e.name == "ManageTime");
+    final attendanceHistoryMenu = manageTimeModule.subMenu!.firstWhere(
+          (s) => s.title == "Attendance History" || s.name == "Attendance History",
+    );
     final access = attendanceHistoryMenu.accessLevel;
     final companies = access?.companies ?? [];
     final hasCompanies = companies.isNotEmpty &&
-        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty && c.companyId != "");
-    final hasBranches =
-        hasCompanies &&
+        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty);
+    final hasBranches = hasCompanies &&
         companies.any((c) =>
         c.branches != null &&
-            c.branches!.isNotEmpty &&
-            c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty && b.branchId != ""));
+            c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty));
     final teamEnabled = access?.team == true;
     final hasBranchId =
-        singletonClass.branchID != null && singletonClass.branchID!.isNotEmpty;
+        _singleton.branchID != null && _singleton.branchID!.isNotEmpty;
 
-    /// Reset all UI flags
-    showDropdown = false;
-    showTeamCheckbox = false;
-    showOnlyMeCheckbox = false;
-    _isTeamChecked = false;
-    _isChecked = false;
+    // Reset flags
+    showDropdown = showTeamCheckbox = showOnlyMeCheckbox = false;
+    _isTeamChecked = _isChecked = false;
 
-    /// 🧩 CASE 1: Companies & Branches available, Team == true
     if (hasCompanies && hasBranches && teamEnabled) {
-      showDropdown = true;
-      showTeamCheckbox = true;
-      showOnlyMeCheckbox = true;
-
+      showDropdown = showTeamCheckbox = showOnlyMeCheckbox = true;
       if (hasBranchId) {
-        /// Branch selected → Team off, Only Me off
-        _isTeamChecked = false;
-        _isChecked = false;
-        extractAllEmployeeIdsForBranch(singletonClass.branchID);
+        extractAllEmployeeIdsForBranch(_singleton.branchID);
       } else {
-        /// No branch selected → Team on, Only Me off
         _isTeamChecked = true;
-        _isChecked = false;
       }
-    }
-
-    /// 🧩 CASE 2: Companies & Branches available, Team == false
-    else if (hasCompanies && hasBranches && !teamEnabled) {
-      showDropdown = true;
-      showTeamCheckbox = false;
-      showOnlyMeCheckbox = true;
-
-      if (!hasBranchId) {
-        /// No branch selected → Only Me true
-        _isChecked = true;
-      } else {
-        extractAllEmployeeIdsForBranch(singletonClass.branchID);
-      }
-    }
-
-    /// 🧩 CASE 3: No Companies/Branches, Team == true
-    else if (!hasCompanies && !hasBranches && teamEnabled) {
-      showDropdown = false;
-      showTeamCheckbox = true;
-      showOnlyMeCheckbox = true;
+    } else if (hasCompanies && hasBranches && !teamEnabled) {
+      showDropdown = showOnlyMeCheckbox = true;
+      if (!hasBranchId) _isChecked = true;
+      else extractAllEmployeeIdsForBranch(_singleton.branchID);
+    } else if (!hasCompanies && !hasBranches && teamEnabled) {
+      showTeamCheckbox = showOnlyMeCheckbox = true;
       _isTeamChecked = true;
-      _isChecked = false;
-    }
-
-    /// 🧩 CASE 4: No Companies/Branches, Team == false
-    else {
-      showDropdown = false;
-      showTeamCheckbox = false;
+    } else {
       showOnlyMeCheckbox = true;
-      _isTeamChecked = false;
       _isChecked = true;
     }
 
-    /// 🔁 Refresh data based on updated logic
-    setState(() {
-      loadData();
-    });
-
-    log('✅ _teamCheck results → '
-        'Dropdown: $showDropdown | TeamCheckbox: $showTeamCheckbox | OnlyMe: $showOnlyMeCheckbox | '
-        '_isTeamChecked: $_isTeamChecked | _isChecked: $_isChecked');
+    log('✅ _teamCheck → Dropdown:$showDropdown | Team:$showTeamCheckbox | '
+        'OnlyMe:$showOnlyMeCheckbox | isTeam:$_isTeamChecked | isMe:$_isChecked');
   }
-  Future<void> extractAllEmployeeIdsForBranch(String? selectedBranchId) async {
-    await singletonClass.getTeamBranchData();
 
-    List<String> allEmployeeIds = [];
+  /// ══════════════════════════════════════════════════════════════════
+  ///  BRANCH / TEAM DATA
+  /// ══════════════════════════════════════════════════════════════════
+
+  Future<void> extractAllEmployeeIdsForBranch(String? branchId) async {
+    await _singleton.getTeamBranchData();
     selectedBranchIds.clear();
 
-    if (selectedBranchId != null &&
-        selectedBranchId.isNotEmpty &&
-        singletonClass.teamBranchDataList.isNotEmpty) {
+    if (branchId == null || branchId.isEmpty || _singleton.teamBranchDataList.isEmpty) {
+      log('⚠️ Invalid branch or empty data');
+      return;
+    }
 
-      for (var branchItem in singletonClass.teamBranchDataList) {
-        final branchData = branchItem.data;
-
-        /// ✅ FILTER BY BRANCH ID
-        if (branchData?.employees!.first.branchId != selectedBranchId) continue;
-
-        if (branchData?.employees != null) {
-          for (var employee in branchData!.employees!) {
-            final employeeId = employee.id;
-
-            if (employeeId != null &&
-                employeeId.isNotEmpty &&
-                employee.employeeInfo!.first.employeeStatus == 'Active') {
-              allEmployeeIds.add(employeeId);
-            }
-          }
+    final ids = <String>[];
+    for (final branchItem in _singleton.teamBranchDataList) {
+      final branchData = branchItem.data;
+      if (branchData?.employees?.first.branchId != branchId) continue;
+      for (final employee in branchData!.employees!) {
+        if (employee.id != null &&
+            employee.id!.isNotEmpty &&
+            employee.employeeInfo?.first.employeeStatus == 'Active') {
+          ids.add(employee.id!);
         }
       }
-
-      selectedBranchIds = allEmployeeIds.toSet();
-
-      log('✅ Employees for branch ($selectedBranchId): ${selectedBranchIds.length}');
-    } else {
-      log('⚠️ Invalid branch or empty data');
     }
+    selectedBranchIds = ids.toSet();
+    log('✅ Employees for branch ($branchId): ${selectedBranchIds.length}');
   }
 
-  void _setDefaultDates() {
-    final now = DateTime.now();
-
-    _startDate = DateTime(now.year, now.month, 1);
-    _endDate = DateTime(now.year, now.month, now.day);
-
-    log("📆 Default Date Range: $_startDate to $_endDate");
-  }
-
-
-  void _initDates({required DateTime start, required DateTime end}) {
-    _dates.clear();
-    final today = DateTime.now();
-
-    for (var date = start; !date.isAfter(end); date = date.add(const Duration(days: 1))) {
-      _dates.add(date);
-    }
-
-    /// ✅ Auto-select today's index
-    _selectedDateIndex = _dates.indexWhere((d) =>
-    d.year == today.year && d.month == today.month && d.day == today.day);
-
-    if (_selectedDateIndex != -1) {
-      _selectedDate = today;
-    }
-    log("📅 Generated ${_dates.length} dates");
-    log("✅ Auto-selected today: $_selectedDate");
-  }
-
-
-
-  Map<String, List<Teams>> getFilteredTeams(List<BranchData> branchDataList, String reportingManagerId) {
-    List<Teams> underTeams = [];
-    String? userGrade = singletonClass.getJWTModel()?.grade;
-    log("🟢 Logged-in Reporting Manager ID: $reportingManagerId");
-    log("🔍 User grade: $userGrade");
-
-    for (BranchData branchData in branchDataList) {
-      for (var departmentDetails in branchData.data?.branch!.departmentDetails ?? []) {
-        for (var department in departmentDetails.departments ?? []) {
-          log("🏢 Department: ${department.departmentName}");
-          for (var supervisor in department.supervisors ?? []) {
-            log("👨‍💼 Supervisor: ${supervisor.empId}, Team ID: ${supervisor.teamId}");
-          }
-          for (var team in department.teams ?? []) {
-            log("🧑‍🤝‍🧑 Team: ${team.teamId}");
-            for (var supervisor in department.supervisors ?? []) {
-              if (supervisor.empId == reportingManagerId && supervisor.teamId == team.teamId) {
-                log("✅ Match found — Supervisor: ${supervisor.empId}, Team: ${team.teamId}");
+  Map<String, List<Teams>> _getFilteredTeams(
+      List<BranchData> branchDataList, String managerId) {
+    final underTeams = <Teams>[];
+    for (final branchData in branchDataList) {
+      for (final deptDetails in branchData.data?.branch?.departmentDetails ?? []) {
+        for (final dept in deptDetails.departments ?? []) {
+          for (final team in dept.teams ?? []) {
+            for (final supervisor in dept.supervisors ?? []) {
+              if (supervisor.empId == managerId && supervisor.teamId == team.teamId) {
                 underTeams.add(team);
               }
             }
@@ -282,1358 +242,843 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
         }
       }
     }
-    log("🔍 Filtered ${underTeams.length} underTeams");
     return {'underTeams': underTeams};
   }
 
+  /// ══════════════════════════════════════════════════════════════════
+  ///  DATA LOADING  ← FIX: no more FutureBuilder re-fetching
+  /// ══════════════════════════════════════════════════════════════════
 
-
-  Future<void> loadData() async {
-    log("📥 Starting data load...");
-    await getTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
-    filterAttendanceData();
+  Future<void> _loadData() async {
+    log("📥 Loading attendance data…");
+    await _fetchTeamAttendanceData(startDate: _startDate!, endDate: _endDate!);
+    _applyFilters();
   }
 
-
-  Future<TeamAttendanceModel?> getTeamAttendanceData({
-    DateTime? startDate,
-    DateTime? endDate,
+  Future<void> _fetchTeamAttendanceData({
+    required DateTime startDate,
+    required DateTime endDate,
     int limit = 10000,
     int page = 0,
   }) async {
-    log("📡 Fetching attendance data...");
+    log("📡 Fetching attendance data…");
+    final grade = _singleton.getJWTModel()?.grade;
     Set<String> employeeIds = {};
 
-    final grade = singletonClass.getJWTModel()?.grade;
+    final isLowerGrade = ['L0', 'L1', 'L2', 'L3'].contains(grade);
 
-    if (grade == 'L0' || grade == 'L1' || grade == 'L2' || grade == "L3"){
-      if(_isChecked == false && _isTeamChecked == true && (singletonClass.branchID!.isEmpty || singletonClass.branchID == null)){
-        for (var team in filteredUnderTeams) {
-          log("👥 Processing team: ${team.teamId}");
-          if (team.teamData != null && team.teamData!.isNotEmpty) {
-            for (var member in team.teamData!) {
-              if (member.employeeId != null && member.employeeId!.isNotEmpty) {
-                employeeIds.add(member.employeeId!);
-                log(" - Added Employee ID: ${member.employeeId}");
-              } else {
-                log(" - ⚠️ Skipping empty employeeId in team: ${team.teamId}");
-              }
+    if (isLowerGrade) {
+      if (!_isChecked && _isTeamChecked &&
+          (_singleton.branchID == null || _singleton.branchID!.isEmpty)) {
+        // Team mode
+        for (final team in filteredUnderTeams) {
+          for (final member in team.teamData ?? []) {
+            if (member.employeeId?.isNotEmpty == true) {
+              employeeIds.add(member.employeeId!);
             }
-          } else {
-            log(" - ⚠️ No teamData found for team: ${team.teamId}");
           }
         }
-      } else if (_isChecked == false && _isTeamChecked == false && singletonClass.branchID!.isNotEmpty && singletonClass.branchID != null){
-        if (selectedBranchIds.isNotEmpty) {
-          employeeIds = selectedBranchIds;
-        }
+      } else if (!_isChecked && !_isTeamChecked &&
+          _singleton.branchID != null && _singleton.branchID!.isNotEmpty) {
+        // Branch mode
+        employeeIds = selectedBranchIds.isNotEmpty ? selectedBranchIds : {};
       } else {
-        String? userID = singletonClass.getJWTModel()?.employeeId;
-        employeeIds.add(userID!);
+        // Only-me mode
+        final userId = _singleton.getJWTModel()?.employeeId;
+        if (userId != null) employeeIds.add(userId);
       }
     } else {
-      String? userID = singletonClass.getJWTModel()?.employeeId;
-      employeeIds.add(userID!);
+      final userId = _singleton.getJWTModel()?.employeeId;
+      if (userId != null) employeeIds.add(userId);
     }
 
     if (employeeIds.isEmpty) {
-      log("❌ No employee IDs found. Returning empty attendance data.");
-      filteredAttendanceDataList.clear();
-      return  null;
+      log("❌ No employee IDs. Clearing data.");
+      if (mounted) setState(() => filteredAttendanceDataList.clear());
+      return;
     }
 
     final ids = employeeIds.join(',');
-    final now = DateTime.now();
-
-    String startDateStr = startDate != null
-        ? '${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}-${startDate.year}'
-        : '${now.month.toString().padLeft(2, '0')}-01-${now.year}';
-
-    String endDateStr = endDate != null
-        ? '${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}-${endDate.year}'
-        : '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
+    final fmt = (DateTime d) =>
+    '${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}-${d.year}';
 
     final uri = Uri.parse(
-      '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$ids/$endDateStr/$startDateStr?limit=$limit&page=$page',
+      '${_singleton.baseURL}/c-emp-attendance/getDataByEmployeeId'
+          '/$ids/${fmt(endDate)}/${fmt(startDate)}?limit=$limit&page=$page',
     );
 
-    log("🌐 Final Employee ID list: $ids");
-    log("🌐 API URL: $uri");
+    log("🌐 URL: $uri");
 
-    final response = await http.get(uri,headers: singletonClass.getHeaders());
+    try {
+      final response = await http.get(uri, headers: _singleton.getHeaders());
+      log("📨 Status: ${response.statusCode}");
 
-    log("📨 TEAM DATA RESPONSE: ${response.statusCode}");
-    log("📨 TEAM DATA BODY: ${response.body}");
-
-    if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
-      final attendance = TeamAttendanceModel.fromJson(responseBody);
-      singletonClass.teamAttendanceDataList.clear();
-      singletonClass.teamAttendanceDataList.add(attendance);
-      log("✅ Attendance data successfully fetched and saved");
-      return attendance;
-    } else {
-      log("❌ Failed to fetch attendance data");
-      return null;
-    }
-  }
-
-
-
-  void filterAttendanceData() {
-    List<TeamAttendanceData> allAttendanceData =
-        singletonClass.teamAttendanceDataList.first.data!.data ?? [];
-
-    List<TeamAttendanceData> filtered = allAttendanceData;
-
-    // ✅ Filter by employee if selected
-    if (selectedEmployeeId != null) {
-      filtered = filtered.where((e) => e.employeeId == selectedEmployeeId).toList();
-    }
-
-    // ✅ Show all date range data when range is selected
-    if (!isDateRangeSelected) {
-      if (_selectedDate != null) {
-        filtered = filtered.where((attendance) {
-          DateTime updatedAt = DateTime.parse(attendance.date!);
-          return updatedAt.year == _selectedDate!.year &&
-              updatedAt.month == _selectedDate!.month &&
-              updatedAt.day == _selectedDate!.day;
-        }).toList();
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        final attendance = TeamAttendanceModel.fromJson(body);
+        _singleton.teamAttendanceDataList
+          ..clear()
+          ..add(attendance);
+        log("✅ Fetched ${attendance.data?.data?.length ?? 0} records");
+      } else {
+        log("❌ API error ${response.statusCode}");
       }
+    } catch (e) {
+      log("❌ Network error: $e");
     }
-
-    setState(() {
-      filteredAttendanceDataList.clear();
-      filteredAttendanceDataList = filtered;
-    });
   }
 
+  /// Central filter — runs after any state change
+  void _applyFilters() {
+    if (_singleton.teamAttendanceDataList.isEmpty) {
+      if (mounted) setState(() => filteredAttendanceDataList.clear());
+      return;
+    }
 
+    List<TeamAttendanceData> all =
+        _singleton.teamAttendanceDataList.first.data?.data ?? [];
+
+    // Employee filter
+    if (selectedEmployeeId != null) {
+      all = all.where((e) => e.employeeId == selectedEmployeeId).toList();
+    }
+
+    // Date filter (only if not in date-range mode)
+    if (!isDateRangeSelected && _selectedDate != null) {
+      all = all.where((a) {
+        final d = DateTime.tryParse(a.date ?? '');
+        return d != null &&
+            d.year == _selectedDate!.year &&
+            d.month == _selectedDate!.month &&
+            d.day == _selectedDate!.day;
+      }).toList();
+    }
+
+    if (mounted) setState(() => filteredAttendanceDataList = all);
+  }
+
+  /// ══════════════════════════════════════════════════════════════════
+  ///  UI HELPERS
+  /// ══════════════════════════════════════════════════════════════════
 
   String _getDayOfWeek(BuildContext context, DateTime date) {
-    final locale = Localizations.localeOf(context).languageCode;
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+    const en = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const ar = ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
+    return isAr ? ar[date.weekday - 1] : en[date.weekday - 1];
+  }
 
-    if (locale == "ar") {
-      return [
-        "الإثنين", // Monday
-        "الثلاثاء", // Tuesday
-        "الأربعاء", // Wednesday
-        "الخميس", // Thursday
-        "الجمعة", // Friday
-        "السبت", // Saturday
-        "الأحد", // Sunday
-      ][date.weekday - 1];
-    } else {
-      return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][date.weekday - 1];
+  String _formatDay(BuildContext context, DateTime date) {
+    return Localizations.localeOf(context).languageCode == 'ar'
+        ? _toArabicDigits(date.day)
+        : date.day.toString();
+  }
+
+  String _toArabicDigits(int n) {
+    const d = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return n.toString().split('').map((c) => d[int.parse(c)]).join();
+  }
+
+  String _formatDate(String raw, BuildContext context) {
+    try {
+      final dt = DateTime.parse(raw);
+      return Localizations.localeOf(context).languageCode == 'ar'
+          ? DateFormat('dd-MM-yyyy', 'ar').format(dt)
+          : DateFormat('dd-MM-yyyy').format(dt);
+    } catch (_) {
+      return '--';
     }
   }
 
-  String formatDay(BuildContext context, DateTime date) {
-    final locale = Localizations.localeOf(context).languageCode;
-
-    if (locale == "ar") {
-      return _toArabicNumber(date.day);
-    } else {
-      return date.day.toString();
+  String _formatMinutes(dynamic minutes) {
+    if (minutes == null) return '---';
+    try {
+      final d = minutes is int ? minutes.toDouble() : double.parse(minutes.toString());
+      return d.ceil().toString();
+    } catch (_) {
+      return '---';
     }
   }
 
-
-  String _toArabicNumber(int number) {
-    const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-    return number
-        .toString()
-        .split('')
-        .map((digit) => arabicDigits[int.parse(digit)])
-        .join('');
+  bool _matchesStatusFilter(TeamAttendanceData a) {
+    final status = (a.status ?? '').toLowerCase().replaceAll('-', ' ');
+    switch (_selectedOptionIndex) {
+      case 0: return true;
+      case 1: return status == 'present';
+      case 2: return status == 'absent';
+      case 3: return ['on leave', 'leave', 'annualleave'].contains(status);
+      case 4: return ['missing checkin/out', 'missing checkin', 'missing checkout', 'pending'].contains(status);
+      case 5: return (a.lateMinutes ?? 0) > 0;
+      case 6: return (a.earlyCheckOut ?? 0) > 0;
+      default: return false;
+    }
   }
+
+  bool _matchesSearch(TeamAttendanceData a) {
+    if (!isSearching || searchController.text.isEmpty) return true;
+    final q = searchController.text.toLowerCase();
+    return (a.name?.toLowerCase().contains(q) ?? false) ||
+        (a.empId?.toLowerCase().contains(q) ?? false);
+  }
+
+  int _getCountForOption(int index) {
+    if (filteredAttendanceDataList.isEmpty) return 0;
+    final prev = _selectedOptionIndex;
+    _selectedOptionIndex = index;
+    final count = filteredAttendanceDataList.where(_matchesStatusFilter).length;
+    _selectedOptionIndex = prev;
+    return count;
+  }
+
+  /// ══════════════════════════════════════════════════════════════════
+  ///  BUILD
+  /// ══════════════════════════════════════════════════════════════════
 
   @override
   Widget build(BuildContext context) {
-    final manageTimeModule = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
-        .firstWhere((e) => (e.title == "ManageTime" || e.name == "ManageTime"),
-    );
-    final attendanceHistoryMenu = manageTimeModule.subMenu!.firstWhere((submenu) =>
-      submenu.title == "Attendance History" ||
-          submenu.name == "Attendance History",
-    );
-
-    final access = attendanceHistoryMenu.accessLevel;
-    final companies = access!.companies ?? [];
-    final hasCompanies = companies.isNotEmpty &&
-        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty && c.companyId != "");
-    final hasBranches =
-        hasCompanies &&
-            companies.any((c) =>
-            c.branches != null &&
-                c.branches!.isNotEmpty &&
-                c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty && b.branchId != ""));
-    final teamEnabled = access.team == true;
-
-    if (hasCompanies && hasBranches && teamEnabled) {
-      // ✅ Case 1: Companies + Branches + Team → Dropdown + Team + Only Me
-      showDropdown = true;
-      showTeamCheckbox = true;
-      showOnlyMeCheckbox = true;
-    } else if (hasCompanies && hasBranches && !teamEnabled) {
-      // ✅ Case 2: Companies + Branches + No Team → Dropdown + Only Me
-      showDropdown = true;
-      showOnlyMeCheckbox = true;
-    } else if (!hasCompanies && !hasBranches && teamEnabled) {
-      // ✅ Case 3: No companies + No branches + Team → Team + Only Me
-      showTeamCheckbox = true;
-      showOnlyMeCheckbox = true;
-    } else if (!hasCompanies && !hasBranches && !teamEnabled) {
-      // ✅ Case 4: No companies + No branches + No Team → Only Me
-      showOnlyMeCheckbox = true;
-    }
-      return Scaffold(
+    return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: Column(
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildAppBar(context),
+            _buildFilterChips(context),
+            _buildDateStrip(context),
+            const SizedBox(height: 8),
+            _buildActionRow(context),
+            const SizedBox(height: 8),
+            Expanded(child: _buildBody(context)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ──────────────────────── App Bar ────────────────────────────────
+
+  Widget _buildAppBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.4),
-                          spreadRadius: 5,
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_outlined,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context)!.attendanceHistory,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: NasColors.darkBlue,
-                  ),
-                ),
-                const Spacer(),
-                  IconButton(
-                    onPressed: () async {
-                      final DateTime now = DateTime.now();
-                      final DateTimeRange? picked = await showDateRangePicker(
-                        context: context,
-                        firstDate: DateTime(now.year - 2),
-                        lastDate: now,
-                        initialDateRange: DateTimeRange(
-                          start: now.subtract(const Duration(days: 7)),
-                          end: now,
-                        ),
-                        builder: (BuildContext context, Widget? child) {
-                          return Theme(
-                            data: ThemeData.light().copyWith(
-                              scaffoldBackgroundColor: Colors.white,
-                              textButtonTheme: TextButtonThemeData(
-                                style: TextButton.styleFrom(
-                                  foregroundColor: NasColors.darkBlue, // Button color
-                                ),
-                              ),
-                              colorScheme: ColorScheme.light(
-                                primary: NasColors.darkBlue, // Selection color
-                                onPrimary: Colors.white, // Default text color
-                                secondaryContainer: NasColors.icons,
-                              ),
-                            ),
-                            child: child!,
-                          );
-                        },
-                      );
-                      if (picked != null) {
-                        _startDate = picked.start;
-                        _endDate = picked.end;
-
-                        isDateRangeSelected = true;  // ✅ activate range mode
-
-                        _initDates(start: picked.start, end: picked.end);
-
-                        await loadData(); // <-- API fetch
-                      }
-                    },
-                    icon:  Icon(Icons.date_range,color: NasColors.darkBlue,size: 30,),
-                  ),
-              ],
+          _circleButton(
+            icon: Icons.arrow_back_ios_new_rounded,
+            onTap: () => Navigator.pop(context),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            AppLocalizations.of(context)!.attendanceHistory,
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: NasColors.darkBlue,
             ),
           ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                buildOptionsCard(0, AppLocalizations.of(context)!.all),
-                buildOptionsCard(1, AppLocalizations.of(context)!.present),
-                buildOptionsCard(2, AppLocalizations.of(context)!.absent),
-                buildOptionsCard(3, AppLocalizations.of(context)!.leave),
-                buildOptionsCard(4, AppLocalizations.of(context)!.missingCheckInOut),
-                buildOptionsCard(5, AppLocalizations.of(context)!.late),
-                buildOptionsCard(6, AppLocalizations.of(context)!.earlyCheckOut),
-
-              ],
-            ),
+          const Spacer(),
+          _circleButton(
+            icon: Icons.calendar_month_rounded,
+            onTap: () => _pickDateRange(context),
           ),
-            SizedBox(
-              height: 80,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                controller: _scrollController,
-                itemCount: _dates.length,
-                itemBuilder: (ctx, i) {
-                  final date = _dates[i];
-                  final selected = _selectedDateIndex == i;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedDateIndex = i;
-                        _selectedDate = date;
-                        isDateRangeSelected = false;
-                      });
-                      filterAttendanceData();
-                    },
-                    child: Container(
-                      width: 55,
-                      decoration: BoxDecoration(
-                        color: selected ? NasColors.darkBlue : Colors.transparent,
-                        borderRadius: BorderRadius.circular(35),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(formatDay(context, date),
-                              style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: selected ? Colors.white : Colors.grey)),
-                          Text(_getDayOfWeek(context,date),
-                              style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: selected ? Colors.white : Colors.grey)),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if(isSearching == false)...[
-                if(_isChecked == false)...[
-                  if (showDropdown)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0, right: 10),
-                      child: PopupMenuButton<String>(
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        onSelected: (value) async {
-                          // 🧩 Show loader while fetching
-                          setState(() {
-                            _isLoadingBranchData = true;
-                          });
-
-                          try {
-                            singletonClass.teamAttendanceDataList.clear();
-                            selectedBranchIds.clear();
-                            singletonClass.branchID = value;
-
-                            // 🔹 1. Fetch latest team-branch data
-                            await singletonClass.getTeamBranchData();
-
-                            // 🔹 2. Extract employee IDs for that branch
-                            await extractAllEmployeeIdsForBranch(value);
-
-                            // 🔹 3. Get branch name
-                            final selectedBranch = singletonClass.availableBranches
-                                .firstWhere((branch) => branch.branchId.toString() == value);
-                            singletonClass.branchName = selectedBranch.branchName ?? '';
-
-                            if (kDebugMode) {
-                              print('🏢 Selected Branch ID: $value');
-                              print('🏷️ Branch Name: ${singletonClass.branchName}');
-                              print('👥 Extracted IDs: $selectedBranchIds');
-                            }
-
-                            // 🔹 4. Reset checkboxes and load attendance
-                            _isTeamChecked = false;
-                            _isChecked = false;
-                            await loadData();
-                          } catch (e) {
-                            log("❌ Error in branch selection: $e");
-                          } finally {
-                            // ✅ Hide loader after everything completes
-                            setState(() {
-                              _isLoadingBranchData = false;
-                            });
-                          }
-                        },
-
-                        itemBuilder: (BuildContext context) {
-                          final branchList = singletonClass.availableBranches;
-                          if (branchList.isEmpty) return [];
-
-                          return branchList.map((branch) {
-                            return PopupMenuItem<String>(
-                              value: branch.branchId,
-                              child: Text(branch.branchName ?? "---"),
-                            );
-                          }).toList();
-                        },
-                        child: Container(
-                          height: 60,
-                          width: 150,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(45),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.3),
-                                blurRadius: 6,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child:_isLoadingBranchData
-                              ? Center(child: CircularProgressIndicator(
-                            color: NasColors.darkBlue,
-                          ))
-                              : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const SizedBox(width: 8),
-                              Image.asset('images/site.png', height: 14, width: 14),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  singletonClass.branchName?.isNotEmpty == true
-                                      ? singletonClass.branchName!
-                                      : singletonClass.branchDataList.first.data!.branch!.branchName!,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 15,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                Spacer(),
-                  if (showTeamCheckbox)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 5),
-                      child: Column(
-                        children: [
-                          Checkbox(
-                            value: _isTeamChecked,
-                            activeColor: NasColors.onTime,
-                            onChanged: (singletonClass.branchID != null)
-                                ? (bool? value) async {
-
-                              try {
-                                singletonClass.teamAttendanceDataList.clear();
-                                _isChecked = false;
-                                _isTeamChecked = value ?? false;
-                                selectedBranchIds.clear();
-
-                                if (hasCompanies && hasBranches && teamEnabled) {
-                                  singletonClass.branchID = null;
-                                  singletonClass.branchName = null;
-                                }
-
-                                await singletonClass.getTeamBranchData();
-                                await loadData();
-                              } catch (e) {
-                                log("❌ Error toggling team checkbox: $e");
-                              } finally {
-                                setState(() {
-                                  isSearching = false;
-                                });
-                              }
-                            }
-                                : null,
-                          ),
-                          Text(
-                            AppLocalizations.of(context)!.teams,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-                if (showOnlyMeCheckbox)...[
-                  if (!_isLoading)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5, right: 5),
-                    child: Column(
-                      children: [
-                        Checkbox(
-                          value: _isChecked,
-                          activeColor: NasColors.onTime,
-                          onChanged: (bool? value) {
-                            final newValue = value ?? false;
-
-                            /// ✅ Immediate UI update
-                            setState(() {
-                              _isChecked = newValue;
-                              _isLoading = true; // ONLY loader
-                            });
-
-                            _handleCheckboxChange(newValue);
-                          },
-                        ),
-                        Text(
-                          AppLocalizations.of(context)!.onlyMe,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: NasColors.darkBlue,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_isLoading)
-                      SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: NasColors.darkBlue,
-                              ),
-                            ),
-                          ),
-                ]
-              ],
-              if(isSearching == true)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: TextField(
-                    controller: searchController,
-                    onChanged: (value) {
-                      setState(() {
-
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.search,
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.black),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.black),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.black, width: 1.5),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: () {
-                          setState(() {
-                            isSearching = false;
-                            searchController.clear();
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              IconButton(onPressed: (){
-                setState(() {
-                  isSearching = true;
-                });
-              }, icon: Icon(Icons.search, size: 30,color: Colors.black,))
-            ],
-          ),
-            SizedBox(height: 10),
-            Expanded(
-                child: (_isLoadingBranchData ||  _isInitialLoading == true)
-                    ? Loader()
-                    : FutureBuilder(
-                    future: getTeamAttendanceData(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Loader();
-                      } else if (filteredAttendanceDataList.isEmpty) {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      final hasMatchingData = filteredAttendanceDataList.any((attendance) {
-                        final status = attendance.status?.toLowerCase() ?? '';
-
-                        if (_selectedOptionIndex == 0) return true;
-                        if (_selectedOptionIndex == 1) return status == 'present';
-                        if (_selectedOptionIndex == 2) return status == 'absent';
-                        if (_selectedOptionIndex == 4) {
-                          final normalized = status.replaceAll('-', ' ');
-                          return normalized == 'missing checkin/out' ||
-                              normalized == 'missing checkin' ||
-                              normalized == 'missing checkout' ||
-                              normalized == 'pending';
-                        }
-                        if (_selectedOptionIndex == 5) return (attendance.lateMinutes ?? 0) > 0;
-                        if (_selectedOptionIndex == 6) return (attendance.earlyCheckOut ?? 0) > 0;
-                        if (_selectedOptionIndex == 3) {
-                          final normalized = status.replaceAll('-', ' ');
-                          return normalized == 'on-leave' ||
-                              normalized == 'leave' ||
-                              normalized == 'annualLeave' ||
-                              normalized == 'on leave';
-                        }
-                        return false;
-                      });
-                      return  hasMatchingData
-                          ? ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount:filteredAttendanceDataList.length,
-                        itemBuilder: (ctx, i) {
-                          final attendance = filteredAttendanceDataList[i];
-                          if (_selectedOptionIndex != 0) {
-                            final status = attendance.status?.toLowerCase();
-                            if ((_selectedOptionIndex == 1 && status != 'present') ||
-                                (_selectedOptionIndex == 2 && status != 'absent') ||
-                                (_selectedOptionIndex == 4 && !['missing checkin/out', 'missing checkin', 'missing checkout' , 'pending']
-                                    .contains(status.replaceAll('-', ' '))) ||
-                                (_selectedOptionIndex == 5 && (attendance.lateMinutes ?? 0) <= 0) ||
-                                (_selectedOptionIndex == 6 && (attendance.earlyCheckOut ?? 0) <= 0) ||
-                                (_selectedOptionIndex == 3 && !['on-leave', 'leave', 'on leave']
-                                    .contains(status.replaceAll('-', ' ')))
-                            ) {
-                              return const SizedBox.shrink();
-                            }
-                          }
-
-                          String formatDate(String updatedAt) {
-                            try{
-                              DateTime updatedAtDateTime = DateTime.parse(updatedAt);
-                              final locale = Localizations.localeOf(context).languageCode;
-                              if (locale == 'ar'){
-                                final arabicFormatter = DateFormat('dd-MM-yyyy', 'ar');
-                                return arabicFormatter.format(updatedAtDateTime);
-                              }else{
-                                final formattedTime = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
-                                return formattedTime;
-                              }
-                            } catch (e){
-                              if (kDebugMode) {
-                                print("Error formatting time: $e");
-                              }
-                              return '--:--';
-                            }
-                          }
-                          String date = formatDate(attendance.date!);
-                          int? lateMinutes = int.tryParse(attendance.lateMinutes.toString());
-                          int? earlyCheckOut = int.tryParse(attendance.earlyCheckOut.toString());
-                          String breakTime = formatMinutes(attendance.breakTime);
-                          final searchText = searchController.text.toLowerCase();
-                          if (isSearching) {
-                            final matchesName = attendance.name?.toLowerCase().contains(searchText) ?? false;
-                            final matchesId = attendance.empId?.toLowerCase().contains(searchText) ?? false;
-
-                            if (!matchesName && !matchesId) {
-                              return const SizedBox.shrink();
-                            }
-                          }
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => TeamAttendanceDetailScreen(attendanceData: attendance),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 10),
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.3),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        attendance.empId ?? "___",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      Text(date,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          )),
-                                    ],
-                                  ),
-                                  SizedBox(height: 5),
-                                  Row(
-                                    children: [
-                                      ClipOval(
-                                        child: CircleAvatar(
-                                          backgroundColor: Colors.white,
-                                          radius: 30,
-                                          child: ClipOval(
-                                            child: Image.asset(
-                                              'images/DP.png',
-                                              fit: BoxFit.cover,
-                                              width: 100,
-                                              height: 100,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 5),
-                                      Column(
-                                        children: [
-                                          SizedBox(
-                                            width: 130,
-                                            child: Text(
-                                              attendance.name ?? "___",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const Spacer(),
-                                      Column(
-                                        children: [
-                                          if (attendance.status != null)
-                                            Container(
-                                              height: attendance.status == "Missing CheckIn/Out" ? 50 : 30,
-                                              width: 100,
-                                              decoration: BoxDecoration(
-                                                color: getStatusColor(attendance.status!),
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  _translateStatus(attendance.status!, context),
-                                                  textAlign: TextAlign.center,
-                                                  style: GoogleFonts.inter(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          SizedBox(height: 5),
-                                          if (attendance.secondaryStatus != null)
-                                            Container(
-                                              height: attendance.secondaryStatus == "Missing CheckIn/Out" ? 50 : 30,
-                                              width: 100,
-                                              decoration: BoxDecoration(
-                                                color: getStatusColor(attendance.secondaryStatus!),
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  _translateSecondaryStatus(attendance.secondaryStatus!, context),
-                                                  textAlign: TextAlign.center,
-                                                  style: GoogleFonts.inter(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      )
-
-                                    ],
-                                  ),
-                                  if(attendance.status != "On-Leave")...[SizedBox(height: 10),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          AppLocalizations.of(context)!.shifts,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        Spacer(),
-                                        Builder(builder: (_) {
-                                          final int workedMinutes = attendance.totalHoursWorked ?? 0;
-                                          final int totalWorkingMinutes = 11 * 60;
-                                          final double progress = (workedMinutes / totalWorkingMinutes).clamp(0.0, 1.0);
-
-                                          return Column(
-                                            children: [
-                                              Text(
-                                                "${workedMinutes ~/ 60}${AppLocalizations.of(context)!.h} ${workedMinutes % 60}${AppLocalizations.of(context)!.m}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 5),
-                                              SizedBox(
-                                                width: 80,
-                                                height: 8,
-                                                child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  child: LinearProgressIndicator(
-                                                    value: progress,
-                                                    backgroundColor: Colors.grey[300],
-                                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                                      progress >= 1.0
-                                                          ? Colors.green
-                                                          : Colors.orange,
-                                                    ),
-                                                    minHeight: 8,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        }),
-                                      ],
-                                    ),
-                                    SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Column(
-                                          children: [
-                                            if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'fullTime')...[
-                                              Text(
-                                                attendance.shiftInfo != null &&
-                                                    attendance.shiftInfo!.timefrom != null &&
-                                                    attendance.shiftInfo!.timeTo != null
-                                                    ? "${singletonClass.formatCheckInTime(attendance.shiftInfo!.timefrom.toString(), context)} - ${singletonClass.formatCheckInTime(attendance.shiftInfo!.timeTo.toString(), context)}"
-                                                    : "---",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: 180,
-                                                child: Text(
-                                                  maxLines: 5,
-                                                  attendance.shiftInfo != null &&
-                                                      attendance.shiftInfo!.shiftName != null
-                                                      ? "${attendance.shiftInfo!.shiftName}"
-                                                      : "---",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                            if (attendance.shiftInfo != null && attendance.shiftInfo!.shiftType == 'flexibleShift')...[
-                                              Text(
-                                                maxLines: 5,
-                                                attendance.shiftInfo != null &&
-                                                    attendance.shiftInfo!.shiftName != null
-                                                    ? "${attendance.shiftInfo!.shiftName}"
-                                                    : "---",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ],
-                                            if (attendance.shiftInfo != null &&
-                                                attendance.shiftInfo!.shiftType == 'timeTableShift') ...[
-                                              Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: attendance.slots!.take(2).map<Widget>((slot) {
-                                                  return Padding(
-                                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(Icons.access_time, size: 16, color: Colors.grey[700]),
-                                                        const SizedBox(width: 6),
-                                                        Text(
-                                                          "${singletonClass.formatCheckInTime(slot.slotStart , context)} - ${singletonClass.formatCheckInTime(slot.slotEnd, context)}",
-                                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                              )
-                                            ],
-                                          ],
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          "$breakTime ${AppLocalizations.of(context)!.minutes}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        const Icon(Icons.coffee,
-                                            size: 20, color: Colors.brown),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                  ],
-                                  Divider(
-                                    color: Colors.grey,
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade200,
-                                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
-                                    ),
-                                    child: attendance.status != "On-Leave" ? Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                         children: [
-                                           Text(
-                                             AppLocalizations.of(context)!.checkIn,
-                                             style: GoogleFonts.inter(
-                                               fontSize: 13,
-                                               fontWeight: FontWeight.bold,
-                                               color: Colors.grey
-                                             ),
-                                           ),
-                                           SizedBox(height: 5),
-                                           Text(
-                                             singletonClass.formatCheckInTime(
-                                                 attendance.clockInTime , context),
-                                             style: GoogleFonts.inter(
-                                               fontSize: 13,
-                                               fontWeight: FontWeight.bold,
-                                               color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
-                                             ),
-                                           ),
-                                         ],
-                                        ),
-                                        SizedBox(width: 10),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!.checkOut,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              singletonClass.formatCheckInTime(
-                                                  attendance.clockOutTime , context),
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color:(lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(width: 10),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!.late,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              "${lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${lateMinutes % 60}${AppLocalizations.of(context)!.m}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: NasColors.pending,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(width: 10),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!.earlyLeft,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              "${earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${earlyCheckOut % 60}${AppLocalizations.of(context)!.m}",
-                                               style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: NasColors.onTime,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ) : Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!.leaveType,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              "${attendance.leaveDetails!.requestInfo!.subType}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(width: 5),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!.startDate,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              singletonClass.formatDate2("${attendance.leaveDetails!.requestInfo!.requestData!.first.startDate}", context),
-                                              style: GoogleFonts.inter(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(width: 5),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!.endDate,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              singletonClass.formatDate2("${attendance.leaveDetails!.requestInfo!.requestData!.first.endDate}", context),
-                                              style: GoogleFonts.inter(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(width: 5),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!.duration,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey
-                                              ),
-                                            ),
-                                            SizedBox(height: 5),
-                                            Text(
-                                              "${attendance.leaveDetails!.requestInfo!.requestData!.first.duration}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    )
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ) : Center(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      );
-                    })
-            ),
         ],
       ),
     );
   }
 
+  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 42,
+        width: 42,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(13),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: NasColors.darkBlue, size: 20),
+      ),
+    );
+  }
 
-  ///counter helper method
-  int getCountForCard(int index) {
-    if (filteredAttendanceDataList.isEmpty) return 0;
+  /// ──────────────────────── Date Range Picker ───────────────────────
 
-    switch (index) {
-      case 0:
-        return filteredAttendanceDataList.length;
-      case 1:
-        return filteredAttendanceDataList.where(
-              (e) => (e.status?.toLowerCase() ?? "") == "present",
-        ).length;
-      case 2:
-        return filteredAttendanceDataList.where(
-              (e) => (e.status?.toLowerCase() ?? "") == "absent",
-        ).length;
-      case 4:
-        return filteredAttendanceDataList.where((e) {
-          final status = (e.status ?? "").toLowerCase().replaceAll('-', ' ');
-          return status == "missing checkin/out" ||
-              status == "missing checkin" ||
-              status == "missing checkout" ||
-              status == 'pending';
-        }).length;
-      case 5:
-        return filteredAttendanceDataList.where(
-              (e) => (e.lateMinutes ?? 0) > 0,
-        ).length;
-      case 6:
-        return filteredAttendanceDataList.where(
-              (e) => (e.earlyCheckOut ?? 0) > 0,
-        ).length;
-      case 3:
-        return filteredAttendanceDataList.where((e) {
-          final status = (e.status ?? "").toLowerCase().replaceAll('-', ' ');
-          return status == "on-leave" ||
-              status == "leave" ||
-              status == "on leave";
-        }).length;
-      default:
-        return 0;
+  Future<void> _pickDateRange(BuildContext context) async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 2),
+      lastDate: now,
+      initialDateRange:
+      DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
+      builder: (ctx, child) => Theme(
+        data: ThemeData.light().copyWith(
+          scaffoldBackgroundColor: Colors.white,
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(foregroundColor: NasColors.darkBlue),
+          ),
+          colorScheme: ColorScheme.light(
+            primary: NasColors.darkBlue,
+            onPrimary: Colors.white,
+            secondaryContainer: NasColors.icons,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _startDate = picked.start;
+        _endDate = picked.end;
+        isDateRangeSelected = true;
+      });
+      _initDates(start: picked.start, end: picked.end);
+      await _loadData();
+      _scrollToSelectedDate();
     }
   }
+
+  Color _chipAccentColor(int index) {
+    switch (index) {
+      case 0: return NasColors.darkBlue;
+      case 1: return NasColors.completed;
+      case 2: return NasColors.red;
+      case 3: return NasColors.darkBlue;
+      case 4: return NasColors.pending;
+      case 5: return NasColors.pending;
+      case 6: return NasColors.onTime;
+      default: return NasColors.darkBlue;
+    }
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final options = [
+      (l.all, 0),
+      (l.present, 1),
+      (l.absent, 2),
+      (l.leave, 3),
+      (l.missingCheckInOut, 4),
+      (l.late, 5),
+      (l.earlyCheckOut, 6),
+    ];
+    return SizedBox(
+      height: 54,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: options.length,
+        itemBuilder: (ctx, i) {
+          final (label, idx) = options[i];
+          return _FilterChip(
+            label: label,
+            count: _getCountForOption(idx),
+            selected: _selectedOptionIndex == idx,
+            accentColor: _chipAccentColor(idx), // ← added
+            onTap: () {
+              setState(() => _selectedOptionIndex = idx);
+              _applyFilters();
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  /// ──────────────────────── Date Strip ─────────────────────────────
+
+  Widget _buildDateStrip(BuildContext context) {
+    return SizedBox(
+      height: 80,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        controller: _scrollController,
+        itemCount: _dates.length,
+        itemBuilder: (ctx, i) {
+          final date = _dates[i];
+          final selected = _selectedDateIndex == i;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedDateIndex = i;
+                _selectedDate = date;
+                isDateRangeSelected = false;
+              });
+              _applyFilters();
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 58,
+              margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+              decoration: BoxDecoration(
+                color: selected ? NasColors.darkBlue : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: selected
+                    ? [BoxShadow(color: NasColors.darkBlue.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+                    : [],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _formatDay(context, date),
+                    style: GoogleFonts.inter(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: selected ? Colors.white : Colors.grey.shade500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _getDayOfWeek(context, date),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: selected ? Colors.white70 : Colors.grey.shade400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ──────────────────────── Action Row ─────────────────────────────
+
+  Widget _buildActionRow(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
+    // Recompute visibility from access settings
+    final manageTimeModule =
+    _singleton.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+        .firstWhere((e) => e.title == "ManageTime" || e.name == "ManageTime");
+    final attendanceHistoryMenu = manageTimeModule.subMenu!.firstWhere(
+          (s) => s.title == "Attendance History" || s.name == "Attendance History",
+    );
+    final access = attendanceHistoryMenu.accessLevel!;
+    final companies = access.companies ?? [];
+    final hasCompanies = companies.isNotEmpty &&
+        companies.any((c) => c.companyId != null && c.companyId!.isNotEmpty);
+    final hasBranches = hasCompanies &&
+        companies.any((c) =>
+        c.branches != null &&
+            c.branches!.any((b) => b.branchId != null && b.branchId!.isNotEmpty));
+    final teamEnabled = access.team == true;
+
+    if (hasCompanies && hasBranches && teamEnabled) {
+      showDropdown = showTeamCheckbox = showOnlyMeCheckbox = true;
+    } else if (hasCompanies && hasBranches) {
+      showDropdown = showOnlyMeCheckbox = true;
+    } else if (teamEnabled) {
+      showTeamCheckbox = showOnlyMeCheckbox = true;
+    } else {
+      showOnlyMeCheckbox = true;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          // Search field (expanded when active)
+          if (isSearching) ...[
+            Expanded(child: _buildSearchField(l)),
+            const SizedBox(width: 4),
+          ] else ...[
+            if (!_isChecked && showDropdown) _buildBranchDropdown(context),
+            const Spacer(),
+            if (showTeamCheckbox && !_isChecked)
+              _buildLabeledCheckbox(
+                label: l.teams,
+                value: _isTeamChecked,
+                enabled: _singleton.branchID != null,
+                onChanged: _onTeamCheckboxChanged,
+              ),
+            if (showOnlyMeCheckbox)
+              _isOnlyMeLoading
+                  ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: NasColors.darkBlue),
+                ),
+              )
+                  : _buildLabeledCheckbox(
+                label: l.onlyMe,
+                value: _isChecked,
+                onChanged: (v) {
+                  setState(() {
+                    _isChecked = v ?? false;
+                    _isOnlyMeLoading = true;
+                  });
+                  _handleOnlyMeChange(v ?? false);
+                },
+              ),
+          ],
+          // Search toggle
+          _circleButton(
+            icon: isSearching ? Icons.close_rounded : Icons.search_rounded,
+            onTap: () {
+              setState(() {
+                isSearching = !isSearching;
+                if (!isSearching) searchController.clear();
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  ///Search Bar
+  Widget _buildSearchField(AppLocalizations l) {
+    return TextField(
+      controller: searchController,
+      autofocus: true,
+      cursorColor: Colors.grey,
+      onChanged: (_) => setState(() {}),
+      style: GoogleFonts.inter(fontSize: 14),
+      decoration: InputDecoration(
+        hintText: l.search,
+        hintStyle: GoogleFonts.inter(color: Colors.grey.shade400),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        prefixIcon: const Icon(Icons.search, size: 20),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBranchDropdown(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: PopupMenuButton<String>(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        onSelected: _onBranchSelected,
+        itemBuilder: (_) => _singleton.availableBranches
+            .map((b) => PopupMenuItem<String>(
+          value: b.branchId,
+          child: Text(b.branchName ?? '---',
+              style: GoogleFonts.inter(fontSize: 14)),
+        ))
+            .toList(),
+        child: Container(
+          height: 44,
+          constraints: const BoxConstraints(minWidth: 120, maxWidth: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3))
+            ],
+          ),
+          child: _isLoadingBranchData
+              ? Center(
+            child: SizedBox(
+              height: 18,
+              width: 18,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: NasColors.darkBlue),
+            ),
+          )
+              : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('images/site.png', height: 14, width: 14),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  _singleton.branchName?.isNotEmpty == true
+                      ? _singleton.branchName!
+                      : (_singleton.branchDataList.isNotEmpty
+                      ? _singleton.branchDataList.first.data?.branch?.branchName ?? '---'
+                      : '---'),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Icon(Icons.keyboard_arrow_down_rounded,
+                  size: 18, color: Colors.black54),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabeledCheckbox({
+    required String label,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+    bool enabled = true,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: enabled ? () => onChanged(!value) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Checkbox(
+              value: value,
+              activeColor: NasColors.onTime,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              onChanged: enabled ? onChanged : null,
+            ),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: enabled ? NasColors.darkBlue : Colors.grey.shade400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ──────────────────────── Checkbox handlers ───────────────────────
+
+  Future<void> _onTeamCheckboxChanged(bool? value) async {
+    try {
+      _singleton.teamAttendanceDataList.clear();
+      _isChecked = false;
+      _isTeamChecked = value ?? false;
+      selectedBranchIds.clear();
+
+      // Recompute access
+      final manageTimeModule =
+      _singleton.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
+          .firstWhere((e) => e.title == "ManageTime" || e.name == "ManageTime");
+      final menu = manageTimeModule.subMenu!.firstWhere(
+            (s) => s.title == "Attendance History" || s.name == "Attendance History",
+      );
+      final access = menu.accessLevel!;
+      final companies = access.companies ?? [];
+      final hasCompanies = companies.isNotEmpty &&
+          companies.any((c) => c.companyId?.isNotEmpty == true);
+      final hasBranches = hasCompanies &&
+          companies.any((c) =>
+          c.branches?.any((b) => b.branchId?.isNotEmpty == true) == true);
+
+      if (hasCompanies && hasBranches && access.team == true) {
+        _singleton.branchID = null;
+        _singleton.branchName = null;
+      }
+      await _singleton.getTeamBranchData();
+      await _loadData();
+    } catch (e) {
+      log("❌ Team checkbox error: $e");
+    } finally {
+      if (mounted) setState(() => isSearching = false);
+    }
+  }
+
+  Future<void> _handleOnlyMeChange(bool isChecked) async {
+    try {
+      _singleton.teamAttendanceDataList.clear();
+      selectedBranchIds.clear();
+
+      if (!isChecked) {
+        // Back to branch mode — pick first available branch
+        if (_singleton.branchDataList.isNotEmpty) {
+          final first = _singleton.branchDataList.first;
+          _singleton.branchID = first.data?.branch?.id;
+          _singleton.branchName = first.data?.branch?.branchName;
+          await extractAllEmployeeIdsForBranch(_singleton.branchID);
+        }
+        _isTeamChecked = false;
+      } else {
+        _singleton.branchID = null;
+        _singleton.branchName = null;
+        _isTeamChecked = false;
+      }
+
+      _initDates(start: _startDate!, end: _endDate!);
+      await Future.wait([_singleton.getTeamBranchData(), _loadData()]);
+    } catch (e) {
+      log("❌ Only-me change error: $e");
+    } finally {
+      if (mounted) setState(() => _isOnlyMeLoading = false);
+    }
+  }
+
+  Future<void> _onBranchSelected(String value) async {
+    setState(() => _isLoadingBranchData = true);
+    try {
+      _singleton.teamAttendanceDataList.clear();
+      selectedBranchIds.clear();
+      _singleton.branchID = value;
+
+      await _singleton.getTeamBranchData();
+      await extractAllEmployeeIdsForBranch(value);
+
+      final branch = _singleton.availableBranches
+          .firstWhere((b) => b.branchId.toString() == value);
+      _singleton.branchName = branch.branchName ?? '';
+
+      _isTeamChecked = false;
+      _isChecked = false;
+      await _loadData();
+    } catch (e) {
+      log("❌ Branch selection error: $e");
+    } finally {
+      if (mounted) setState(() => _isLoadingBranchData = false);
+    }
+  }
+
+  /// ──────────────────────── Body / List ────────────────────────────
+
+  Widget _buildBody(BuildContext context) {
+    if (_isLoadingBranchData || _isInitialLoading) return const Loader();
+
+    // Apply status + search filter for display
+    final visible = filteredAttendanceDataList
+        .where((a) => _matchesStatusFilter(a) && _matchesSearch(a))
+        .toList();
+
+    if (visible.isEmpty) return _buildEmptyState(context);
+
+    return FadeTransition(
+      opacity: _fadeController,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+        itemCount: visible.length,
+        itemBuilder: (ctx, i) => _AttendanceCard(
+          attendance: visible[i],
+          singleton: _singleton,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  TeamAttendanceDetailScreen(attendanceData: visible[i]),
+            ),
+          ),
+          context: context,
+          formatDate: _formatDate,
+          formatMinutes: _formatMinutes,
+          translateStatus: _translateStatus,
+          translateSecondaryStatus: _translateSecondaryStatus,
+          getStatusColor: getStatusColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 180,
+            width: 180,
+            child: Lottie.asset('images/empty.json'),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)!.noData,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: NasColors.darkBlue,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ══════════════════════════════════════════════════════════════════
+  ///  TRANSLATION / COLOR
+  /// ══════════════════════════════════════════════════════════════════
 
   String _translateStatus(String? status, BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    if (status == null) return localizations.noData;
-
+    final l = AppLocalizations.of(context)!;
     switch (status) {
-      case 'Absent':
-        return localizations.absent;
-      case 'Present':
-        return localizations.present;
-      case 'Quarterly':
-        return localizations.quarterly;
-      case 'Pending':
-        return localizations.pending;
-      case 'Missing CheckIn/Out':
-        return localizations.missingCheckInOut;
-      case 'On-Leave':
-        return localizations.onLeaves;
-      default:
-        return status;
+      case 'Absent': return l.absent;
+      case 'Present': return l.present;
+      case 'Quarterly': return l.quarterly;
+      case 'Pending': return l.pending;
+      case 'Missing CheckIn/Out': return l.missingCheckInOut;
+      case 'On-Leave': return l.onLeaves;
+      default: return status ?? l.noData;
     }
   }
-/// secondary status
+
   String _translateSecondaryStatus(String? status, BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
-    if (status == null || status.isEmpty) {
-      return localizations.noData;
-    }
-
+    final l = AppLocalizations.of(context)!;
+    if (status == null || status.isEmpty) return l.noData;
+    // Extended switch
     switch (status) {
-      case 'Absent':
-        return localizations.absent;
-      case 'Present':
-        return localizations.present;
-      case 'late':
-        return localizations.late;
-      case 'leave':
-        return localizations.leave;
-      case 'holiday':
-        return localizations.holiday;
-      case 'dayOFF':
-        return localizations.dayOff;
-      case 'training':
-        return localizations.training;
-      case 'absent with approval':
-        return localizations.absentWithApproval;
-      case 'Missing CheckIn/Out':
-        return localizations.missingCheckInOut;
-      case 'Late':
-        return localizations.late;
-      case 'Pending':
-        return localizations.pending;
-      case 'No-CheckIn':
-        return localizations.noCheckIn;
-      case 'Late-Penality':
-        return localizations.latePenality;
-      case 'Short-Hours':
-        return localizations.shortHours;
-      case 'Missing-CheckIn':
-        return localizations.missingCheckIn;
-      case 'Missing-CheckOut':
-        return localizations.missingCheckOut;
-      case 'Check-In':
-        return localizations.checkIn;
-      case 'Check-Out':
-        return localizations.checkOut;
-      case 'OOS-In':
-        return localizations.oosIn;
-      case 'OOS-Out':
-        return localizations.oosOut;
-      case 'Early-In':
-        return localizations.earlyIn;
-      case 'Early-Left':
-        return localizations.earlyLeft;
-      case 'OnTime-In':
-        return localizations.onTimeIn;
-      case 'OnTime-Out':
-        return localizations.onTimeOut;
-      case 'Late-In':
-        return localizations.lateIn;
-      case 'Late-Out':
-        return localizations.lateOut;
-      case 'SM-In':
-        return localizations.smIn;
-      case 'SM-Out':
-        return localizations.smOut;
-      case 'Break-In':
-        return localizations.breakIn;
-      case 'Break-Out':
-        return localizations.breakOut;
-      case 'slot':
-        return localizations.slot;
-      case 'Out-Off-Shift':
-        return localizations.outOffShift;
-      case 'Full-Day':
-        return localizations.fullDay;
-      case 'annualLeave':
-        return localizations.annualLeave;
-      default:
-        return status;
+      case 'Absent': return l.absent;
+      case 'Present': return l.present;
+      case 'late': case 'Late': return l.late;
+      case 'leave': return l.leave;
+      case 'holiday': return l.holiday;
+      case 'dayOFF': return l.dayOff;
+      case 'training': return l.training;
+      case 'absent with approval': return l.absentWithApproval;
+      case 'Missing CheckIn/Out': return l.missingCheckInOut;
+      case 'Pending': return l.pending;
+      case 'No-CheckIn': return l.noCheckIn;
+      case 'Late-Penality': return l.latePenality;
+      case 'Short-Hours': return l.shortHours;
+      case 'Missing-CheckIn': return l.missingCheckIn;
+      case 'Missing-CheckOut': return l.missingCheckOut;
+      case 'Check-In': return l.checkIn;
+      case 'Check-Out': return l.checkOut;
+      case 'OOS-In': return l.oosIn;
+      case 'OOS-Out': return l.oosOut;
+      case 'Early-In': return l.earlyIn;
+      case 'Early-Left': return l.earlyLeft;
+      case 'OnTime-In': return l.onTimeIn;
+      case 'OnTime-Out': return l.onTimeOut;
+      case 'Late-In': return l.lateIn;
+      case 'Late-Out': return l.lateOut;
+      case 'SM-In': return l.smIn;
+      case 'SM-Out': return l.smOut;
+      case 'Break-In': return l.breakIn;
+      case 'Break-Out': return l.breakOut;
+      case 'slot': return l.slot;
+      case 'Out-Off-Shift': return l.outOffShift;
+      case 'Full-Day': return l.fullDay;
+      case 'annualLeave': return l.annualLeave;
+      default: return status;
     }
   }
 
@@ -1641,252 +1086,600 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
     switch (status.toLowerCase()) {
       case 'present':
       case 'ontime-in':
-      case 'ontime-out':
-        return NasColors.green;
-
-      case 'absent':
-        return NasColors.reds;
-
+      case 'ontime-out': return NasColors.green;
+      case 'absent': return NasColors.reds;
       case 'absent with approval':
-      case 'pending':
-        return NasColors.yellow;
-
-      case 'early checkout':
-        return NasColors.purple;
-
-      case 'late':
-        return NasColors.amber;
-
-      case 'check-in':
-        return NasColors.violet;
-
-      case 'check-out':
-        return NasColors.fuchsia;
-
+      case 'pending': return NasColors.yellow;
+      case 'early checkout': return NasColors.purple;
+      case 'late': return NasColors.amber;
+      case 'check-in': return NasColors.violet;
+      case 'check-out': return NasColors.fuchsia;
       case 'oos-in':
-      case 'oos-out':
-        return NasColors.amber;
-
+      case 'oos-out': return NasColors.amber;
       case 'early-in':
-      case 'early-out':
-        return NasColors.rose;
-
+      case 'early-out': return NasColors.rose;
       case 'late-in':
-      case 'late-out':
-        return NasColors.brightRed;
-
+      case 'late-out': return NasColors.brightRed;
       case 'sm-in':
-      case 'sm-out':
-        return NasColors.indigo;
-
+      case 'sm-out': return NasColors.indigo;
       case 'break-in':
-      case 'break-out':
-        return NasColors.zinc;
-
-      case 'slot':
-        return NasColors.warmGray;
-
-      case 'no-checkin':
-        return NasColors.darkGray;
-
+      case 'break-out': return NasColors.zinc;
+      case 'slot': return NasColors.warmGray;
+      case 'no-checkin': return NasColors.darkGray;
       case 'on-leave':
-      case 'casual leave':
-        return NasColors.blue;
-
-      default:
-        return NasColors.orange;
+      case 'casual leave': return NasColors.blue;
+      default: return NasColors.orange;
     }
   }
+}
 
+/// ══════════════════════════════════════════════════════════════════════
+///  EXTRACTED WIDGETS
+/// ══════════════════════════════════════════════════════════════════════
 
-  String formatMinutes(dynamic minutes) {
-    if (minutes == null) return '---';
-    try {
-      double roundedMinutes = (minutes is int)
-          ? minutes.toDouble()
-          : double.parse(minutes.toString());
-      return roundedMinutes.ceil().toString();
-    } catch (e) {
-      return '---';
-    }
-  }
+/// Filter chip pill shown in the horizontal options row
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final int count;
+  final bool selected;
+  final Color accentColor;
+  final VoidCallback onTap;
 
-  String minutesToHoursMinutes(int? totalMinutes) {
-    if (totalMinutes == null || totalMinutes <= 0) return '---';
+  const _FilterChip({
+    required this.label,
+    required this.count,
+    required this.selected,
+    required this.onTap,
+    required this.accentColor,
+  });
 
-    int hours = totalMinutes ~/ 60;
-    int minutes = totalMinutes % 60;
+  Color get _chipBg    => selected ? accentColor : Colors.white;
+  Color get _textColor => selected ? Colors.white : accentColor;
+  Color get _badgeBg   => selected
+      ? Colors.white.withOpacity(0.25)
+      : accentColor.withOpacity(0.12);
 
-    if (hours > 0 && minutes > 0) {
-      return '${hours.toString().padLeft(2, '0')}h ${minutes.toString().padLeft(2, '0')}m';
-    } else if (hours > 0) {
-      return '${hours.toString().padLeft(2, '0')}h';
-    } else {
-      return '${minutes.toString().padLeft(2, '0')}m';
-    }
-  }
-
-
-  Widget buildOptionsCard(int index, String title) {
-    int count = getCountForCard(index);
-
-    Color getTextColor() {
-      if (_selectedOptionIndex == index) return Colors.white;
-      switch (index) {
-        case 0:
-          return NasColors.darkBlue;
-        case 1:
-          return NasColors.completed;
-        case 2:
-          return NasColors.red;
-        case 3:
-          return NasColors.darkBlue;
-        case 4:
-          return NasColors.pending;
-        case 5:
-          return NasColors.pending;
-        case 6:
-          return NasColors.onTime;
-        default:
-          return NasColors.darkBlue;
-      }
-    }
-
-    Color getCardColor() {
-      if (_selectedOptionIndex != index) return Colors.white;
-      switch (index) {
-        case 0:
-          return NasColors.darkBlue;
-        case 1:
-          return NasColors.completed;
-        case 2:
-          return NasColors.red;
-        case 3:
-          return NasColors.darkBlue;
-        case 4:
-          return NasColors.pending;
-        case 5:
-          return NasColors.pending;
-        case 6:
-          return NasColors.onTime;
-        default:
-          return NasColors.darkBlue;
-      }
-    }
-
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedOptionIndex = index;
-        });
-        filterAttendanceData();
-      },
-      child: SizedBox(
-        height: 70,
-        width: (index == 4 || index == 6) ? 210 : 160,
-        child: Card(
-          color: getCardColor(),
-          margin: const EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: const BorderSide(
-              color: Colors.white,
-              width: 0,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeInOut,
+        margin: const EdgeInsets.only(right: 8, top: 6, bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: _chipBg,
+          borderRadius: BorderRadius.circular(20),
+          border: selected
+              ? null
+              : Border.all(color: accentColor.withOpacity(0.25), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: selected
+                  ? accentColor.withOpacity(0.35)
+                  : Colors.black.withOpacity(0.06),
+              blurRadius: selected ? 10 : 4,
+              offset: const Offset(0, 3),
             ),
-          ),
-          child: Center(
-        child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: getTextColor(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-
-            /// ✅ Circle badge for count
-            _selectedOptionIndex == index ?
-            Text(
-              count.toString(),
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: getTextColor(),
-              ),
-            ) :
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: getTextColor().withOpacity(0.2), // opacity 50%
-              ),
-              child: Text(
-                count.toString(),
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: getTextColor(),
-                ),
-              ),
-            )
-        ],
+          ],
         ),
-      ),
-
-    ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label,
+                style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _textColor)),
+            const SizedBox(width: 6),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                  color: _badgeBg,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Text(count.toString(),
+                  style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: _textColor)),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-/// helper methods
-  Future<void> _handleCheckboxChange(bool isChecked) async {
-    try {
-      singletonClass.teamAttendanceDataList.clear();
-      selectedBranchIds.clear();
+// ─────────────────────────────────────────────────────────────────────
+/// Card widget for each attendance record
+// ─────────────────────────────────────────────────────────────────────
 
-      if (!isChecked) {
-        /// 🔁 UNCHECKED → Branch Mode
+class _AttendanceCard extends StatelessWidget {
+  final TeamAttendanceData attendance;
+  final SingletonClass singleton;
+  final VoidCallback onTap;
+  final BuildContext context;
+  final String Function(String, BuildContext) formatDate;
+  final String Function(dynamic) formatMinutes;
+  final String Function(String?, BuildContext) translateStatus;
+  final String Function(String?, BuildContext) translateSecondaryStatus;
+  final Color Function(String) getStatusColor;
 
-        if (singletonClass.branchDataList.isNotEmpty) {
-          final firstBranch = singletonClass.branchDataList.first;
+  const _AttendanceCard({
+    required this.attendance,
+    required this.singleton,
+    required this.onTap,
+    required this.context,
+    required this.formatDate,
+    required this.formatMinutes,
+    required this.translateStatus,
+    required this.translateSecondaryStatus,
+    required this.getStatusColor,
+  });
 
-          singletonClass.branchID = firstBranch.data?.branch?.id;
-          singletonClass.branchName = firstBranch.data?.branch?.branchName;
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final lateMinutes = int.tryParse(attendance.lateMinutes.toString()) ?? 0;
+    final earlyCheckOut = int.tryParse(attendance.earlyCheckOut.toString()) ?? 0;
+    final breakTime = formatMinutes(attendance.breakTime);
+    final date = formatDate(attendance.date ?? '', context);
+    final isOnLeave = attendance.status == "On-Leave";
 
-          await extractAllEmployeeIdsForBranch(singletonClass.branchID);
-        }
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.12),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // ── Header row ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+              child: Row(
+                children: [
+                  _EmpIdBadge(empId: attendance.empId),
+                  const Spacer(),
+                  Text(
+                    date,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
 
-        _isTeamChecked = false;
-      } else {
-        /// 🔁 ONLY ME MODE
-        singletonClass.branchID = null;
-        singletonClass.branchName = null;
-        _isTeamChecked = false;
-      }
+            // ── Name + Avatar + Status ───────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Row(
+                children: [
+                  _Avatar(),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      attendance.name ?? '---',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (attendance.status != null)
+                        _StatusBadge(
+                          label: translateStatus(attendance.status, context),
+                          color: getStatusColor(attendance.status!),
+                          tall: attendance.status == "Missing CheckIn/Out",
+                        ),
+                      if (attendance.secondaryStatus != null) ...[
+                        const SizedBox(height: 4),
+                        _StatusBadge(
+                          label: translateSecondaryStatus(attendance.secondaryStatus, context),
+                          color: getStatusColor(attendance.secondaryStatus!),
+                          tall: attendance.secondaryStatus == "Missing CheckIn/Out",
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
 
-      _initDates(start: _startDate!, end: _endDate!);
+            // ── Shift info (non-leave) ───────────────────────────────
+            if (!isOnLeave) ...[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Column(
+                  children: [
+                    _WorkedHoursRow(attendance: attendance, l: l),
+                    const SizedBox(height: 8),
+                    _ShiftRow(
+                      attendance: attendance,
+                      singleton: singleton,
+                      breakTime: breakTime,
+                      context: context,
+                      l: l,
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
-      /// ⚠️ Run in parallel where possible
-      await Future.wait([
-        singletonClass.getTeamBranchData(),
-        loadData(),
-      ]);
+            const SizedBox(height: 10),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFF0F0F0)),
 
-    } catch (e) {
-      log("❌ Error: $e");
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+            // ── Footer ───────────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7F8FA),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(18),
+                ),
+              ),
+              child: isOnLeave
+                  ? _LeaveFooter(attendance: attendance, singleton: singleton, l: l, context: context)
+                  : _AttendanceFooter(
+                attendance: attendance,
+                singleton: singleton,
+                lateMinutes: lateMinutes,
+                earlyCheckOut: earlyCheckOut,
+                l: l,
+                context: context,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ─────── Sub-widgets ─────────────────────────────────────────────────
+
+class _EmpIdBadge extends StatelessWidget {
+  final String? empId;
+  const _EmpIdBadge({this.empId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: NasColors.darkBlue.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        empId ?? '---',
+        style: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: NasColors.darkBlue,
+        ),
+      ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.grey.shade100,
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: ClipOval(
+        child: Image.asset('images/DP.png', fit: BoxFit.cover),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool tall;
+
+  const _StatusBadge({required this.label, required this.color, this.tall = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: tall ? 48 : 28,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+              fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkedHoursRow extends StatelessWidget {
+  final TeamAttendanceData attendance;
+  final AppLocalizations l;
+
+  const _WorkedHoursRow({required this.attendance, required this.l});
+
+  @override
+  Widget build(BuildContext context) {
+    final worked = attendance.totalHoursWorked ?? 0;
+    final total = 11 * 60;
+    final progress = (worked / total).clamp(0.0, 1.0);
+
+    return Row(
+      children: [
+        Text(l.shifts,
+            style: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+        const Spacer(),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              "${worked ~/ 60}${l.h} ${worked % 60}${l.m}",
+              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(
+                width: 80,
+                height: 6,
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      progress >= 1.0 ? Colors.green : Colors.orange),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ShiftRow extends StatelessWidget {
+  final TeamAttendanceData attendance;
+  final SingletonClass singleton;
+  final String breakTime;
+  final BuildContext context;
+  final AppLocalizations l;
+
+  const _ShiftRow({
+    required this.attendance,
+    required this.singleton,
+    required this.breakTime,
+    required this.context,
+    required this.l,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final shift = attendance.shiftInfo;
+    Widget shiftDetail = const SizedBox.shrink();
+
+    if (shift != null) {
+      if (shift.shiftType == 'fullTime') {
+        shiftDetail = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (shift.timefrom != null && shift.timeTo != null)
+              Text(
+                "${singleton.formatCheckInTime(shift.timefrom.toString(), context)} - "
+                    "${singleton.formatCheckInTime(shift.timeTo.toString(), context)}",
+                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            if (shift.shiftName != null)
+              Text(shift.shiftName!,
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600)),
+          ],
+        );
+      } else if (shift.shiftType == 'flexibleShift' && shift.shiftName != null) {
+        shiftDetail = Text(shift.shiftName!,
+            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600));
+      } else if (shift.shiftType == 'timeTableShift' &&
+          attendance.slots != null) {
+        shiftDetail = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: attendance.slots!.take(2).map((slot) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.access_time_rounded,
+                      size: 14, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text(
+                    "${singleton.formatCheckInTime(slot.slotStart, context)} - "
+                        "${singleton.formatCheckInTime(slot.slotEnd, context)}",
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        );
       }
     }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: shiftDetail),
+        Row(
+          children: [
+            Text(
+              "$breakTime ${l.minutes}",
+              style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.brown.shade400),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.coffee_rounded, size: 16, color: Colors.brown),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _AttendanceFooter extends StatelessWidget {
+  final TeamAttendanceData attendance;
+  final SingletonClass singleton;
+  final int lateMinutes;
+  final int earlyCheckOut;
+  final AppLocalizations l;
+  final BuildContext context;
+
+  const _AttendanceFooter({
+    required this.attendance,
+    required this.singleton,
+    required this.lateMinutes,
+    required this.earlyCheckOut,
+    required this.l,
+    required this.context,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isLate = lateMinutes > 0;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _FooterCol(
+          label: l.checkIn,
+          value: singleton.formatCheckInTime(attendance.clockInTime, context),
+          valueColor: isLate ? NasColors.pending : Colors.black87,
+        ),
+        _FooterCol(
+          label: l.checkOut,
+          value: singleton.formatCheckInTime(attendance.clockOutTime, context),
+          valueColor: isLate ? NasColors.pending : Colors.black87,
+        ),
+        _FooterCol(
+          label: l.late,
+          value: "${lateMinutes ~/ 60}${l.h} ${lateMinutes % 60}${l.m}",
+          valueColor: NasColors.pending,
+        ),
+        _FooterCol(
+          label: l.earlyLeft,
+          value: "${earlyCheckOut ~/ 60}${l.h} ${earlyCheckOut % 60}${l.m}",
+          valueColor: NasColors.onTime,
+        ),
+      ],
+    );
+  }
+}
+
+class _LeaveFooter extends StatelessWidget {
+  final TeamAttendanceData attendance;
+  final SingletonClass singleton;
+  final AppLocalizations l;
+  final BuildContext context;
+
+  const _LeaveFooter({
+    required this.attendance,
+    required this.singleton,
+    required this.l,
+    required this.context,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final info = attendance.leaveDetails?.requestInfo;
+    final reqData = info?.requestData?.first;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _FooterCol(label: l.leaveType, value: info?.subType ?? '---'),
+        _FooterCol(
+          label: l.startDate,
+          value: singleton.formatDate2("${reqData?.startDate}", context),
+        ),
+        _FooterCol(
+          label: l.endDate,
+          value: singleton.formatDate2("${reqData?.endDate}", context),
+        ),
+        _FooterCol(label: l.duration, value: "${reqData?.duration ?? '---'}"),
+      ],
+    );
+  }
+}
+
+class _FooterCol extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  const _FooterCol({required this.label, required this.value, this.valueColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: valueColor ?? Colors.black87,
+          ),
+        ),
+      ],
+    );
   }
 }

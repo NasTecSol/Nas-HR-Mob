@@ -58,6 +58,7 @@ import 'package:nashr/request_controller/team_attendance_model.dart';
 import 'package:nashr/request_controller/team_model.dart';
 import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
+import 'package:nashr/request_controller/user_activity_detail_model.dart';
 import 'package:nashr/request_controller/user_activity_model.dart';
 import 'package:nashr/widgets/face_id_popup.dart';
 import 'package:nashr/widgets/successful_popup.dart';
@@ -82,9 +83,11 @@ class SingletonClass {
   String? env;
   String? envToggle;
   int unreadCount = 0;
+  bool? isTimerActive = false;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<UserActivityDetailModel> userActivityDetailModelDataList = [];
   List<UserActivityModel> userActivityDataList = [];
   List<CompanyNotificationModel> companyNotificationDataList = [];
   List<CompanyNotificationsAssetsDetailModel> companyNotificationAssetDetailDataList = [];
@@ -642,9 +645,14 @@ class SingletonClass {
 
 
   ///formated date method
-  String formatCheckInTime(String dateTimeString , context) {
+  String formatCheckInTime(String? dateTimeString , context) {
+    if (dateTimeString == null || dateTimeString.isEmpty || dateTimeString == 'null') {
+      return '--:--';
+    }
     try {
-      DateTime localTime = DateTime.parse(dateTimeString).toLocal();
+      DateTime? parsed = DateTime.tryParse(dateTimeString);
+      if (parsed == null) return '--:--';
+      DateTime localTime = parsed.toLocal();
       final locale = Localizations.localeOf(context).languageCode;
       if (locale == 'ar') {
         final arabicFormatter = DateFormat('h:mm a', 'ar');
@@ -736,23 +744,35 @@ class SingletonClass {
     }
   }
 
-  String formatTime(String createdAt) {
-    DateTime createdDate = DateTime.parse(createdAt);
-    return DateFormat('hh:mm a').format(createdDate);
+  String formatTime(String? createdAt) {
+    if (createdAt == null || createdAt.isEmpty || createdAt == 'null') {
+      return '--:--';
+    }
+    try {
+      DateTime? parsed = DateTime.tryParse(createdAt);
+      if (parsed == null) return '--:--';
+      return DateFormat('hh:mm a').format(parsed);
+    } catch (e) {
+      return '--:--';
+    }
   }
 
-  String formatDate2(String createdAt , context) {
-    try{
-      DateTime updatedAtDateTime = DateTime.parse(createdAt);
+  String formatDate2(String? createdAt , context) {
+    if (createdAt == null || createdAt.isEmpty || createdAt == 'null') {
+      return '--:--';
+    }
+    try {
+      DateTime? parsed = DateTime.tryParse(createdAt);
+      if (parsed == null) return '--:--';
       final locale = Localizations.localeOf(context).languageCode;
-      if (locale == 'ar'){
+      if (locale == 'ar') {
         final arabicFormatter = DateFormat('dd-MM-yyyy', 'ar');
-        return arabicFormatter.format(updatedAtDateTime);
-      }else{
-        final formattedTime = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+        return arabicFormatter.format(parsed);
+      } else {
+        final formattedTime = DateFormat('dd-MM-yyyy').format(parsed);
         return formattedTime;
       }
-    } catch (e){
+    } catch (e) {
       if (kDebugMode) {
         print("Error formatting time: $e");
       }
@@ -760,9 +780,14 @@ class SingletonClass {
     }
   }
 
-  String formatDateTime(String dateTime) {
+  String formatDateTime(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty || dateTime == 'null') {
+      return 'Invalid date';
+    }
     try {
-      final parsedDate = DateTime.parse(dateTime).toLocal();
+      DateTime? parsed = DateTime.tryParse(dateTime);
+      if (parsed == null) return 'Invalid date';
+      final parsedDate = parsed.toLocal();
       return DateFormat('hh:mm:a').format(parsedDate);
     } catch (e) {
       return 'Invalid date';
@@ -803,7 +828,7 @@ class SingletonClass {
 
   ///Request Screen API Calls
   Future<ApproverRequestData?> getApproverData(
-      {int page = 0, int limit = 20}) async {
+      {int page = 0, int limit = 25}) async {
     String? employeeId = getJWTModel()?.employeeId;
 
     // Request body (stays the same)
@@ -852,6 +877,42 @@ class SingletonClass {
       }
     } catch (e) {
       log('Error Approver Data: $e');
+      return null;
+    }
+  }
+
+  Future<ApproverRequestData?> getRequestByCompanyAndBranch(
+      String companyId, String branchId, {int page = 0, int limit = 25}) async {
+    final uri = Uri.parse(
+      '$baseURL/request/requestByCompany&BranchId/$companyId/$branchId?page=$page&limit=$limit',
+    );
+    print("🌐 requestByCompanyAndBranch URL: $uri");
+    try {
+      final response = await http.get(
+        uri,
+        headers: getHeaders(),
+      );
+
+      log("Response requestByCompanyAndBranch: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseBody = json.decode(response.body);
+        final requestData = ApproverRequestData.fromJson(responseBody);
+
+        if (page == 0) {
+          setApproverDataList([requestData]);
+        } else {
+          final existing = approverDataList;
+          setApproverDataList([...existing, requestData]);
+        }
+
+        return requestData;
+      } else {
+        log("Error: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error requestByCompanyAndBranch: $e');
       return null;
     }
   }
@@ -955,6 +1016,7 @@ class SingletonClass {
     headerUrl = '';
     footerUrl = '';
     token = null;
+    isTimerActive = false;
   }
 
 

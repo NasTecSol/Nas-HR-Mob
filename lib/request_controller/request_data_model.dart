@@ -222,6 +222,9 @@ class RequestData {
   dynamic punchingType;
   dynamic attendanceTime;
   dynamic attendanceDate;
+  dynamic checkIn;
+  dynamic checkOut;
+  dynamic totalAmount;
 
   // 🔥 NEW FIELD (Single date for: expense, overtime, documents, penalties)
   dynamic date;
@@ -264,6 +267,9 @@ class RequestData {
     this.punchingType,
     this.attendanceTime,
     this.attendanceDate,
+    this.checkIn,
+    this.checkOut,
+    this.totalAmount,
     this.date,
     this.effectiveDate,
     this.days,
@@ -316,6 +322,9 @@ class RequestData {
     punchingType = json["punchingType"];
     attendanceTime = json["attendanceTime"];
     attendanceDate = json["attendanceDate"];
+    checkIn = json["checkIn"];
+    checkOut = json["checkOut"];
+    totalAmount = json["totalAmount"];
 
     date = json["date"];
     effectiveDate = json["effectiveDate"];
@@ -375,6 +384,9 @@ class RequestData {
     data["punchingType"] = punchingType;
     data["attendanceTime"] = attendanceTime;
     data["attendanceDate"] = attendanceDate;
+    data["checkIn"] = checkIn;
+    data["checkOut"] = checkOut;
+    data["totalAmount"] = totalAmount;
 
     data["date"] = date;
     data["effectiveDate"] = effectiveDate;

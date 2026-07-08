@@ -24,6 +24,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   int _selectedOptionIndex = 0;
   SingletonClass singletonClass = SingletonClass();
   late List<DateTime> _dates;
+  bool _isLoading = false;
+  bool _hasError = false;
+  EventModel? _eventData;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -32,6 +36,57 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _dates = List.generate(today.day, (index) {
       return DateTime(today.year, today.month, index + 1);
     });
+    _selectedDateIndex = today.day - 1;
+    _selectedDate = today;
+    _fetchAndLoadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedDate();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToSelectedDate() {
+    if (_scrollController.hasClients &&
+        _selectedDateIndex != null &&
+        _selectedDateIndex! >= 0) {
+      _scrollController.animateTo(
+        _selectedDateIndex! * 66.0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  Future<void> _fetchAndLoadData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      final res = await getEventData();
+      if (mounted) {
+        setState(() {
+          _eventData = res;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching data: $e");
+      }
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      }
+    }
   }
   String _getDayOfWeek(BuildContext context, DateTime date) {
     final locale = Localizations.localeOf(context).languageCode;
@@ -78,13 +133,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
 
   Future<void> fetchLatestEventData() async {
-    try {
-      getEventData();
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error fetching data: $e");
-      }
-    }
+    await _fetchAndLoadData();
   }
 
   @override
@@ -131,14 +180,45 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ],
               ]),
               const SizedBox(height: 20),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+              SizedBox(
+                height: 54,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.zero,
                   children: [
-                    buildOptionsCard(0, AppLocalizations.of(context)!.meetings),
-                    buildOptionsCard(1, AppLocalizations.of(context)!.tasks),
-                    buildOptionsCard(2, AppLocalizations.of(context)!.events),
+                    _FilterChip(
+                      label: AppLocalizations.of(context)!.meetings,
+                      count: _getCountForOption(0),
+                      selected: _selectedOptionIndex == 0,
+                      accentColor: _chipAccentColor(0),
+                      onTap: () {
+                        setState(() {
+                          _selectedOptionIndex = 0;
+                        });
+                      },
+                    ),
+                    _FilterChip(
+                      label: AppLocalizations.of(context)!.tasks,
+                      count: _getCountForOption(1),
+                      selected: _selectedOptionIndex == 1,
+                      accentColor: _chipAccentColor(1),
+                      onTap: () {
+                        setState(() {
+                          _selectedOptionIndex = 1;
+                        });
+                      },
+                    ),
+                    _FilterChip(
+                      label: AppLocalizations.of(context)!.events,
+                      count: _getCountForOption(2),
+                      selected: _selectedOptionIndex == 2,
+                      accentColor: _chipAccentColor(2),
+                      onTap: () {
+                        setState(() {
+                          _selectedOptionIndex = 2;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -155,6 +235,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               SizedBox(
                 height: 80,
                 child: ListView.builder(
+                  controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   itemCount: _dates.length,
                   itemBuilder: (context, index) {
@@ -166,15 +247,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           _selectedDateIndex = index;
                           _selectedDate = date;
                         });
+                        _fetchAndLoadData();
                       },
-                      child: Container(
-                        width: 55,
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 58,
+                        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? NasColors.darkBlue
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(35),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: NasColors.darkBlue.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  )
+                                ]
+                              : [],
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -182,16 +274,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             Text(
                              formatDay(context, date),
                               style: GoogleFonts.inter(
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
-                                  color: isSelected ? Colors.white : Colors.grey),
+                                  color: isSelected ? Colors.white : Colors.grey.shade500),
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               _getDayOfWeek(context ,date),
                               style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : Colors.grey,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected ? Colors.white70 : Colors.grey.shade400,
                               ),
                             ),
                           ],
@@ -202,25 +295,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              if (_selectedOptionIndex == 0) ...[
-                FutureBuilder<EventModel?>(
-                  future: getEventData(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Loader();
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/error.json'),
-                          ),
-                        ),
-                      );
-                    } else if (snapshot.hasData && snapshot.data != null) {
-                      final meetingList = snapshot.data!.data!.where((event) =>
-                      event.category == "General Meeting" || event.category == "Work Meeting").toList();
+              if (_isLoading) ...[
+                const SizedBox(height: 50),
+                const Loader(),
+              ] else if (_hasError) ...[
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: SizedBox(
+                      height: 200,
+                      width: 200,
+                      child: Lottie.asset('images/error.json'),
+                    ),
+                  ),
+                ),
+              ] else if (_eventData != null) ...[
+                if (_selectedOptionIndex == 0) ...[
+                  Builder(
+                    builder: (context) {
+                      final meetingList = _eventData!.data!.where((event) =>
+                          event.category == "General Meeting" || event.category == "Work Meeting").toList();
                       if (meetingList.isEmpty) {
                         return Center(
                           child: Padding(
@@ -250,36 +344,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                       return Column(
                         children: [
-                          const Divider(
-                            color: Colors.grey,
-                            height: 2,
-                            thickness: 1,
-                          ),
                           const SizedBox(height: 10),
                           Row(
                             children: [
                               Text(
                                 "${meetingList.length} ${AppLocalizations.of(context)!.meetings}",
                                 style: GoogleFonts.inter(
-                                  fontSize: 25,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: NasColors.darkBlue,
                                 ),
                               ),
                               const Spacer(),
                               SizedBox(
-                                height: 200,
-                                width: 200,
+                                height: 80,
+                                width: 80,
                                 child: Image.asset("images/meeting.png"),
                               )
                             ],
                           ),
-                          const SizedBox(height: 20),
-                          const Divider(
-                            color: Colors.grey,
-                            height: 2,
-                            thickness: 1,
-                          ),
+                          const SizedBox(height: 10),
                           ListView.builder(
                             physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
@@ -296,111 +380,136 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   membersList = names.join(", ");
                                 }
                               }
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const SizedBox(height: 30),
-                                  Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Text(
-                                      meeting.eventName ?? "---",
-                                      style: GoogleFonts.inter(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: NasColors.darkBlue,
+                              return Container(
+                                margin: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.12),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: NasColors.darkBlue.withOpacity(0.08),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.groups_rounded,
+                                                  size: 14,
+                                                  color: NasColors.darkBlue,
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  meeting.category ?? "Meeting",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: NasColors.darkBlue,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          if (meeting.date != null)
+                                            Text(
+                                              singletonClass.formatWithDateTime(meeting.date!),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 30),
-                                  Row(
-                                    children: <Widget>[
-                                      const Expanded(
-                                        child: Divider(
-                                          color: Colors.grey,
-                                          height: 2,
-                                          thickness: 1,
-                                          endIndent: 10,
-                                        ),
-                                      ),
-                                      Text(
-                                        singletonClass.formatWithDateTime(meeting.date!),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        meeting.eventName ?? "---",
                                         style: GoogleFonts.inter(
-                                          color: NasColors.darkBlue,
-                                          fontSize: 22,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
                                         ),
                                       ),
-                                      const Expanded(
-                                        child: Divider(
-                                          color: Colors.grey,
-                                          height: 2,
-                                          thickness: 1,
-                                          indent: 10,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Text(
-                                    membersList,
-                                    style: GoogleFonts.inter(
-                                      color: Colors.grey,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 8),
+                                    if (meeting.eventDescription != null && meeting.eventDescription!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Text(
+                                          meeting.eventDescription!,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            color: Colors.grey.shade600,
+                                            height: 1.3,
+                                          ),
+                                        ),
+                                      ),
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFF7F8FA),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(18),
+                                          bottomRight: Radius.circular(18),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.person_search_rounded,
+                                            size: 16,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              membersList,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                           ),
                         ],
                       );
-                    } else {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              Center(
-                                child: SizedBox(
-                                  height: 200,
-                                  width: 200,
-                                  child: Lottie.asset('images/empty.json'),
-                                ),
-                              ),
-                              Text(
-                                AppLocalizations.of(context)!.noData,
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
                     }
-                  },
-                ),
-              ],
-              if (_selectedOptionIndex == 1) ...[
-                FutureBuilder<EventModel?>(
-                  future: getEventData(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Loader();
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/error.json'),
-                          ),
-                        ),
-                      );
-                    } else if (snapshot.hasData && snapshot.data != null) {
-                      final eventList = snapshot.data!.data!
+                  ),
+                ],
+                if (_selectedOptionIndex == 1) ...[
+                  Builder(
+                    builder: (context) {
+                      final eventList = _eventData!.data!
                           .where((event) => event.category == "Task Deadlines")
                           .toList();
 
@@ -432,7 +541,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       }
 
                       return ListView.builder(
-                        padding: const EdgeInsets.all(5),
+                        padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: eventList.length,
@@ -441,137 +550,137 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           return Directionality(
                             textDirection: TextDirection.ltr,
                             child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 15),
+                              margin: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                borderRadius: BorderRadius.circular(18),
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withValues(alpha: 0.5),
-                                    spreadRadius: 2,
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
+                                    color: Colors.grey.withOpacity(0.12),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    height: 150,
-                                    width: 20,
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(15),
-                                        bottomLeft: Radius.circular(15),
+                              child: IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(18),
+                                          bottomLeft: Radius.circular(18),
+                                        ),
+                                        color: _getColorForVerificationStatus("Pending"),
                                       ),
-                                      color: _getColorForVerificationStatus("Pending"),
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(15.0),
+                                    Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  task.eventName ?? "No Task Name",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: _getColorForVerificationStatus("Pending").withOpacity(0.08),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    task.eventType ?? "Task",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: _getColorForVerificationStatus("Pending"),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                                const Spacer(),
+                                                if (task.date != null)
+                                                  Text(
+                                                    singletonClass.formatDate2(task.date!, context),
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.grey.shade600,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
                                           ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                task.eventType ?? "Unknown",
-                                                textAlign: TextAlign.center,
-                                                style: GoogleFonts.inter(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.calendar_month_outlined,
-                                                color: _getColorForVerificationStatus("Pending"),
-                                                size: 25,
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Text(
-                                                task.month ?? "No Duration",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: _getColorForVerificationStatus("Pending"),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: Alignment.topLeft,
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16),
                                             child: Text(
-                                              task.eventDescription ?? "No Project Name",
+                                              task.eventName ?? "No Task Name",
                                               style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
                                               ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          if (task.eventDescription != null && task.eventDescription!.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                                              child: Text(
+                                                task.eventDescription!,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  color: Colors.grey.shade600,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          const SizedBox(height: 12),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFFF7F8FA),
+                                              borderRadius: BorderRadius.only(
+                                                bottomRight: Radius.circular(18),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.calendar_month_outlined,
+                                                  color: _getColorForVerificationStatus("Pending"),
+                                                  size: 18,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  task.month ?? "No Duration",
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: _getColorForVerificationStatus("Pending"),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           );
                         },
                       );
-                    } else {
-                      return Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.noData,
-                          style: GoogleFonts.inter(fontSize: 15, color: Colors.grey),
-                        ),
-                      );
                     }
-                  },
-                ),
-              ],
-              if (_selectedOptionIndex == 2) ...[
-                FutureBuilder<EventModel?>(
-                  future: getEventData(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Loader();
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Center(
-                          child: SizedBox(
-                            height: 200,
-                            width: 200,
-                            child: Lottie.asset('images/error.json'),
-                          ),
-                        ),
-                      );
-                    } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.data!.isNotEmpty) {
-                      final eventList = snapshot.data!.data!
+                  ),
+                ],
+                if (_selectedOptionIndex == 2) ...[
+                  Builder(
+                    builder: (context) {
+                      final eventList = _eventData!.data!
                           .where((event) => event.category == "Standup" || event.category == "Celebration")
                           .toList();
                       if (eventList.isEmpty) {
@@ -603,7 +712,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(10),
+                        padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         itemCount: eventList.length,
                         itemBuilder: (BuildContext context, int index) {
@@ -611,143 +720,179 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                           return Directionality(
                             textDirection: TextDirection.ltr,
-                            child: Column(
-                              children: [
-                                Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Text(
-                                    event.eventType ?? "Unknown Type",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: NasColors.darkBlue,
-                                    ),
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.12),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 15),
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                    color: NasColors.containerColor,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withAlpha(80),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 0),
+                                ],
+                              ),
+                              child: IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Container(
+                                      width: 90,
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(18),
+                                          bottomLeft: Radius.circular(18),
+                                        ),
+                                        color: NasColors.darkBlue.withOpacity(0.05),
                                       ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height: 175,
-                                        width: 80,
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(15),
-                                            bottomLeft: Radius.circular(15),
-                                          ),
-                                          color: NasColors.darkBlue,
-                                          image: DecorationImage(
-                                            image: AssetImage(_getImageForEventType(event.eventType ?? "")),
-                                            fit: BoxFit.contain,
+                                      padding: const EdgeInsets.all(12),
+                                      child: Center(
+                                        child: Image.asset(
+                                          _getImageForEventType(event.eventType ?? ""),
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) => Icon(
+                                            Icons.event_note_rounded,
+                                            color: NasColors.darkBlue,
+                                            size: 32,
                                           ),
                                         ),
                                       ),
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(left: 8.0, top: 2, right: 8.0),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const SizedBox(height: 20),
-                                              Align(
-                                                alignment: Alignment.topLeft,
-                                                child: Text(
-                                                  event.eventName ?? "Unnamed Event",
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: NasColors.darkBlue.withOpacity(0.08),
+                                                    borderRadius: BorderRadius.circular(8),
                                                   ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 15),
-                                              Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.calendar_month_outlined,
-                                                    color: NasColors.darkBlue,
-                                                    size: 30,
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    singletonClass.formatDate2(event.date ?? "" , context),
+                                                  child: Text(
+                                                    event.eventType ?? "Event",
                                                     style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w700,
                                                       color: NasColors.darkBlue,
                                                     ),
                                                   ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 20),
-                                              Text(
-                                                event.eventDescription ?? "No Description",
-                                                maxLines: 5,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey,
                                                 ),
-                                              ),
-                                              const SizedBox(height: 20),
-                                            ],
+                                                const Spacer(),
+                                                if (event.category != null)
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.teal.withOpacity(0.08),
+                                                      borderRadius: BorderRadius.circular(6),
+                                                    ),
+                                                    child: Text(
+                                                      event.category!,
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.teal.shade700,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                                            child: Text(
+                                              event.eventName ?? "Unnamed Event",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          if (event.eventDescription != null && event.eventDescription!.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                                              child: Text(
+                                                event.eventDescription!,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  color: Colors.grey.shade600,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                maxLines: 4,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          const SizedBox(height: 12),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFFF7F8FA),
+                                              borderRadius: BorderRadius.only(
+                                                bottomRight: Radius.circular(18),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.calendar_month_outlined,
+                                                  color: NasColors.darkBlue,
+                                                  size: 18,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  singletonClass.formatDate2(event.date ?? "", context),
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: NasColors.darkBlue,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 20),
-                              ],
+                              ),
                             ),
                           );
                         },
                       );
-                    } else {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              Center(
-                                child: SizedBox(
-                                  height: 200,
-                                  width: 200,
-                                  child: Lottie.asset('images/empty.json'),
-                                ),
-                              ),
-                              Text(
-                                AppLocalizations.of(context)!.noData,
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: NasColors.darkBlue,
-                                ),
-                              ),
-                            ],
+                    }
+                  ),
+                ],
+              ] else ...[
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Center(
+                          child: SizedBox(
+                            height: 200,
+                            width: 200,
+                            child: Lottie.asset('images/empty.json'),
                           ),
                         ),
-                      );
-                    }
-                  },
+                        Text(
+                          AppLocalizations.of(context)!.noData,
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: NasColors.darkBlue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
 
@@ -794,48 +939,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return null;
   }
 
-  Widget buildOptionsCard(int index, String title) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedOptionIndex = index;
-        });
-      },
-      child: SizedBox(
-        height: 70,
-        width: 140,
-        child: Card(
-          color:
-              _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
-          margin: const EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: BorderSide(
-              color:
-                  _selectedOptionIndex == index ? Colors.white : Colors.white,
-              width: 0,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: _selectedOptionIndex == index
-                      ? Colors.white
-                      : NasColors.darkBlue,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  int _getCountForOption(int index) {
+    if (_eventData?.data == null) return 0;
+    switch (index) {
+      case 0:
+        return _eventData!.data!
+            .where((event) => event.category == "General Meeting" || event.category == "Work Meeting")
+            .length;
+      case 1:
+        return _eventData!.data!
+            .where((event) => event.category == "Task Deadlines")
+            .length;
+      case 2:
+        return _eventData!.data!
+            .where((event) => event.category == "Standup" || event.category == "Celebration")
+            .length;
+      default:
+        return 0;
+    }
+  }
+
+  Color _chipAccentColor(int index) {
+    switch (index) {
+      case 0:
+        return NasColors.darkBlue;
+      case 1:
+        return NasColors.pending;
+      case 2:
+        return NasColors.completed;
+      default:
+        return NasColors.darkBlue;
+    }
   }
 
   Color _getColorForVerificationStatus(String verificationStatus) {
@@ -862,5 +996,86 @@ class _CalendarScreenState extends State<CalendarScreen> {
       default:
         return 'images/Vector.png'; // Default image for company or other types
     }
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final int count;
+  final bool selected;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.count,
+    required this.selected,
+    required this.onTap,
+    required this.accentColor,
+  });
+
+  Color get _chipBg => selected ? accentColor : Colors.white;
+  Color get _textColor => selected ? Colors.white : accentColor;
+  Color get _badgeBg => selected
+      ? Colors.white.withOpacity(0.25)
+      : accentColor.withOpacity(0.12);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeInOut,
+        margin: const EdgeInsets.only(right: 8, top: 6, bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: _chipBg,
+          borderRadius: BorderRadius.circular(20),
+          border: selected
+              ? null
+              : Border.all(color: accentColor.withOpacity(0.25), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: selected
+                  ? accentColor.withOpacity(0.35)
+                  : Colors.black.withOpacity(0.06),
+              blurRadius: selected ? 10 : 4,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _textColor,
+              ),
+            ),
+            const SizedBox(width: 6),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: _badgeBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                count.toString(),
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: _textColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

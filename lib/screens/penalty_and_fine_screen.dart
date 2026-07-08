@@ -689,7 +689,7 @@ class _PenaltyAndFineScreenState extends State<PenaltyAndFineScreen> {
                                                       ),
                                                     Spacer(),
                                                     Text(
-                                                      DateFormat('dd-MM-yyyy, hh:mm a').format(DateTime.parse(request.requestData!.first.dateTime)),
+                                                      DateFormat('dd-MM-yyyy, hh:mm a').format((DateTime.tryParse(request.requestData!.first.dateTime ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0))),
                                                       style: GoogleFonts.inter(
                                                         fontSize: 12,
                                                         fontWeight:

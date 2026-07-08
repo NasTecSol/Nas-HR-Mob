@@ -273,7 +273,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             String date = '--';
                             try {
                               final parsed =
-                              DateTime.parse(notification.expiryDate!);
+                              (DateTime.tryParse(notification.expiryDate ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0));
                               final locale = Localizations.localeOf(context).languageCode;
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);
@@ -490,7 +490,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             String date = '--';
                             try {
                               final parsed =
-                              DateTime.parse(notification.expiryDate!);
+                              (DateTime.tryParse(notification.expiryDate ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0));
                               final locale = Localizations.localeOf(context).languageCode;
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);
@@ -695,7 +695,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                                 : null;
                             try {
                               final parsed =
-                              DateTime.parse(notification.expiryDate!);
+                              (DateTime.tryParse(notification.expiryDate ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0));
                               final locale = Localizations.localeOf(context).languageCode;
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);
@@ -907,7 +907,7 @@ class _CompanyNotificationsState extends State<CompanyNotifications> {
                             String date = '--';
                             try {
                               final parsed =
-                              DateTime.parse(notification.expiryDate!);
+                              (DateTime.tryParse(notification.expiryDate ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0));
                               final locale = Localizations.localeOf(context).languageCode;
                               date = DateFormat(
                                   'dd-MM-yyyy', locale == 'ar' ? 'ar' : null).format(parsed);

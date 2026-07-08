@@ -27,10 +27,10 @@ class TeamAttendanceModel {
 
 class Data {
   List<TeamAttendanceData>? data;
-  int? totalRecords;
-  int? page;
-  int? limit;
-  int? totalPages;
+  dynamic totalRecords;
+  dynamic page;
+  dynamic limit;
+  dynamic totalPages;
 
   Data({this.data, this.totalRecords, this.page, this.limit, this.totalPages});
 
@@ -164,9 +164,9 @@ class TeamAttendanceData {
 }
 
 class LeaveDetails {
-  String? leaveType;
-  String? leaveRequestId;
-  bool? isCompensatory;
+  dynamic leaveType;
+  dynamic leaveRequestId;
+  dynamic isCompensatory;
   RequestInfo? requestInfo;
 
   LeaveDetails({this.leaveType, this.leaveRequestId, this.isCompensatory, this.requestInfo});
@@ -190,23 +190,23 @@ class LeaveDetails {
   }
 }
 class RequestInfo {
-  String? id;
-  String? employeeId;
-  String? employeeName;
-  String? empId;
-  String? companyId;
-  String? branchId;
-  String? policyId;
-  String? requestType;
-  String? subType;
+  dynamic id;
+  dynamic employeeId;
+  dynamic employeeName;
+  dynamic empId;
+  dynamic companyId;
+  dynamic branchId;
+  dynamic policyId;
+  dynamic requestType;
+  dynamic subType;
   List<RequestData>? requestData;
   List<Approvers>? approvers;
-  String? reason;
+  dynamic reason;
   List<dynamic>? attachments;
-  String? createdAt;
-  String? updatedAt;
+  dynamic createdAt;
+  dynamic updatedAt;
   int? v;
-  String? status;
+  dynamic status;
 
   RequestInfo({this.id, this.employeeId, this.employeeName, this.empId, this.companyId, this.branchId, this.policyId, this.requestType, this.subType, this.requestData, this.approvers, this.reason, this.attachments, this.createdAt, this.updatedAt, this.v, this.status});
 
@@ -259,12 +259,12 @@ class RequestInfo {
   }
 }
 class Approvers {
-  String? approverId;
-  String? approverName;
-  bool? isRequired;
-  String? status;
-  String? timeStamps;
-  String? comments;
+  dynamic approverId;
+  dynamic approverName;
+  dynamic isRequired;
+  dynamic status;
+  dynamic timeStamps;
+  dynamic comments;
 
   Approvers({this.approverId, this.approverName, this.isRequired, this.status, this.timeStamps, this.comments});
 
@@ -290,10 +290,10 @@ class Approvers {
 }
 
 class RequestData {
-  String? leaveType;
-  String? startDate;
-  String? endDate;
-  String? duration;
+  dynamic leaveType;
+  dynamic startDate;
+  dynamic endDate;
+  dynamic duration;
 
   RequestData({this.leaveType, this.startDate, this.endDate, this.duration});
 
@@ -315,10 +315,10 @@ class RequestData {
 }
 
 class ShiftInfo {
-  String? timefrom;
-  String? timeTo;
-  String? shiftName;
-  String? shiftType;
+  dynamic timefrom;
+  dynamic timeTo;
+  dynamic shiftName;
+  dynamic shiftType;
 
   ShiftInfo({this.timefrom, this.timeTo, this.shiftName, this.shiftType});
 
@@ -381,11 +381,11 @@ class Slots {
   }
 }
 class Penalties {
-  int? uniqueId;
-  String? action;
-  int? percentage;
-  int? lateMinute;
-  int? occurrence;
+  dynamic uniqueId;
+  dynamic action;
+  dynamic percentage;
+  dynamic lateMinute;
+  dynamic occurrence;
 
   Penalties({this.uniqueId, this.action, this.percentage, this.lateMinute, this.occurrence});
 

@@ -97,13 +97,11 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
                         return const Loader();
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData && snapshot.data != null) {
+                      } else if (snapshot.hasData && snapshot.data != null){
                         final assetDetails = snapshot.data!;
                         final objDetails = assetDetails.data?.objectDetails;
-
                         cachedAssetDetails = assetDetails;
                         cachedObjectDetails = (objDetails?.objectName?.isNotEmpty ?? false) ? objDetails : null;
-
                         if (cachedObjectDetails == null) {
                           return Center(
                             child: Padding(
@@ -117,7 +115,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
                             ),
                           );
                         }
-
                         return Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Container(
@@ -126,7 +123,12 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
                               borderRadius: BorderRadius.circular(15),
                               color: NasColors.containerColor,
                               boxShadow: [
-                                BoxShadow(color: Colors.grey.withOpacity(0.3), spreadRadius: 2, blurRadius: 8, offset: const Offset(0, 0)),
+                                BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 0)
+                                ),
                               ],
                             ),
                             child: Padding(
@@ -215,7 +217,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
                         final documentNotificationDetails = snapshot.data!;
                         final assetIds = singletonClass.assetsDetailsModel.expand((assetDetail) => assetDetail.data ?? []).map((e) => e.id.toString()).toSet();
                         final matchingData = documentNotificationDetails.data?.where((e) => e.objectType == "asset" && e.objectId != null && assetIds.contains(e.objectId.toString())).toList() ?? [];
-
                         if (matchingData.isEmpty) {
                           return Center(
                             child: Padding(
@@ -229,9 +230,7 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
                             ),
                           );
                         }
-
                         final item = matchingData.first;
-
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 10),
                           padding: const EdgeInsets.all(10.0),
@@ -297,7 +296,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
       ),
     ),
   );
-
   Future<CompanyNotificationsAssetsDetailModel?> getAssetsDetailsData() async {
     String? assetId = widget.assetsInfo?.objectId;
     print("<><><><>${assetId}");
@@ -372,10 +370,8 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
           final smallBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 12, fontWeight: pw.FontWeight.bold);
           final childTextStyle = pw.TextStyle(font: ttf, fontSize: 11);
           final childBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 11, fontWeight: pw.FontWeight.bold);
-
           // Build content widgets
           final List<pw.Widget> contentWidgets = [];
-
           // Asset Name
           contentWidgets.add(
             pw.Row(
@@ -386,7 +382,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
             ),
           );
           contentWidgets.add(pw.SizedBox(height: 10));
-
           // Template Type
           if (assetDetails?.data?.templateType != null) {
             final tags = (assetDetails!.data!.templateType ?? '')
@@ -403,7 +398,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
             );
             contentWidgets.add(pw.SizedBox(height: 10));
           }
-
           // Asset Image
           if (objDetails?.img != null && objDetails!.img!.isNotEmpty) {
             try {
@@ -416,7 +410,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
               } else {
                 assetImage = pw.MemoryImage(base64Decode(objDetails.img!));
               }
-
               if (assetImage != null) {
                 contentWidgets.add(
                   pw.Container(
@@ -431,14 +424,12 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
               if (kDebugMode) print('Error loading asset image: $e');
             }
           }
-
           // Parameters
           if (objDetails?.parameters != null && objDetails!.parameters!.isNotEmpty) {
             contentWidgets.add(
               pw.Text('Parameters', style: headingStyle),
             );
             contentWidgets.add(pw.SizedBox(height: 10));
-
             objDetails.parameters!.forEach((key, value) {
               contentWidgets.add(
                 pw.Row(
@@ -455,14 +446,12 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
             });
             contentWidgets.add(pw.SizedBox(height: 10));
           }
-
           // Child Objects
           if (objDetails?.childObjs != null && objDetails!.childObjs!.isNotEmpty) {
             contentWidgets.add(
               pw.Text('Child Objects', style: headingStyle),
             );
             contentWidgets.add(pw.SizedBox(height: 10));
-
             for (var child in objDetails.childObjs!) {
               contentWidgets.add(
                 pw.Container(
@@ -512,7 +501,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
               contentWidgets.add(pw.SizedBox(height: 10));
             }
           }
-
           // Add pages with header and footer on each page
           pdf.addPage(
             pw.MultiPage(
@@ -541,7 +529,6 @@ class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScr
               },
             ),
           );
-
           return pdf.save();
         },
       );

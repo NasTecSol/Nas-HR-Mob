@@ -2616,5 +2616,59 @@ class AppLocalizationsAr extends AppLocalizations {
   String get activityTimeLine => 'الجدول الزمني للنشاط';
 
   @override
+  String get session => 'الجلسة';
+
+  @override
   String get sessionDetails => 'تفاصيل الجلسة';
+
+  @override
+  String get results => 'نتائج';
+
+  @override
+  String get allApps => 'جميع التطبيقات';
+
+  @override
+  String get dur => 'مدة';
+
+  @override
+  String get taskOrTitle => 'المهمة / العنوان';
+
+  @override
+  String get application => 'طلب';
+
+  @override
+  String get timeRange => 'النطاق الزمني';
+
+  @override
+  String get noSessionMatchYourFilter => 'لا توجد جلسات مطابقة لمرشحك';
+
+  @override
+  String get noSessionData => 'لا توجد بيانات الجلسة';
+
+  @override
+  String get noActivityDataAvailable => 'لا توجد بيانات النشاط المتاحة';
+
+  @override
+  String get morningSession => 'الجلسة الصباحية';
+
+  @override
+  String get afternoonSession => 'جلسة بعد الظهر';
+
+  @override
+  String get eveningSession => 'الجلسة المسائية';
+
+  @override
+  String get am => 'أكون';
+
+  @override
+  String get pm => 'مساءً';
+
+  @override
+  String get idle => 'عاطل';
+
+  @override
+  String get retry => 'أعد المحاولة';
+
+  @override
+  String get liveSessions => 'جلسة مباشرة';
 }
