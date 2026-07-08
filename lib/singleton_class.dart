@@ -21,6 +21,7 @@ import 'package:nashr/request_controller/company_assets_details_model.dart';
 import 'package:nashr/request_controller/company_details_document_notification_model.dart';
 import 'package:nashr/request_controller/company_model.dart';
 import 'package:nashr/request_controller/company_notification_model.dart';
+import 'package:nashr/request_controller/company_notifications_assets_detail_model.dart';
 import 'package:nashr/request_controller/complaints_approver_model.dart';
 import 'package:nashr/request_controller/complaints_model.dart';
 import 'package:nashr/request_controller/document_notification_model.dart';
@@ -57,6 +58,8 @@ import 'package:nashr/request_controller/team_attendance_model.dart';
 import 'package:nashr/request_controller/team_model.dart';
 import 'package:nashr/request_controller/time_table_shift.dart';
 import 'package:nashr/request_controller/ui_settings_model.dart';
+import 'package:nashr/request_controller/user_activity_detail_model.dart';
+import 'package:nashr/request_controller/user_activity_model.dart';
 import 'package:nashr/widgets/face_id_popup.dart';
 import 'package:nashr/widgets/successful_popup.dart';
 import 'package:nashr/widgets/unsuccessful_popup.dart';
@@ -80,10 +83,14 @@ class SingletonClass {
   String? env;
   String? envToggle;
   int unreadCount = 0;
+  bool? isTimerActive = false;
   LoginModel? _loginModel;
   JWTData? _jwtData;
   List<EmployeeData> employeeDataList = [];
+  List<UserActivityDetailModel> userActivityDetailModelDataList = [];
+  List<UserActivityModel> userActivityDataList = [];
   List<CompanyNotificationModel> companyNotificationDataList = [];
+  List<CompanyNotificationsAssetsDetailModel> companyNotificationAssetDetailDataList = [];
   List<DocumentSharedTemplate> documentSharedTemplateDataList = [];
   List<ReportManagerModel> reportManagerDataList = [];
   List<RoleAndAccessModel> roleAndAccessModelDataList = [];
@@ -152,6 +159,7 @@ class SingletonClass {
   String headerUrl = '';
   String footerUrl = '';
   String? token ;
+  bool? rememberMe = true ;
 
   init() async {
     _singleton ??= SingletonClass._();
@@ -331,7 +339,6 @@ class SingletonClass {
     }
     return null;
   }
-
   ///Role and Access Api Call
   Future<RoleAndAccessModel?> getRoleAndAccessData() async {
     String? employeeId = getJWTModel()?.employeeId;
@@ -406,19 +413,35 @@ class SingletonClass {
     }
     return null ;
   }
-
   Future<EmployeeData?> getEmployeeData() async {
-    String? employeeId =  getJWTModel()?.employeeId;
-    var client = http.Client();
-    var uri = Uri.parse('$baseURL/employee/$employeeId');
-    var response = await client.get(uri,headers: getHeaders());
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var employeeData = EmployeeData.fromJson(responseBody);
-      setEmployeeData([employeeData]);
-      return employeeData;
+    try {
+      String? employeeId = getJWTModel()?.empId;
+
+      var uri = Uri.parse('$baseURL/employee/getDataByEMPId/$employeeId');
+      var response = await http.get(uri, headers: getHeaders());
+
+      log("EMPLOYEE DATA RAW: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+
+        final employeeData = EmployeeData.fromJson(responseBody);
+
+        setEmployeeData([employeeData]);
+
+        // SAFE access now
+        if (employeeData.data.isNotEmpty) {
+          log("USERNAME: ${employeeData.data.first.userName}");
+        }
+
+        return employeeData;
+      }
+    } catch (e, st) {
+      log("EMPLOYEE API ERROR: $e");
+      log("$st");
     }
-    return null ;
+
+    return null;
   }
 
   //Remote Attendance Data
@@ -438,7 +461,7 @@ class SingletonClass {
 
   ///Get supervisor Data
   Future<ReportManagerModel?> getSupervisorData() async {
-    String? employeeId =  employeeDataList.first.data!.employeeInfo!.first.reportingManager;
+    String? employeeId =  employeeDataList.first.data.first.employeeInfo!.first.reportingManager;
     var client = http.Client();
     var uri = Uri.parse('$baseURL/employee/getDataByEMPId/$employeeId');
     var response = await client.get(uri,headers: getHeaders());
@@ -459,6 +482,7 @@ class SingletonClass {
     print(uri);
     var response = await client.get(uri,headers: getHeaders());
     if (response.statusCode == 200) {
+      log("notification response ${response.body}");
       var responseBody = json.decode(response.body);
       var notificationData = NotificationModel.fromJson(responseBody);
       notificationModelList.addAll([notificationData]);
@@ -480,7 +504,6 @@ class SingletonClass {
 
     var client = http.Client();
     var uri = Uri.parse('$baseURL/company/$companyId');
-
     log("📡 Requesting company data from: $uri");
     log("📦 Headers: ${getHeaders()}");
     log("📦 FCM: ${fcmToken}");
@@ -493,6 +516,10 @@ class SingletonClass {
         var responseBody = json.decode(response.body);
         var companyData = CompanyData.fromJson(responseBody);
         setCompanyData([companyData]);
+        headerUrl = "${companyData.data!.headerFooter!.defaultHeader}";
+        footerUrl = "${companyData.data!.headerFooter!.defaultFooter}";
+        print("HEADER${headerUrl}");
+        print("footer${footerUrl}");
         return companyData;
       } else {
         log("❌ Failed to fetch company data. Status: ${response.statusCode}");
@@ -618,9 +645,14 @@ class SingletonClass {
 
 
   ///formated date method
-  String formatCheckInTime(String dateTimeString , context) {
+  String formatCheckInTime(String? dateTimeString , context) {
+    if (dateTimeString == null || dateTimeString.isEmpty || dateTimeString == 'null') {
+      return '--:--';
+    }
     try {
-      DateTime localTime = DateTime.parse(dateTimeString).toLocal();
+      DateTime? parsed = DateTime.tryParse(dateTimeString);
+      if (parsed == null) return '--:--';
+      DateTime localTime = parsed.toLocal();
       final locale = Localizations.localeOf(context).languageCode;
       if (locale == 'ar') {
         final arabicFormatter = DateFormat('h:mm a', 'ar');
@@ -712,23 +744,35 @@ class SingletonClass {
     }
   }
 
-  String formatTime(String createdAt) {
-    DateTime createdDate = DateTime.parse(createdAt);
-    return DateFormat('hh:mm a').format(createdDate);
+  String formatTime(String? createdAt) {
+    if (createdAt == null || createdAt.isEmpty || createdAt == 'null') {
+      return '--:--';
+    }
+    try {
+      DateTime? parsed = DateTime.tryParse(createdAt);
+      if (parsed == null) return '--:--';
+      return DateFormat('hh:mm a').format(parsed);
+    } catch (e) {
+      return '--:--';
+    }
   }
 
-  String formatDate2(String createdAt , context) {
-    try{
-      DateTime updatedAtDateTime = DateTime.parse(createdAt);
+  String formatDate2(String? createdAt , context) {
+    if (createdAt == null || createdAt.isEmpty || createdAt == 'null') {
+      return '--:--';
+    }
+    try {
+      DateTime? parsed = DateTime.tryParse(createdAt);
+      if (parsed == null) return '--:--';
       final locale = Localizations.localeOf(context).languageCode;
-      if (locale == 'ar'){
+      if (locale == 'ar') {
         final arabicFormatter = DateFormat('dd-MM-yyyy', 'ar');
-        return arabicFormatter.format(updatedAtDateTime);
-      }else{
-        final formattedTime = DateFormat('dd-MM-yyyy').format(updatedAtDateTime);
+        return arabicFormatter.format(parsed);
+      } else {
+        final formattedTime = DateFormat('dd-MM-yyyy').format(parsed);
         return formattedTime;
       }
-    } catch (e){
+    } catch (e) {
       if (kDebugMode) {
         print("Error formatting time: $e");
       }
@@ -736,9 +780,14 @@ class SingletonClass {
     }
   }
 
-  String formatDateTime(String dateTime) {
+  String formatDateTime(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty || dateTime == 'null') {
+      return 'Invalid date';
+    }
     try {
-      final parsedDate = DateTime.parse(dateTime).toLocal();
+      DateTime? parsed = DateTime.tryParse(dateTime);
+      if (parsed == null) return 'Invalid date';
+      final parsedDate = parsed.toLocal();
       return DateFormat('hh:mm:a').format(parsedDate);
     } catch (e) {
       return 'Invalid date';
@@ -779,7 +828,7 @@ class SingletonClass {
 
   ///Request Screen API Calls
   Future<ApproverRequestData?> getApproverData(
-      {int page = 0, int limit = 20}) async {
+      {int page = 0, int limit = 25}) async {
     String? employeeId = getJWTModel()?.employeeId;
 
     // Request body (stays the same)
@@ -792,7 +841,10 @@ class SingletonClass {
         "documentRequest",
         "specialLeaveRequest",
         "attendanceRequest",
-        "overTimeRequest"
+        "overTimeRequest",
+        "remoteRequest",
+        "resignationRequest",
+        "complaintRequest"
       ],
     };
     final uri = Uri.parse(
@@ -829,30 +881,66 @@ class SingletonClass {
     }
   }
 
-  Future<void> fetchCompanyHeaderFooter(String companyId) async {
+  Future<ApproverRequestData?> getRequestByCompanyAndBranch(
+      String companyId, String branchId, {int page = 0, int limit = 25}) async {
+    final uri = Uri.parse(
+      '$baseURL/request/requestByCompany&BranchId/$companyId/$branchId?page=$page&limit=$limit',
+    );
+    print("🌐 requestByCompanyAndBranch URL: $uri");
     try {
-      final url = Uri.parse('${baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval');
-      final response = await http.get(url, headers: getHeaders());
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body)['data'] as List? ?? [];
-        if (data.isNotEmpty) {
-          final doc = data.first;
-          headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
-          footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
-          if (kDebugMode) {
-            print('Header URL: $headerUrl');
-            print('Footer URL: $footerUrl');
-          }
+      final response = await http.get(
+        uri,
+        headers: getHeaders(),
+      );
+
+      log("Response requestByCompanyAndBranch: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseBody = json.decode(response.body);
+        final requestData = ApproverRequestData.fromJson(responseBody);
+
+        if (page == 0) {
+          setApproverDataList([requestData]);
         } else {
-          if (kDebugMode) print('No documents found for this company.');
+          final existing = approverDataList;
+          setApproverDataList([...existing, requestData]);
         }
+
+        return requestData;
       } else {
-        if (kDebugMode) print('Failed to fetch documents. Status code: ${response.statusCode}');
+        log("Error: Received status code ${response.statusCode}");
+        return null;
       }
     } catch (e) {
-      if (kDebugMode) print('Error fetching company documents: $e');
+      log('Error requestByCompanyAndBranch: $e');
+      return null;
     }
   }
+
+  // Future<void> fetchCompanyHeaderFooter(String companyId) async {
+  //   try {
+  //     final url = Uri.parse('${baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval');
+  //     final response = await http.get(url, headers: getHeaders());
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body)['data'] as List? ?? [];
+  //       if (data.isNotEmpty) {
+  //         final doc = data.first;
+  //         headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
+  //         footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
+  //         if (kDebugMode) {
+  //           print('Header URL: $headerUrl');
+  //           print('Footer URL: $footerUrl');
+  //         }
+  //       } else {
+  //         if (kDebugMode) print('No documents found for this company.');
+  //       }
+  //     } else {
+  //       if (kDebugMode) print('Failed to fetch documents. Status code: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     if (kDebugMode) print('Error fetching company documents: $e');
+  //   }
+  // }
 
 
   ///Clear all data lists
@@ -928,6 +1016,7 @@ class SingletonClass {
     headerUrl = '';
     footerUrl = '';
     token = null;
+    isTimerActive = false;
   }
 
 

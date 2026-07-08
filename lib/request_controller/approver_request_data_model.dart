@@ -200,9 +200,14 @@ class RequestData {
   dynamic punchingType;
   dynamic attendanceTime;
   dynamic attendanceDate;
+  dynamic checkIn;
+  dynamic checkOut;
+  dynamic totalAmount;
 
   // 🔥 NEW FIELD (Single date for: expense, overtime, documents, penalties)
   dynamic date;
+  dynamic effectiveDate;
+  dynamic days;
 
   // Extra storage for any unrecognized keys
   Map<String, dynamic>? extra;
@@ -240,7 +245,12 @@ class RequestData {
     this.punchingType,
     this.attendanceTime,
     this.attendanceDate,
-    this.date, // NEW FIELD
+    this.checkIn,
+    this.checkOut,
+    this.totalAmount,
+    this.date,
+    this.effectiveDate,
+    this.days,
     this.extra,
   });
 
@@ -290,8 +300,13 @@ class RequestData {
     punchingType = json["punchingType"];
     attendanceTime = json["attendanceTime"];
     attendanceDate = json["attendanceDate"];
+    checkIn = json["checkIn"];
+    checkOut = json["checkOut"];
+    totalAmount = json["totalAmount"];
 
-    date = json["date"]; // NEW FIELD
+    date = json["date"];
+    effectiveDate = json["effectiveDate"];
+    days = json["days"];
 
     // Save extra unknown keys
     extra = {};
@@ -347,8 +362,13 @@ class RequestData {
     data["punchingType"] = punchingType;
     data["attendanceTime"] = attendanceTime;
     data["attendanceDate"] = attendanceDate;
+    data["checkIn"] = checkIn;
+    data["checkOut"] = checkOut;
+    data["totalAmount"] = totalAmount;
 
-    data["date"] = date; // NEW FIELD
+    data["date"] = date;
+    data["effectiveDate"] = effectiveDate;
+    data["days"] = days;
 
     // Add unknown extra keys
     if (extra != null) {

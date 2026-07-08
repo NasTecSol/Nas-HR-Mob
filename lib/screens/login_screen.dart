@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     _email.addListener(() {
       setState(() {
-        _isEmailValid = _password.text.length >= 6;
+        _isEmailValid = _email.text.isNotEmpty;
       });
     });
   }
@@ -426,6 +426,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const Spacer(),
+                        Checkbox(
+                          activeColor: NasColors.darkBlue,
+                          checkColor: Colors.white,
+                          value: singletonClass.rememberMe,
+                          onChanged: (value) {
+                            setState(() {
+                              singletonClass.rememberMe = value ?? true;
+                            });
+                          },
+                        ),
+                        Text(
+                          "Remember Me",
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
@@ -498,8 +515,22 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+  ///Helper method
+  Future<void> handleLogin() async {
+    final prefs = await SharedPreferences.getInstance();
 
-  // Login API Call
+    if (singletonClass.rememberMe == true) {
+      await prefs.setString("email", _email.text);
+      await prefs.setString("password", _password.text);
+      await prefs.setBool("rememberMe", true);
+    } else {
+      await prefs.remove("email");
+      await prefs.remove("password");
+      await prefs.setBool("rememberMe", false);
+    }
+  }
+
+  /// Login API Call
   Future<void> login() async {
     var uuid = const Uuid();
     var v1 = uuid.v1();
@@ -536,6 +567,8 @@ class _LoginScreenState extends State<LoginScreen> {
             });
             singletonClass.sendFCMToken();
             await singletonClass.showSuccessPopup(context);
+            await singletonClass.getEmployeeData();
+            await handleLogin();
             await Navigator.push(
               context,
               MaterialPageRoute(

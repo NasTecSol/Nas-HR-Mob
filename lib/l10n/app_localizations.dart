@@ -5143,6 +5143,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send Letter'**
   String get sendLetter;
+
+  /// No description provided for @baseSalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Base Salary'**
+  String get baseSalary;
+
+  /// No description provided for @remoteRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote Request'**
+  String get remoteRequest;
+
+  /// No description provided for @attendanceRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance Request'**
+  String get attendanceRequest;
+
+  /// No description provided for @phoneNumberMustBeAtLeastTenDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must be at least 10 digits'**
+  String get phoneNumberMustBeAtLeastTenDigits;
+
+  /// No description provided for @iqamaNumberMustBeAtLeastTenDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Iqama number must be at least 10 digits'**
+  String get iqamaNumberMustBeAtLeastTenDigits;
+
+  /// No description provided for @nationalIDNumberMustBeAtLeastTenDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID number must be at least 10 digits'**
+  String get nationalIDNumberMustBeAtLeastTenDigits;
+
+  /// No description provided for @print.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get print;
+
+  /// No description provided for @shareAndSavePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Share / Save PDF'**
+  String get shareAndSavePdf;
+
+  /// No description provided for @ageMustBeAtLeastEighteenYearsOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Age must be at least 18 years old'**
+  String get ageMustBeAtLeastEighteenYearsOld;
+
+  /// No description provided for @resignationRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Resignation Request'**
+  String get resignationRequest;
+
+  /// No description provided for @lastWorkingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Working Day'**
+  String get lastWorkingDay;
+
+  /// No description provided for @annualLeaveCashOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Leave Cash Out'**
+  String get annualLeaveCashOut;
+
+  /// No description provided for @userActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'User Activity'**
+  String get userActivity;
+
+  /// No description provided for @online.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get online;
+
+  /// No description provided for @offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get offline;
+
+  /// No description provided for @activeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Time'**
+  String get activeTime;
+
+  /// No description provided for @productivityScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Productivity Score'**
+  String get productivityScore;
+
+  /// No description provided for @employeeActivityDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee Activity Details'**
+  String get employeeActivityDetail;
+
+  /// No description provided for @totalTrackedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Tracked Time'**
+  String get totalTrackedTime;
+
+  /// No description provided for @mostUsedApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Used Apps'**
+  String get mostUsedApps;
+
+  /// No description provided for @activityTimeLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Timeline'**
+  String get activityTimeLine;
+
+  /// No description provided for @session.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get session;
+
+  /// No description provided for @sessionDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Details'**
+  String get sessionDetails;
+
+  /// No description provided for @results.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get results;
+
+  /// No description provided for @allApps.
+  ///
+  /// In en, this message translates to:
+  /// **'All Apps'**
+  String get allApps;
+
+  /// No description provided for @dur.
+  ///
+  /// In en, this message translates to:
+  /// **'Dur'**
+  String get dur;
+
+  /// No description provided for @taskOrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task / Title'**
+  String get taskOrTitle;
+
+  /// No description provided for @application.
+  ///
+  /// In en, this message translates to:
+  /// **'Application'**
+  String get application;
+
+  /// No description provided for @timeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Range'**
+  String get timeRange;
+
+  /// No description provided for @noSessionMatchYourFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'\'No sessions match your filter'**
+  String get noSessionMatchYourFilter;
+
+  /// No description provided for @noSessionData.
+  ///
+  /// In en, this message translates to:
+  /// **'No session data'**
+  String get noSessionData;
+
+  /// No description provided for @noActivityDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity data available'**
+  String get noActivityDataAvailable;
+
+  /// No description provided for @morningSession.
+  ///
+  /// In en, this message translates to:
+  /// **'MORNING SESSION'**
+  String get morningSession;
+
+  /// No description provided for @afternoonSession.
+  ///
+  /// In en, this message translates to:
+  /// **'AFTERNOON SESSION'**
+  String get afternoonSession;
+
+  /// No description provided for @eveningSession.
+  ///
+  /// In en, this message translates to:
+  /// **'EVENING SESSION'**
+  String get eveningSession;
+
+  /// No description provided for @am.
+  ///
+  /// In en, this message translates to:
+  /// **'AM'**
+  String get am;
+
+  /// No description provided for @pm.
+  ///
+  /// In en, this message translates to:
+  /// **'PM'**
+  String get pm;
+
+  /// No description provided for @idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get idle;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'retry'**
+  String get retry;
+
+  /// No description provided for @liveSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE SESSIONS'**
+  String get liveSessions;
 }
 
 class _AppLocalizationsDelegate

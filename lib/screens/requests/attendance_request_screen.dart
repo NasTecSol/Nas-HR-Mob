@@ -300,6 +300,8 @@ class _AttendanceRequestScreenState extends State<AttendanceRequestScreen> {
                     cursorColor: Colors.grey,
                     controller: _notes,
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return AppLocalizations.of(context)!.enterNotesValidation;
@@ -495,9 +497,9 @@ class _AttendanceRequestScreenState extends State<AttendanceRequestScreen> {
         return;
       }
 
-      final String? firstName = singletonClass.employeeDataList.first.data?.firstName;
-      final String? middleName = singletonClass.employeeDataList.first.data?.middleName;
-      final String? lastName = singletonClass.employeeDataList.first.data?.lastName;
+      final String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+      final String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+      final String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
 
       final String employeeName = [firstName, middleName, lastName].where((e) => e != null && e.isNotEmpty).join(' ');
 

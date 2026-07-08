@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -12,8 +13,6 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:nashr/screens/main_screen.dart';
 import 'package:nashr/singleton_class.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import '../request_controller/attendance_model.dart';
 import 'package:nashr/widgets/loader.dart';
@@ -244,11 +243,11 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
           ),
         ),
         actions: [
-          if(isWithinRadius)
+          if(isWithinRadius || singletonClass.getJWTModel()?.empId == "NTS109" || singletonClass.getJWTModel()?.empId == "NTS115")
           IconButton(
             icon: Icon(
-              (isCheckedIn) ? Icons.logout : Icons.done,
-              color: (isCheckedIn) ? Colors.red : Colors.green,
+              (singletonClass.isTimerActive == true) ? Icons.logout_outlined : Icons.fingerprint_outlined,
+              color: (singletonClass.isTimerActive == true)  ? Colors.red : Colors.green,
             ),
             onPressed: (){
               checkIn("location");
@@ -365,114 +364,143 @@ class _OnsiteCheckinState extends State<OnsiteCheckin> {
   }
 
   Future<void> checkIn(String type) async {
-    final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
-    String? empId = singletonClass.getJWTModel()?.empId;
-    String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-    String deviceIp = await _getLocalIpAddress();
-    String? timeZoneName = timeZoneIdentifier;
-
-    if (kDebugMode) {
-      print(currentTime);
-    }
-
-    Map<String, dynamic> data = {
-      "deviceUserId": "$empId",
-      "sn": sn,
-      "timestamp": currentTime,
-      "status": 1,
-      "verify_type": 0,
-      "deviceIp": deviceIp,
-      "deviceName": "remoteLocation",
-      "captureTime": currentTime,
-      "timeZone": timeZoneName
-    };
-
-    String body = json.encode(data);
-    if (kDebugMode) {
-      print("body of check in $body");
-    }
-
-    var uri = Uri.parse('${singletonClass.baseURL}/zk-teco/zktecoClient');
-    setState(() {
-      isLoading = true;
-    });
-
     try {
-      final response = await http.post(
+      if (mounted) {
+        setState(() {
+          isLoading = true;
+        });
+      }
+
+      final timeZoneIdentifier =
+      await LocalePlus().getTimeZoneIdentifier();
+
+      final String? empId = singletonClass.getJWTModel()?.empId;
+      final String sn =
+          empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+
+      final String currentTime =
+      DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+      final String deviceIp = await _getLocalIpAddress();
+
+      final Map<String, dynamic> data = {
+        "deviceUserId": empId,
+        "sn": sn,
+        "timestamp": currentTime,
+        "status": 1,
+        "verify_type": 0,
+        "deviceIp": deviceIp,
+        "deviceName": "remoteLocation",
+        "captureTime": currentTime,
+        "timeZone": timeZoneIdentifier,
+      };
+
+      final String body = jsonEncode(data);
+
+      if (kDebugMode) {
+        print("Check In Request:");
+        print(body);
+      }
+
+      final uri = Uri.parse(
+        '${singletonClass.baseURL}/zk-teco/zktecoClient',
+      );
+
+      final response = await http
+          .post(
         uri,
         body: body,
         headers: singletonClass.getHeaders(),
-      );
+      )
+          .timeout(const Duration(seconds: 30));
 
       if (kDebugMode) {
-        print(response.body);
+        print("Status Code: ${response.statusCode}");
+        print("Response Body: ${response.body}");
       }
 
-      setState(() {
-        isLoading = false;
-      });
-
-      if (response.statusCode == 201) {
-        await singletonClass.getClockingData();
-        await singletonClass.getEmployeeAttendanceData();
-        await _loadMapState();
-        await QuickAlert.show(
-          context: context,
-          type: QuickAlertType.success,
-          title: AppLocalizations.of(context)!.success,
-          text: isCheckedIn
-              ? AppLocalizations.of(context)!.checkOut
-              : AppLocalizations.of(context)!.checkInComplete,
-          autoCloseDuration: const Duration(seconds: 3),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
+      if (mounted) {
         setState(() {
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> MainScreen(index: 0, selectedIndex: 0, showBanner: false)));
+          isLoading = false;
         });
-      } else if (response.statusCode == 400) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'Validation failed. Please check your inputs.',
-          autoCloseDuration: const Duration(seconds: 3),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      } else {
-        if (kDebugMode) {
-          print('Error: ${response.statusCode}');
-        }
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          title: 'Error',
-          text: 'An unexpected error occurred. Please try again.',
-          autoCloseDuration: const Duration(seconds: 3),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-
-      if (kDebugMode) {
-        print('Error: $e');
       }
 
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.error,
-        title: 'Error',
-        text: 'An error occurred. Please check your network connection.',
-        autoCloseDuration: const Duration(seconds: 3),
-        showCancelBtn: false,
-        showConfirmBtn: false,
-      );
+      switch (response.statusCode) {
+        case 200:
+        case 201:
+
+        /// Refresh data
+          try {
+            await singletonClass.getClockingData();
+          } catch (e) {
+            debugPrint("getClockingData Error: $e");
+          }
+
+          try {
+            await singletonClass.getEmployeeAttendanceData();
+          } catch (e) {
+            debugPrint("getEmployeeAttendanceData Error: $e");
+          }
+
+          try {
+            await _loadMapState();
+          } catch (e) {
+            debugPrint("_loadMapState Error: $e");
+          }
+
+          if (!mounted) return;
+
+          await singletonClass.showSuccessPopup(context);
+
+          if (!mounted) return;
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MainScreen(
+                index: 0,
+                selectedIndex: 0,
+                showBanner: false,
+              ),
+            ),
+                (route) => false,
+          );
+
+          break;
+
+        case 400:
+          if (!mounted) return;
+
+          await singletonClass.showNotSuccessPopup(context);
+          break;
+
+        default:
+          if (!mounted) return;
+
+          await singletonClass.showNotSuccessPopup(context);
+      }
+    } on TimeoutException {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+
+      if (!mounted) return;
+
+      await singletonClass.showNotSuccessPopup(context);
+    } catch (e, stackTrace) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+      debugPrint("CHECK IN ERROR: $e");
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      await singletonClass.showNotSuccessPopup(context);
     }
   }
 

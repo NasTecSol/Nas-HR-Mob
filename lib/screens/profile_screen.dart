@@ -67,7 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
 
-
   void _resetSignature() {
     _controller.clear();
   }
@@ -111,11 +110,11 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-    final employeeProfile = singletonClass.employeeDataList.first.data;
-    final bankInfo = singletonClass.employeeDataList.first.data!.bankingInfo;
-    final salaryInfo = singletonClass.employeeDataList.first.data!.salaryInfo;
-    final familyInfo = singletonClass.employeeDataList.first.data!.familyInfo;
-    final shiftInfo = singletonClass.employeeDataList.first.data!.employeeInfo;
+    final employeeProfile = singletonClass.employeeDataList.first.data.first;
+    final bankInfo = singletonClass.employeeDataList.first.data.first.bankingInfo;
+    final salaryInfo = singletonClass.employeeDataList.first.data.first.salaryInfo;
+    final familyInfo = singletonClass.employeeDataList.first.data.first.familyInfo;
+    final shiftInfo = singletonClass.employeeDataList.first.data.first.employeeInfo;
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Stack(
@@ -285,10 +284,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  (employeeProfile?.firstName?.isNotEmpty == true ||
-                                                      employeeProfile?.middleName?.isNotEmpty == true ||
-                                                      employeeProfile?.lastName?.isNotEmpty == true)
-                                                      ? "${employeeProfile?.firstName ?? ''} ${employeeProfile?.middleName ?? ''} ${employeeProfile?.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
+                                                  (employeeProfile.firstName?.isNotEmpty == true ||
+                                                      employeeProfile.middleName?.isNotEmpty == true ||
+                                                      employeeProfile.lastName?.isNotEmpty == true)
+                                                      ? "${employeeProfile.firstName ?? ''} ${employeeProfile.middleName ?? ''} ${employeeProfile.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
                                                       : "---",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 18,
@@ -300,8 +299,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  (employeeProfile?.profession?.isNotEmpty == true)
-                                                      ? employeeProfile!.profession!
+                                                  (employeeProfile.profession?.isNotEmpty == true)
+                                                      ? employeeProfile.profession!
                                                       : "---",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -315,10 +314,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
-                                                        (employeeProfile?.employeeInfo?.first.depName?.isNotEmpty ==
+                                                    (employeeProfile.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile.employeeInfo?.first.depName?.isNotEmpty ==
                                                             true))
-                                                        ? employeeProfile!.employeeInfo!.first.depName!
+                                                        ? employeeProfile.employeeInfo!.first.depName!
                                                         : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -331,10 +330,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
-                                                        (employeeProfile?.employeeInfo?.first.workDomain?.isNotEmpty ==
+                                                    (employeeProfile.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile.employeeInfo?.first.workDomain?.isNotEmpty ==
                                                             true))
-                                                        ? employeeProfile!.employeeInfo!.first.workDomain!
+                                                        ? employeeProfile.employeeInfo!.first.workDomain!
                                                         : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -347,10 +346,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    (employeeProfile?.employeeInfo?.isNotEmpty == true &&
-                                                        (employeeProfile?.employeeInfo?.first.grade?.isNotEmpty ==
+                                                    (employeeProfile.employeeInfo?.isNotEmpty == true &&
+                                                        (employeeProfile.employeeInfo?.first.grade?.isNotEmpty ==
                                                             true))
-                                                        ? employeeProfile!.employeeInfo!.first.grade!
+                                                        ? employeeProfile.employeeInfo!.first.grade!
                                                         : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
@@ -374,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 child: Stack(children: [
                                   GestureDetector(
                                     onTap: (){
-                                      String url = "${employeeProfile?.profilePic ?? ''}".toLowerCase();
+                                      String url = "${employeeProfile.profilePic ?? ''}".toLowerCase();
                                       if (url.endsWith(".png")  ||
                                           url.endsWith(".jpg")  ||
                                           url.endsWith(".jpeg")  ||
@@ -395,7 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                   borderRadius: BorderRadius.circular(12.0),
                                                 ),
                                                 child: Image.network(
-                                                  employeeProfile?.profilePic ?? '',
+                                                  employeeProfile.profilePic ?? '',
                                                   fit: BoxFit.contain,
                                                   errorBuilder: (context, error, stackTrace) =>
                                                   const Icon(Icons.error),
@@ -418,7 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                       child: ClipOval(
-                                        child: (employeeProfile?.profilePic != null && employeeProfile!.profilePic.isNotEmpty &&
+                                        child: (employeeProfile.profilePic != null && employeeProfile.profilePic.isNotEmpty &&
                                             employeeProfile.profilePic!.isNotEmpty && employeeProfile.profilePic != "https://www.profilePic.com")
                                             ? Image.network(
                                           employeeProfile.profilePic!,
@@ -552,8 +551,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.gender?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile!.gender!
+                                        (employeeProfile.gender?.trim().isNotEmpty ?? false)
+                                            ? employeeProfile.gender!
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -578,8 +577,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.nationality?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile!.nationality!
+                                        (employeeProfile.nationality?.trim().isNotEmpty ?? false)
+                                            ? employeeProfile.nationality!
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -603,8 +602,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.dob?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile!.dob!
+                                        (employeeProfile.dob?.trim().isNotEmpty ?? false)
+                                            ? employeeProfile.dob!
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -628,7 +627,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.age != null && employeeProfile!.age!.toString().trim().isNotEmpty)
+                                        (employeeProfile.age != null && employeeProfile.age!.toString().trim().isNotEmpty)
                                             ? employeeProfile.age!.toString()
                                             : "---",
                                         style: GoogleFonts.inter(
@@ -654,8 +653,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.martialStatus?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile!.martialStatus!
+                                        (employeeProfile.martialStatus?.trim().isNotEmpty ?? false)
+                                            ? employeeProfile.martialStatus!
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -679,9 +678,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.phoneNumber?.isNotEmpty == true &&
-                                            (employeeProfile?.phoneNumber?.first.mobileNumber?.toString().isNotEmpty ?? false))
-                                            ? employeeProfile!.phoneNumber!.first.mobileNumber!.toString()
+                                        (employeeProfile.phoneNumber?.isNotEmpty == true &&
+                                            (employeeProfile.phoneNumber?.first.mobileNumber?.toString().isNotEmpty ?? false))
+                                            ? employeeProfile.phoneNumber!.first.mobileNumber!.toString()
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -706,18 +705,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       alignment: Alignment.topLeft,
                                       child: Text(
                                         [
-                                          employeeProfile?.address?.city,
-                                          employeeProfile?.address?.streetAddress,
-                                          employeeProfile?.address?.country
+                                          employeeProfile.address?.city,
+                                          employeeProfile.address?.streetAddress,
+                                          employeeProfile.address?.country
                                         ]
                                             .where((e) => e != null && e.trim().isNotEmpty)
                                             .join(" ")
                                             .trim()
                                             .isNotEmpty
                                             ? [
-                                          employeeProfile?.address?.city,
-                                          employeeProfile?.address?.streetAddress,
-                                          employeeProfile?.address?.country
+                                          employeeProfile.address?.city,
+                                          employeeProfile.address?.streetAddress,
+                                          employeeProfile.address?.country
                                         ]
                                             .where((e) => e != null && e.trim().isNotEmpty)
                                             .join(" ")
@@ -746,8 +745,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        (employeeProfile?.passport?.id != null &&
-                                            employeeProfile!.passport!.id.toString().isNotEmpty)
+                                        (employeeProfile.passport?.id != null &&
+                                            employeeProfile.passport!.id.toString().isNotEmpty)
                                             ? employeeProfile.passport!.id.toString()
                                             : "---",
                                         maxLines: 2,
@@ -852,10 +851,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     Align(
                                                       alignment: Alignment.topLeft,
                                                       child: Text(
-                                                        ((employeeProfile?.firstName?.isNotEmpty == true) ||
-                                                            (employeeProfile?.middleName?.isNotEmpty == true) ||
-                                                            (employeeProfile?.lastName?.isNotEmpty == true))
-                                                            ? "${employeeProfile?.firstName ?? ''} ${employeeProfile?.middleName ?? ''} ${employeeProfile?.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
+                                                        ((employeeProfile.firstName?.isNotEmpty == true) ||
+                                                            (employeeProfile.middleName?.isNotEmpty == true) ||
+                                                            (employeeProfile.lastName?.isNotEmpty == true))
+                                                            ? "${employeeProfile.firstName ?? ''} ${employeeProfile.middleName ?? ''} ${employeeProfile.lastName ?? ''}".replaceAll(RegExp(r'\s+'), ' ').trim()
                                                             : "---",
                                                         maxLines: 2,
                                                         style: GoogleFonts.inter(
@@ -948,10 +947,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               ],
                                           ),
                                           const SizedBox(height: 10),
+                                          ///Salary
                                           Row(
                                             children: [
                                               Text(
-                                                AppLocalizations.of(context)!.salary,
+                                                AppLocalizations.of(context)!.baseSalary,
                                                 maxLines: 2,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 20,
@@ -961,7 +961,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               ),
                                               Spacer(),
                                               Text(
-                                                "${salaryInfo?.baseSalary} ${singletonClass.employeeDataList.first.data!.salaryInfo!.currency}",
+                                                "${salaryInfo?.baseSalary} ${singletonClass.employeeDataList.first.data.first.salaryInfo!.currency}",
                                                 maxLines: 2,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 20,
@@ -972,6 +972,186 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             ],
                                           ),
                                           const SizedBox(height: 5),
+                                          ///Allowances
+                                          Column(
+                                            children: (salaryInfo?.allowanceBenefits == null || salaryInfo!.allowanceBenefits!.isEmpty)
+                                                ? [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    AppLocalizations.of(context)!.allowance,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                  Spacer(),
+                                                  Text(
+                                                    "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: NasColors.onTime,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ]
+                                                : salaryInfo.allowanceBenefits!.map<Widget>((allowance) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(bottom: 6),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            AppLocalizations.of(context)!.allowance,
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 20,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Spacer(),
+                                                        Text(
+                                                          "${allowance.allowanceTitle ?? "---"} ",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                      children: [
+                                                        Text("${allowance.amount ?? "---"} ${singletonClass.employeeDataList.first.data.first.salaryInfo?.currency ?? ""}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.onTime,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          ///Gross Salary
+                                          Row(
+                                            children: [
+                                              Text(
+                                                AppLocalizations.of(context)!.grossSalary,
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Text(
+                                                "${(
+                                                    (double.tryParse(salaryInfo?.baseSalary?.toString() ?? '0') ?? 0) +
+                                                        (salaryInfo?.allowanceBenefits?.fold<double>(0, (sum, item) {
+                                                          final amount = double.tryParse(item.amount?.toString() ?? '0') ?? 0;
+                                                          return sum + amount;
+                                                        }) ?? 0)
+                                                ).toStringAsFixed(0)} ${singletonClass.employeeDataList.first.data.first.salaryInfo?.currency ?? ""}",
+                                                maxLines: 2,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          const SizedBox(height: 5),
+                                          ///Deductions
+                                          Column(
+                                            children: (salaryInfo?.deductions == null || salaryInfo!.deductions!.isEmpty)
+                                                ? [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    AppLocalizations.of(context)!.deductions,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                  Spacer(),
+                                                  Text(
+                                                    "---",
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 20,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ]
+                                                : salaryInfo.deductions!.map<Widget>((allowance) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(bottom: 6),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            AppLocalizations.of(context)!.deductions,
+                                                            maxLines: 2,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 20,
+                                                              fontWeight: FontWeight.w500,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Spacer(),
+                                                        Text(
+                                                          "${allowance.deductionTitle ?? "---"} ",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.red,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                      children: [
+                                                        Text("${allowance.amount ?? "---"} ${singletonClass.employeeDataList.first.data.first.salaryInfo?.currency ?? ""}",
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 20,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: NasColors.red,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          /// net salary
                                           Row(
                                             children: [
                                               Text(
@@ -985,31 +1165,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               ),
                                               Spacer(),
                                               Text(
-                                                "${salaryInfo?.netSalary}",
-                                                maxLines: 2,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                AppLocalizations.of(context)!.allowance,
-                                                maxLines: 2,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                              Spacer(),
-                                              Text(
-                                                "${salaryInfo?.allowanceContribution ?? "---"}",
+                                                "${salaryInfo?.netSalary ?? 0} ${singletonClass.employeeDataList.first.data.first.salaryInfo!.currency}",
                                                 maxLines: 2,
                                                 style: GoogleFonts.inter(
                                                   fontSize: 20,
@@ -1490,9 +1646,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        employeeProfile?.shiftInfo?.shiftName?.isNotEmpty ==
+                                        employeeProfile.shiftInfo?.shiftName?.isNotEmpty ==
                                             true
-                                            ? employeeProfile!.shiftInfo!.shiftName!
+                                            ? employeeProfile.shiftInfo!.shiftName!
                                             : "---",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
@@ -1518,7 +1674,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        "${AppLocalizations.of(context)!.from}: ${employeeProfile?.shiftInfo?.timeFrom != null ? singletonClass.formatWithDateTime(employeeProfile!.shiftInfo!.timeFrom) : "NA"}",
+                                        "${AppLocalizations.of(context)!.from}: ${employeeProfile.shiftInfo?.timeFrom != null ? singletonClass.formatWithDateTime(employeeProfile.shiftInfo!.timeFrom) : "NA"}",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w500,
@@ -1529,7 +1685,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Align(
                                       alignment: Alignment.topLeft,
                                       child: Text(
-                                        "${AppLocalizations.of(context)!.to}: ${employeeProfile?.shiftInfo?.timeTo != null ? singletonClass.formatWithDateTime(employeeProfile!.shiftInfo!.timeTo) : "NA"}",
+                                        "${AppLocalizations.of(context)!.to}: ${employeeProfile.shiftInfo?.timeTo != null ? singletonClass.formatWithDateTime(employeeProfile.shiftInfo!.timeTo) : "NA"}",
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w500,
@@ -1636,11 +1792,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   )
                                       : Column(
                                     children: [
-                                      singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature != null &&
-                                          singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!.isNotEmpty
+                                      singletonClass.employeeDataList.first.data.first.employeeInfo!.first.empSignature != null &&
+                                          singletonClass.employeeDataList.first.data.first.employeeInfo!.first.empSignature!.isNotEmpty
                                           ? Center(
                                             child: Image.network(
-                                              singletonClass.employeeDataList.first.data!.employeeInfo!.first.empSignature!,
+                                              singletonClass.employeeDataList.first.data.first.employeeInfo!.first.empSignature!,
                                               height: 250,
                                             ),
                                           )

@@ -2556,4 +2556,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendLetter => 'Send Letter';
+
+  @override
+  String get baseSalary => 'Base Salary';
+
+  @override
+  String get remoteRequest => 'Remote Request';
+
+  @override
+  String get attendanceRequest => 'Attendance Request';
+
+  @override
+  String get phoneNumberMustBeAtLeastTenDigits =>
+      'Phone number must be at least 10 digits';
+
+  @override
+  String get iqamaNumberMustBeAtLeastTenDigits =>
+      'Iqama number must be at least 10 digits';
+
+  @override
+  String get nationalIDNumberMustBeAtLeastTenDigits =>
+      'National ID number must be at least 10 digits';
+
+  @override
+  String get print => 'Print';
+
+  @override
+  String get shareAndSavePdf => 'Share / Save PDF';
+
+  @override
+  String get ageMustBeAtLeastEighteenYearsOld =>
+      'Age must be at least 18 years old';
+
+  @override
+  String get resignationRequest => 'Resignation Request';
+
+  @override
+  String get lastWorkingDay => 'Last Working Day';
+
+  @override
+  String get annualLeaveCashOut => 'Annual Leave Cash Out';
+
+  @override
+  String get userActivity => 'User Activity';
+
+  @override
+  String get online => 'Online';
+
+  @override
+  String get offline => 'Offline';
+
+  @override
+  String get activeTime => 'Active Time';
+
+  @override
+  String get productivityScore => 'Productivity Score';
+
+  @override
+  String get employeeActivityDetail => 'Employee Activity Details';
+
+  @override
+  String get totalTrackedTime => 'Total Tracked Time';
+
+  @override
+  String get mostUsedApps => 'Most Used Apps';
+
+  @override
+  String get activityTimeLine => 'Activity Timeline';
+
+  @override
+  String get session => 'Sessions';
+
+  @override
+  String get sessionDetails => 'Session Details';
+
+  @override
+  String get results => 'Results';
+
+  @override
+  String get allApps => 'All Apps';
+
+  @override
+  String get dur => 'Dur';
+
+  @override
+  String get taskOrTitle => 'Task / Title';
+
+  @override
+  String get application => 'Application';
+
+  @override
+  String get timeRange => 'Time Range';
+
+  @override
+  String get noSessionMatchYourFilter => '\'No sessions match your filter';
+
+  @override
+  String get noSessionData => 'No session data';
+
+  @override
+  String get noActivityDataAvailable => 'No activity data available';
+
+  @override
+  String get morningSession => 'MORNING SESSION';
+
+  @override
+  String get afternoonSession => 'AFTERNOON SESSION';
+
+  @override
+  String get eveningSession => 'EVENING SESSION';
+
+  @override
+  String get am => 'AM';
+
+  @override
+  String get pm => 'PM';
+
+  @override
+  String get idle => 'Idle';
+
+  @override
+  String get retry => 'retry';
+
+  @override
+  String get liveSessions => 'LIVE SESSIONS';
 }

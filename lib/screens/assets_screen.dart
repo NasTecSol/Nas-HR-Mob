@@ -19,8 +19,8 @@ class _AssetsScreenState extends State<AssetsScreen> {
   @override
   Widget build(BuildContext context) {
     final assetsInfo = (singletonClass.employeeDataList.isNotEmpty &&
-        singletonClass.employeeDataList.first.data?.assetsInfo != null)
-        ? singletonClass.employeeDataList.first.data!.assetsInfo
+        singletonClass.employeeDataList.first.data.first.assetsInfo != null)
+        ? singletonClass.employeeDataList.first.data.first.assetsInfo
         : [];
 
 

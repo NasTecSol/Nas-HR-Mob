@@ -952,7 +952,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   void createProject() async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
     String? empName = singletonClass.getJWTModel()?.userName;
-    String? designation = singletonClass.employeeDataList.first.data!.employeeInfo!.first.designation;
+    String? designation = singletonClass.employeeDataList.first.data.first.employeeInfo!.first.designation;
     List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {
       return {
         "empId": employee!.empId,

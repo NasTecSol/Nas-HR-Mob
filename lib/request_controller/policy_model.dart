@@ -150,14 +150,18 @@ class PenaltiesFines {
   dynamic penalityCode;
   dynamic description;
   dynamic fineAmount;
+  dynamic penalityType;
+  dynamic fineType;
 
-  PenaltiesFines({this.penalityName, this.penalityCode, this.description, this.fineAmount});
+  PenaltiesFines({this.penalityName, this.penalityCode, this.description, this.fineAmount , this.fineType , this.penalityType});
 
   PenaltiesFines.fromJson(Map<String, dynamic> json) {
     penalityName = json["penalityName"];
     penalityCode = json["penalityCode"];
     description = json["description"];
     fineAmount = json["fineAmount"];
+    penalityType = json["penalityType"];
+    fineType = json["fineType"];
   }
 
   Map<String, dynamic> toJson() {
@@ -166,6 +170,8 @@ class PenaltiesFines {
     _data["penalityCode"] = penalityCode;
     _data["description"] = description;
     _data["fineAmount"] = fineAmount;
+    _data["penalityType"] = penalityType;
+    _data["fineType"] = fineType;
     return _data;
   }
 }

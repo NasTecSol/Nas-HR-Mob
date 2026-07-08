@@ -1,16 +1,16 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nashr/widgets/loader.dart';
 import '../../request_controller/company_model.dart';
-import 'package:file_picker/file_picker.dart';
+import '../../widgets/loader.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import '../../request_controller/company_model.dart' show Request, SubTypes;
-import 'dart:io';
+import '../../request_controller/company_model.dart' show Request;
 import 'package:flutter/foundation.dart';
 import '../../request_controller/company_model.dart';
 import 'dart:convert';
@@ -21,28 +21,25 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../request_controller/attachment_response_model.dart';
 import '../main_screen.dart';
 
-class SpecialLeaveRequestScreen extends StatefulWidget {
+class CreateRemoteRequestScreen extends StatefulWidget {
   final Request? selectedRequest;
-  const SpecialLeaveRequestScreen({super.key, this.selectedRequest});
+  const CreateRemoteRequestScreen({super.key, this.selectedRequest});
 
   @override
-  State<SpecialLeaveRequestScreen> createState() => _SpecialLeaveRequestScreenState();
+  State<CreateRemoteRequestScreen> createState() => _CreateRemoteRequestScreenState();
 }
 
-class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
-  SingletonClass singletonClass = SingletonClass();
+class _CreateRemoteRequestScreenState extends State<CreateRemoteRequestScreen> {
   bool isLoading = false;
-  final TextEditingController _totalDays = TextEditingController();
-  final TextEditingController _notes = TextEditingController();
+  SingletonClass singletonClass = SingletonClass();
   final GlobalKey<FormState> _formKey = GlobalKey();
-  SubTypes? _selectedSubType;
   DateTime? startDate;
   DateTime? endDate;
   PlatformFile? selectedFile;
-
+  final TextEditingController _totalDays = TextEditingController();
+  final TextEditingController _reason = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    final List<SubTypes> subTypeList = widget.selectedRequest?.subTypes ?? [];
     return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: Form(
@@ -93,53 +90,6 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Text(
-                    _translateBottomText(widget.selectedRequest?.requestName, context),
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  /// SubType Dropdown (unchanged functionality)
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: DropdownButtonFormField<SubTypes>(
-                      dropdownColor: Colors.white,
-                      value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
-                      validator: (value) {
-                        if (value == null) {
-                          return AppLocalizations.of(context)!.selectSubType;
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                      hint: Text(
-                        _translateRequest(widget.selectedRequest?.requestName, context),
-                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                      ),
-                      items: subTypeList.map((SubTypes subType) {
-                        return DropdownMenuItem<SubTypes>(
-                          value: subType,
-                          child: Text(
-                            _translateRequestSubtype(subType.requestName!, context),
-                            style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                   ///Duration
                   Text(AppLocalizations.of(context)!.duration,
                       style: GoogleFonts.inter(
@@ -147,7 +97,6 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                           fontSize: 14,
                           color: Colors.grey[700])),
                   const SizedBox(height: 6),
-                  ///Date Picker
                   Row(
                     children: [
                       ///Start Date
@@ -200,8 +149,8 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                               children: [
                                 Text(
                                   startDate == null
-                                      ? AppLocalizations.of(context)!.selectDate
-                                      : DateFormat('MMM yyyy').format(startDate!),
+                                      ? "YYYY/MM/DD"
+                                      : DateFormat('yyyy-MM-dd').format(startDate!),
                                   style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
                                 ),
                                 const Icon(Icons.calendar_today_outlined, color: Colors.grey),
@@ -266,8 +215,8 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                               children: [
                                 Text(
                                   endDate == null
-                                      ? AppLocalizations.of(context)!.selectDate
-                                      : DateFormat('MMM yyyy').format(endDate!),
+                                      ? "YYYY/MM/DD"
+                                      : DateFormat('yyyy-MM-dd').format(endDate!),
                                   style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
                                 ),
                                 const Icon(Icons.calendar_today_outlined, color: Colors.grey),
@@ -280,8 +229,9 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  ///No of Days
-                  Text(AppLocalizations.of(context)!.totalDays,
+                  /// number of days
+                  Text(
+                      AppLocalizations.of(context)!.totalDays,
                       style: GoogleFonts.inter(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
@@ -313,7 +263,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                   ),
                   const SizedBox(height: 20),
                   ///Notes
-                  Text(AppLocalizations.of(context)!.notes,
+                  Text(AppLocalizations.of(context)!.reason,
                       style: GoogleFonts.inter(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
@@ -321,10 +271,10 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                   const SizedBox(height: 6),
                   TextFormField(
                     cursorColor: Colors.grey,
-                    controller: _notes,
-                    maxLines: 3,
+                    controller: _reason,
                     textInputAction: TextInputAction.done,
                     keyboardType: TextInputType.text,
+                    maxLines: 3,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return AppLocalizations.of(context)!.enterNotesValidation;
@@ -343,9 +293,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  /// Attachment button (only if required)
-                  if (_selectedSubType != null && _selectedSubType!.docRequired == true)  ...[
+                  ///Attachments
                     TextButton(
                       onPressed: () async {
                         FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
@@ -425,7 +373,6 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                         ],
                       ),
                     ),
-                  ],
                   const SizedBox(height: 20),
                   Center(
                     child: SizedBox(
@@ -450,132 +397,12 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                   ),
                 ],
               ),
-              if(isLoading)
-                Loader()
+              if (isLoading) Loader()
             ],
           ),
         ),
       ),
     );
-  }
-
-  ///Helper methods for translation of text values from english to arabic
-  String _translateRequestSubtype(String? status, BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    switch (status) {
-      case 'leave Request':
-        return localizations.leaveRequests;
-      case 'Sick Leave':
-        return localizations.sickLeave;
-      case 'Annual Leave':
-        return localizations.annualLeave;
-      case 'Casual Leave':
-        return localizations.casualLeave;
-      case 'Advance Salary Request':
-        return localizations.advanceSalaryRequest;
-      case 'LongTerm Loan Request':
-        return localizations.longTermLoanRequest;
-      case "Housing Allowance":
-        return localizations.housingAllowance;
-      case "Traveling Allowance":
-        return localizations.travellingAllowance;
-      case 'Salary Incremental Allowance':
-        return localizations.salaryIncrementalAllowance;
-      case "Salary Slip":
-        return localizations.salarySlip;
-      case "Promotional Letter":
-        return localizations.promotionalLetter;
-      case "Contract":
-        return localizations.contract;
-      case "ID Card":
-        return localizations.idCard;
-      case "Advance Expense":
-        return localizations.advanceExpense;
-      case "Business Expense":
-        return localizations.businessExpense;
-      case "Reimbursement":
-        return localizations.reimbursement;
-      case "Disbursement":
-        return localizations.disbursement;
-      case "Star":
-        return localizations.star;
-      case "Moon":
-        return localizations.moon;
-      case "Bad Behaviour":
-        return localizations.badBehaviour;
-      case "Marriage Leave":
-        return localizations.marriageLeave;
-      case "Exam Leave":
-        return localizations.examLeave;
-      case "Death Leave":
-        return localizations.deathLeave;
-      case "Special Document":
-        return localizations.specialDocument;
-      case "Maternity Leave":
-        return localizations.maternityLeave;
-      default:
-        return status ?? '';
-    }
-  }
-
-  String _translateRequest(String? status, BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    switch (status) {
-      case 'Leave Request':
-        return localizations.leaveRequests;
-      case 'Loan Request':
-        return localizations.loanRequest;
-      case 'Penalty and Fine Requests':
-        return localizations.penaltiesAndFine;
-      case 'OverTime':
-        return localizations.overTime;
-      case 'Training':
-        return localizations.training;
-      case "Complaint Request":
-        return localizations.complaints;
-      case "Allowance Increment":
-        return localizations.allowanceIncrement;
-      case 'Document Request':
-        return localizations.documentRequest;
-      case "Expense Request":
-        return localizations.expenseRequest;
-      case "Special leave Request":
-        return localizations.specialLeaveRequest;
-      case "Approval Document Request":
-        return localizations.approvalDocumentRequest;
-      default:
-        return status ?? '';
-    }
-  }
-
-  String _translateBottomText(String? status, BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    switch (status) {
-      case 'Leave Request':
-        return localizations.leaveRequestBottom;
-      case 'Loan Request':
-        return localizations.loanRequestBottom;
-      case 'Penalty and Fine Requests':
-        return localizations.penaltiesAndFineBottom;
-      case 'OverTime':
-        return localizations.overTime;
-      case 'Training':
-        return localizations.training;
-      case "Complaint Request":
-        return localizations.complaints;
-      case "Allowance Increment":
-        return localizations.allowanceIncrementBottom;
-      case 'Document Request':
-        return localizations.documentRequestBottom;
-      case "Expense Request":
-        return localizations.expenseRequestBottom;
-      case "Special leave Request":
-        return localizations.specialLeaveRequestBottom;
-      case "Approval Document Request":
-        return localizations.approvalDocumentRequestBottom;
-      default:
-        return status ?? '';
-    }
   }
 
   ///Helper  method to calculate total days
@@ -588,7 +415,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
     });
   }
 
-  /// APi methods
+  ///API's Methods
   Future<Map<String, dynamic>> uploadDocuments(PlatformFile file) async {
     try {
       Uint8List fileBytes;
@@ -619,7 +446,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
       final responseBody = await response.stream.bytesToString();
 
       if (mounted) setState(() => isLoading = false);
-      debugPrint("UPLOAD DOCUMENT RESPONSE${responseBody}");
+
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
         final attachmentResponse = AttachmentResponse.fromJson(decodedJson);
@@ -664,20 +491,8 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
 
       final String? policyId = singletonClass.companyDataList.first.data?.policies?.first.policyId;
 
-      final String? selectedRequestType = widget.selectedRequest?.requestType;
-      final String? selectedSubType = _selectedSubType?.requestType;
 
-      if (selectedRequestType == null || selectedSubType == null) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: AppLocalizations.of(context)!.selectSubType,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        return;
-      }
+
 
       if (startDate == null && endDate == null) {
         QuickAlert.show(
@@ -690,6 +505,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
         );
         return;
       }
+
       final List<Map<String, dynamic>> attachments = [];
       if (selectedFile != null) {
         if (singletonClass.attachmentResponseDataList.isNotEmpty && singletonClass.attachmentResponseDataList.first.data != null) {
@@ -706,20 +522,21 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
         "companyId": companyId,
         "policyId": policyId,
         "branchId": branchId,
-        "requestType": selectedRequestType,
-        "subType": selectedSubType,
+        "requestType": "remoteRequest",
+        "subType": "remoteRequest",
         "requestData": [
           {
-            "startDate": startDate!.toIso8601String().split('T').first,
-            "endDate": endDate!.toIso8601String().split('T').first,
-            "duration": _totalDays.text  ,
-            "leaveType": selectedSubType,
-          }
-        ],
+       "startDate": startDate!.toIso8601String().split('T').first,
+       "endDate": endDate!.toIso8601String().split('T').first,
+       "duration": int.tryParse( _totalDays.text),
+       "numberOfDays":  int.tryParse( _totalDays.text),
+      }
+    ],
         "approvers": [],
-        "reason": _notes.text,
+        "reason": _reason.text,
         "attachments": attachments,
       };
+
 
       if (kDebugMode) print("REQUEST JSON POST: ${jsonEncode(data)}");
 

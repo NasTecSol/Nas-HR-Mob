@@ -2,29 +2,46 @@ class EmployeeData {
   int? statusCode;
   String? statusMessage;
   dynamic errorMessage;
-  Data? data;
+  List<Data> data;
 
-  EmployeeData({this.statusCode, this.statusMessage, this.errorMessage, this.data});
+  EmployeeData({
+    this.statusCode,
+    this.statusMessage,
+    this.errorMessage,
+    List<Data>? data,
+  }) : data = data ?? [];
 
-  EmployeeData.fromJson(Map<String, dynamic> json) {
-    statusCode = json["statusCode"];
-    statusMessage = json["statusMessage"];
-    errorMessage = json["errorMessage"];
-    data = json["data"] == null ? null : Data.fromJson(json["data"]);
+  factory EmployeeData.fromJson(Map<String, dynamic> json) {
+    final rawData = json["data"];
+
+    List<Data> parsedData = [];
+
+    if (rawData is List) {
+      parsedData = rawData
+          .map((e) => Data.fromJson(e))
+          .toList();
+    }
+    else if (rawData is Map<String, dynamic>) {
+      parsedData = [Data.fromJson(rawData)];
+    }
+
+    return EmployeeData(
+      statusCode: json["statusCode"],
+      statusMessage: json["statusMessage"],
+      errorMessage: json["errorMessage"],
+      data: parsedData,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["statusCode"] = statusCode;
-    _data["statusMessage"] = statusMessage;
-    _data["errorMessage"] = errorMessage;
-    if(data != null) {
-      _data["data"] = data?.toJson();
-    }
-    return _data;
+    return {
+      "statusCode": statusCode,
+      "statusMessage": statusMessage,
+      "errorMessage": errorMessage,
+      "data": data.map((e) => e.toJson()).toList(),
+    };
   }
 }
-
 class Data {
   dynamic id;
   dynamic userName;
@@ -330,19 +347,27 @@ class ShiftInfo {
     return _data;
   }
 }
+
+
 class LeaveBalance {
   AnnualLeave? annualLeave;
   CasualLeave? casualLeave;
-  SickLeave? sickLeave;
+  PaidLeave? paidLeave;
   ShortLeavesMonthlyBal? shortLeavesMonthlyBal;
+  SickLeave? sickLeave;
+  List<SpecialLeave>? specialLeave;
+  UnPaidLeave? unPaidLeave;
 
-  LeaveBalance({this.annualLeave, this.casualLeave, this.sickLeave, this.shortLeavesMonthlyBal});
+  LeaveBalance({this.annualLeave, this.casualLeave, this.paidLeave, this.shortLeavesMonthlyBal, this.sickLeave, this.specialLeave, this.unPaidLeave});
 
   LeaveBalance.fromJson(Map<String, dynamic> json) {
     annualLeave = json["annualLeave"] == null ? null : AnnualLeave.fromJson(json["annualLeave"]);
     casualLeave = json["casualLeave"] == null ? null : CasualLeave.fromJson(json["casualLeave"]);
-    sickLeave = json["sickLeave"] == null ? null : SickLeave.fromJson(json["sickLeave"]);
+    paidLeave = json["paidLeave"] == null ? null : PaidLeave.fromJson(json["paidLeave"]);
     shortLeavesMonthlyBal = json["shortLeavesMonthlyBal"] == null ? null : ShortLeavesMonthlyBal.fromJson(json["shortLeavesMonthlyBal"]);
+    sickLeave = json["sickLeave"] == null ? null : SickLeave.fromJson(json["sickLeave"]);
+    specialLeave = json["specialLeave"] == null ? null : (json["specialLeave"] as List).map((e) => SpecialLeave.fromJson(e)).toList();
+    unPaidLeave = json["unPaidLeave"] == null ? null : UnPaidLeave.fromJson(json["unPaidLeave"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -353,28 +378,71 @@ class LeaveBalance {
     if(casualLeave != null) {
       _data["casualLeave"] = casualLeave?.toJson();
     }
-    if(sickLeave != null) {
-      _data["sickLeave"] = sickLeave?.toJson();
+    if(paidLeave != null) {
+      _data["paidLeave"] = paidLeave?.toJson();
     }
     if(shortLeavesMonthlyBal != null) {
       _data["shortLeavesMonthlyBal"] = shortLeavesMonthlyBal?.toJson();
+    }
+    if(sickLeave != null) {
+      _data["sickLeave"] = sickLeave?.toJson();
+    }
+    if(specialLeave != null) {
+      _data["specialLeave"] = specialLeave?.map((e) => e.toJson()).toList();
+    }
+    if(unPaidLeave != null) {
+      _data["unPaidLeave"] = unPaidLeave?.toJson();
     }
     return _data;
   }
 }
 
-class ShortLeavesMonthlyBal {
-  int? shortLeavesMinutes;
+class UnPaidLeave {
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
 
-  ShortLeavesMonthlyBal({this.shortLeavesMinutes});
+  UnPaidLeave({this.entitlement, this.remaining, this.used});
 
-  ShortLeavesMonthlyBal.fromJson(Map<String, dynamic> json) {
-    shortLeavesMinutes = json["shortLeavesMinutes"];
+  UnPaidLeave.fromJson(Map<String, dynamic> json) {
+    entitlement = json["entitlement"];
+    remaining = json["remaining"];
+    used = json["used"];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> _data = <String, dynamic>{};
-    _data["shortLeavesMinutes"] = shortLeavesMinutes;
+    _data["entitlement"] = entitlement;
+    _data["remaining"] = remaining;
+    _data["used"] = used;
+    return _data;
+  }
+}
+
+class SpecialLeave {
+  dynamic leaveType;
+  dynamic leaveName;
+  dynamic entitlement;
+  dynamic used;
+  dynamic remaining;
+
+  SpecialLeave({this.leaveType, this.leaveName, this.entitlement, this.used, this.remaining});
+
+  SpecialLeave.fromJson(Map<String, dynamic> json) {
+    leaveType = json["leaveType"];
+    leaveName = json["leaveName"];
+    entitlement = json["entitlement"];
+    used = json["used"];
+    remaining = json["remaining"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["leaveType"] = leaveType;
+    _data["leaveName"] = leaveName;
+    _data["entitlement"] = entitlement;
+    _data["used"] = used;
+    _data["remaining"] = remaining;
     return _data;
   }
 }
@@ -401,6 +469,43 @@ class SickLeave {
   }
 }
 
+class ShortLeavesMonthlyBal {
+  dynamic shortLeavesMinutes;
+
+  ShortLeavesMonthlyBal({this.shortLeavesMinutes});
+
+  ShortLeavesMonthlyBal.fromJson(Map<String, dynamic> json) {
+    shortLeavesMinutes = json["shortLeavesMinutes"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["shortLeavesMinutes"] = shortLeavesMinutes;
+    return _data;
+  }
+}
+
+class PaidLeave {
+  dynamic entitlement;
+  dynamic remaining;
+  dynamic used;
+
+  PaidLeave({this.entitlement, this.remaining, this.used});
+
+  PaidLeave.fromJson(Map<String, dynamic> json) {
+    entitlement = json["entitlement"];
+    remaining = json["remaining"];
+    used = json["used"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["entitlement"] = entitlement;
+    _data["remaining"] = remaining;
+    _data["used"] = used;
+    return _data;
+  }
+}
 
 class CasualLeave {
   dynamic entitlement;
@@ -429,14 +534,18 @@ class AnnualLeave {
   dynamic entitlement;
   dynamic remaining;
   dynamic used;
+  dynamic session;
+  dynamic dailyEarned;
 
-  AnnualLeave({this.currentMonth, this.entitlement, this.remaining, this.used});
+  AnnualLeave({this.currentMonth, this.entitlement, this.remaining, this.used, this.session, this.dailyEarned});
 
   AnnualLeave.fromJson(Map<String, dynamic> json) {
     currentMonth = json["currentMonth"];
     entitlement = json["entitlement"];
     remaining = json["remaining"];
     used = json["used"];
+    session = json["session"] == null ? null : Session.fromJson(json["session"]);
+    dailyEarned = json["dailyEarned"];
   }
 
   Map<String, dynamic> toJson() {
@@ -445,10 +554,32 @@ class AnnualLeave {
     _data["entitlement"] = entitlement;
     _data["remaining"] = remaining;
     _data["used"] = used;
+    if(session != null) {
+      _data["session"] = session?.toJson();
+    }
+    _data["dailyEarned"] = dailyEarned;
     return _data;
   }
 }
 
+class Session {
+  dynamic start;
+  dynamic end;
+
+  Session({this.start, this.end});
+
+  Session.fromJson(Map<String, dynamic> json) {
+    start = json["start"];
+    end = json["end"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["start"] = start;
+    _data["end"] = end;
+    return _data;
+  }
+}
 
 class DocumentsInfo {
   dynamic type;
@@ -651,7 +782,7 @@ class SalaryInfo {
     baseSalary = json["baseSalary"];
     currency = json["currency"];
     timeCyclePeriod = json["timeCycle_Period"];
-    allowanceBenefits = json["allowance_benefits"] == null ? null : (json["allowance_benefits"] as List).map((e) => AllowanceBenefits.fromJson(e)).toList();
+    allowanceBenefits = json["allowance_Benefits"] == null ? null : (json["allowance_Benefits"] as List).map((e) => AllowanceBenefits.fromJson(e)).toList();
     deductions = json["deductions"] == null ? null : (json["deductions"] as List).map((e) => Deductions.fromJson(e)).toList();
     taxInfo = json["taxInfo"] == null ? null : TaxInfo.fromJson(json["taxInfo"]);
     allowanceContribution = json["allowanceContribution"];

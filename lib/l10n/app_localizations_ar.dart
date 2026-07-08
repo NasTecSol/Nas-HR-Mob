@@ -926,7 +926,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tax => 'الضرائب';
 
   @override
-  String get deductions => 'Deductions';
+  String get deductions => 'الخصومات';
 
   @override
   String get salaryStructure => 'هيكل الراتب';
@@ -2547,4 +2547,128 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sendLetter => 'أرسل رسالة';
+
+  @override
+  String get baseSalary => 'الراتب الأساسي';
+
+  @override
+  String get remoteRequest => 'الطلب عن بعد';
+
+  @override
+  String get attendanceRequest => 'طلب الحضور';
+
+  @override
+  String get phoneNumberMustBeAtLeastTenDigits =>
+      'يجب أن يتكون رقم الهاتف من 10 أرقام على الأقل';
+
+  @override
+  String get iqamaNumberMustBeAtLeastTenDigits =>
+      'يجب أن يتكون رقم الإقامة من 10 أرقام على الأقل';
+
+  @override
+  String get nationalIDNumberMustBeAtLeastTenDigits =>
+      'يجب أن يتكون رقم الهوية الوطنية من 10 أرقام على الأقل';
+
+  @override
+  String get print => 'مطبعة';
+
+  @override
+  String get shareAndSavePdf => 'مشاركة / حفظ PDF';
+
+  @override
+  String get ageMustBeAtLeastEighteenYearsOld =>
+      'يجب ألا يقل العمر عن 18 عامًا';
+
+  @override
+  String get resignationRequest => 'طلب الاستقالة';
+
+  @override
+  String get lastWorkingDay => 'يوم العمل الأخير';
+
+  @override
+  String get annualLeaveCashOut => 'الإجازة السنوية النقدية';
+
+  @override
+  String get userActivity => 'نشاط المستخدم';
+
+  @override
+  String get online => 'متصل';
+
+  @override
+  String get offline => 'غير متصل';
+
+  @override
+  String get activeTime => 'الوقت النشط';
+
+  @override
+  String get productivityScore => 'نقاط الإنتاجية';
+
+  @override
+  String get employeeActivityDetail => 'تفاصيل نشاط الموظف';
+
+  @override
+  String get totalTrackedTime => 'إجمالي الوقت المتعقب';
+
+  @override
+  String get mostUsedApps => 'التطبيقات الأكثر استخدامًا';
+
+  @override
+  String get activityTimeLine => 'الجدول الزمني للنشاط';
+
+  @override
+  String get session => 'الجلسة';
+
+  @override
+  String get sessionDetails => 'تفاصيل الجلسة';
+
+  @override
+  String get results => 'نتائج';
+
+  @override
+  String get allApps => 'جميع التطبيقات';
+
+  @override
+  String get dur => 'مدة';
+
+  @override
+  String get taskOrTitle => 'المهمة / العنوان';
+
+  @override
+  String get application => 'طلب';
+
+  @override
+  String get timeRange => 'النطاق الزمني';
+
+  @override
+  String get noSessionMatchYourFilter => 'لا توجد جلسات مطابقة لمرشحك';
+
+  @override
+  String get noSessionData => 'لا توجد بيانات الجلسة';
+
+  @override
+  String get noActivityDataAvailable => 'لا توجد بيانات النشاط المتاحة';
+
+  @override
+  String get morningSession => 'الجلسة الصباحية';
+
+  @override
+  String get afternoonSession => 'جلسة بعد الظهر';
+
+  @override
+  String get eveningSession => 'الجلسة المسائية';
+
+  @override
+  String get am => 'أكون';
+
+  @override
+  String get pm => 'مساءً';
+
+  @override
+  String get idle => 'عاطل';
+
+  @override
+  String get retry => 'أعد المحاولة';
+
+  @override
+  String get liveSessions => 'جلسة مباشرة';
 }

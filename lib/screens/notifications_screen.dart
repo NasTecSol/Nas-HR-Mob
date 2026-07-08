@@ -167,8 +167,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             final empList = singletonClass.employeeDataList;
                             if (empList.isEmpty) return '';
                             final empData = empList.first.data;
-                            if (empData == null) return '';
-                            final emails = empData.email;
+                            final emails = empData.first.email;
                             if (emails == null || emails.isEmpty) return '';
                             return emails.first.workEmail ?? '';
                           } catch (_) {
@@ -389,11 +388,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
 
-  String formatRelativeTime(String createdAt) {
-    DateTime createdDate = DateTime.parse(createdAt);
-    DateTime currentDate = DateTime.now();
+  String formatRelativeTime(String? createdAt) {
+    if (createdAt == null || createdAt.isEmpty || createdAt == 'null') {
+      return '';
+    }
+    try {
+      DateTime? createdDate = DateTime.tryParse(createdAt);
+      if (createdDate == null) return '';
+      DateTime currentDate = DateTime.now();
 
-    Duration difference = currentDate.difference(createdDate);
+      Duration difference = currentDate.difference(createdDate);
 
     if (difference.inMinutes < 1) {
       return  AppLocalizations.of(context)!.justNow;
@@ -410,6 +414,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       } else {
         return DateFormat('dd-MM-yyyy').format(createdDate);
       }
+    }
+    } catch (e) {
+      return '';
     }
   }
 

@@ -25,7 +25,8 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
   late final WebViewController _controller;
   bool _isLoading = true;
 
-  bool get isPdf => widget.url.toLowerCase().endsWith('.pdf');
+  bool get isLocal => !widget.url.startsWith('http://') && !widget.url.startsWith('https://');
+  bool get isPdf => (isLocal && widget.url.toLowerCase().endsWith('.pdf')) || (!widget.url.startsWith('https://view.officeapps.live.com') && widget.url.toLowerCase().endsWith('.pdf'));
   bool get isExcel => widget.url.toLowerCase().endsWith('.xlsx');
   bool get isDoc => widget.url.toLowerCase().endsWith('.docx');
   bool get isPpt => widget.url.toLowerCase().endsWith('.pptx');
@@ -60,8 +61,11 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
           },
         ),
       );
-    if (!isPdf) {
-
+    if (isLocal) {
+      _isLoading = false;
+    } else if (widget.url.startsWith('https://view.officeapps.live.com')) {
+      _controller.loadRequest(Uri.parse(widget.url));
+    } else if (!isPdf) {
       final officeUrl =
           'https://view.officeapps.live.com/op/embed.aspx?src=${Uri.encodeFull(widget.url)}';
       _controller.loadRequest(Uri.parse(officeUrl));
@@ -86,7 +90,7 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
           IconButton(onPressed: () async {
             setState(() => _isLoading = true);
 
-            final file = await _downloadFile(widget.url);
+            final file = isLocal ? File(widget.url) : await _downloadFile(widget.url);
 
             await _printPdf(file);
             setState(() => _isLoading = false);
@@ -96,17 +100,29 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       body: Stack(
         children: [
           if (isPdf)
-            SfPdfViewer.network(
-              widget.url,
-              canShowPaginationDialog: true,
-              canShowScrollHead: true,
-              enableTextSelection: true,
-              onDocumentLoaded: (detail){
-                setState(() => _isLoading = false);
-              },
-            )
+            isLocal
+                ? SfPdfViewer.file(
+                    File(widget.url),
+                    canShowPaginationDialog: true,
+                    canShowScrollHead: true,
+                    enableTextSelection: true,
+                    onDocumentLoaded: (detail) {
+                      setState(() => _isLoading = false);
+                    },
+                  )
+                : SfPdfViewer.network(
+                    widget.url,
+                    canShowPaginationDialog: true,
+                    canShowScrollHead: true,
+                    enableTextSelection: true,
+                    onDocumentLoaded: (detail) {
+                      setState(() => _isLoading = false);
+                    },
+                  )
           else  if (isImg)
-           Image.network(widget.url,)
+            isLocal
+                ? Image.file(File(widget.url))
+                : Image.network(widget.url)
           else
             WebViewWidget(controller: _controller),
           if (_isLoading)

@@ -5,32 +5,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:nashr/request_controller/assets_details_model.dart';
-import 'package:nashr/request_controller/document_notification_model.dart';
+import 'package:nashr/request_controller/document_notification_model.dart' hide Data;
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:printing/printing.dart';
-import '../request_controller/employee_model.dart';
+import '../request_controller/company_notifications_assets_detail_model.dart';
 import '../widgets/loader.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:nashr/request_controller/company_notification_model.dart';
 
-class AssetsDetailsScreen extends StatefulWidget {
-  final AssetsInfo? assetsInfo;
+class CompanyNotificationAssetsDetailScreen extends StatefulWidget {
+  final Data? assetsInfo;
 
-  const AssetsDetailsScreen({super.key, this.assetsInfo});
+  const CompanyNotificationAssetsDetailScreen({super.key, this.assetsInfo});
 
   @override
-  State<AssetsDetailsScreen> createState() => _AssetsDetailsScreenState();
+  State<CompanyNotificationAssetsDetailScreen> createState() => _AssetsDetailsScreenState();
 }
 
-class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
+class _AssetsDetailsScreenState extends State<CompanyNotificationAssetsDetailScreen> {
   SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
-  AssetDetailsModel? cachedAssetDetails;
+  CompanyNotificationsAssetsDetailModel? cachedAssetDetails;
   ObjectDetails? cachedObjectDetails;
+  Future<CompanyNotificationsAssetsDetailModel?>? _assetsFuture;
+  Future<DocumentNotificationModel?>? _documentFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _assetsFuture = getAssetsDetailsData();
+    _documentFuture = getDocumentNotificationData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,18 +90,18 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                   ),
                 ),
                 if (_selectedOptionIndex == 0) ...[
-                  FutureBuilder<AssetDetailsModel?>(
-                    future: getAssetsDetailsData(),
+                  FutureBuilder<CompanyNotificationsAssetsDetailModel?>(
+                    future: _assetsFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Loader();
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData && snapshot.data != null) {
-                        cachedObjectDetails = (snapshot.data?.data?.isNotEmpty ?? false)
-                            ? snapshot.data!.data!.first.objectDetails
-                            : null;
-
+                      } else if (snapshot.hasData && snapshot.data != null){
+                        final assetDetails = snapshot.data!;
+                        final objDetails = assetDetails.data?.objectDetails;
+                        cachedAssetDetails = assetDetails;
+                        cachedObjectDetails = (objDetails?.objectName?.isNotEmpty ?? false) ? objDetails : null;
                         if (cachedObjectDetails == null) {
                           return Center(
                             child: Padding(
@@ -106,7 +115,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                             ),
                           );
                         }
-
                         return Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Container(
@@ -115,7 +123,12 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                               borderRadius: BorderRadius.circular(15),
                               color: NasColors.containerColor,
                               boxShadow: [
-                                BoxShadow(color: Colors.grey.withOpacity(0.3), spreadRadius: 2, blurRadius: 8, offset: const Offset(0, 0)),
+                                BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 0)
+                                ),
                               ],
                             ),
                             child: Padding(
@@ -136,7 +149,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                                   const SizedBox(height: 10),
                                   Wrap(
                                     spacing: 4.0,
-                                    children: (cachedAssetDetails!.data?.first.templateType ?? 'N/A')
+                                    children: (cachedAssetDetails?.data?.templateType ?? 'N/A')
                                         .split('_')
                                         .where((word) => word.toLowerCase() != 'asset')
                                         .map((tag) => Chip(label: Text(tag), backgroundColor: NasColors.darkBlue, labelStyle: GoogleFonts.inter(color: Colors.white, fontSize: 14), materialTapTargetSize: MaterialTapTargetSize.shrinkWrap))
@@ -194,7 +207,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                 ],
                 if (_selectedOptionIndex == 1) ...[
                   FutureBuilder<DocumentNotificationModel?>(
-                    future: getDocumentNotificationData(),
+                    future: _documentFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Loader();
@@ -204,7 +217,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                         final documentNotificationDetails = snapshot.data!;
                         final assetIds = singletonClass.assetsDetailsModel.expand((assetDetail) => assetDetail.data ?? []).map((e) => e.id.toString()).toSet();
                         final matchingData = documentNotificationDetails.data?.where((e) => e.objectType == "asset" && e.objectId != null && assetIds.contains(e.objectId.toString())).toList() ?? [];
-
                         if (matchingData.isEmpty) {
                           return Center(
                             child: Padding(
@@ -218,9 +230,7 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                             ),
                           );
                         }
-
                         final item = matchingData.first;
-
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 10),
                           padding: const EdgeInsets.all(10.0),
@@ -286,17 +296,18 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
       ),
     ),
   );
-
-  Future<AssetDetailsModel?> getAssetsDetailsData() async {
-    int? assetId = widget.assetsInfo?.assetId;
+  Future<CompanyNotificationsAssetsDetailModel?> getAssetsDetailsData() async {
+    String? assetId = widget.assetsInfo?.objectId;
+    print("<><><><>${assetId}");
     var client = http.Client();
-    var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
+    var uri = Uri.parse('${singletonClass.baseURL}/assets/assetId/$assetId');
+    print(uri);
     var response = await client.get(uri, headers: singletonClass.getHeaders());
     log("ASSETS DETAILS RESPONSE: ${response.body}");
     if (response.statusCode == 200) {
       var responseBody = json.decode(response.body);
-      var assetData = AssetDetailsModel.fromJson(responseBody);
-      singletonClass.assetsDetailsModel.add(assetData);
+      var assetData = CompanyNotificationsAssetsDetailModel.fromJson(responseBody);
+      singletonClass.companyNotificationAssetDetailDataList.add(assetData);
       return assetData;
     }
     return null;
@@ -359,10 +370,8 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
           final smallBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 12, fontWeight: pw.FontWeight.bold);
           final childTextStyle = pw.TextStyle(font: ttf, fontSize: 11);
           final childBoldTextStyle = pw.TextStyle(font: ttf, fontSize: 11, fontWeight: pw.FontWeight.bold);
-
           // Build content widgets
           final List<pw.Widget> contentWidgets = [];
-
           // Asset Name
           contentWidgets.add(
             pw.Row(
@@ -373,10 +382,9 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
             ),
           );
           contentWidgets.add(pw.SizedBox(height: 10));
-
           // Template Type
-          if (assetDetails?.data?.first.templateType != null) {
-            final tags = (assetDetails!.data!.first.templateType ?? '')
+          if (assetDetails?.data?.templateType != null) {
+            final tags = (assetDetails!.data!.templateType ?? '')
                 .split('_')
                 .where((word) => word.toLowerCase() != 'asset')
                 .join(', ');
@@ -390,7 +398,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
             );
             contentWidgets.add(pw.SizedBox(height: 10));
           }
-
           // Asset Image
           if (objDetails?.img != null && objDetails!.img!.isNotEmpty) {
             try {
@@ -403,7 +410,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
               } else {
                 assetImage = pw.MemoryImage(base64Decode(objDetails.img!));
               }
-
               if (assetImage != null) {
                 contentWidgets.add(
                   pw.Container(
@@ -418,14 +424,12 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
               if (kDebugMode) print('Error loading asset image: $e');
             }
           }
-
           // Parameters
           if (objDetails?.parameters != null && objDetails!.parameters!.isNotEmpty) {
             contentWidgets.add(
               pw.Text('Parameters', style: headingStyle),
             );
             contentWidgets.add(pw.SizedBox(height: 10));
-
             objDetails.parameters!.forEach((key, value) {
               contentWidgets.add(
                 pw.Row(
@@ -442,14 +446,12 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
             });
             contentWidgets.add(pw.SizedBox(height: 10));
           }
-
           // Child Objects
           if (objDetails?.childObjs != null && objDetails!.childObjs!.isNotEmpty) {
             contentWidgets.add(
               pw.Text('Child Objects', style: headingStyle),
             );
             contentWidgets.add(pw.SizedBox(height: 10));
-
             for (var child in objDetails.childObjs!) {
               contentWidgets.add(
                 pw.Container(
@@ -499,7 +501,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
               contentWidgets.add(pw.SizedBox(height: 10));
             }
           }
-
           // Add pages with header and footer on each page
           pdf.addPage(
             pw.MultiPage(
@@ -528,7 +529,6 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
               },
             ),
           );
-
           return pdf.save();
         },
       );

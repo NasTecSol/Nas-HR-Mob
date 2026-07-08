@@ -82,6 +82,7 @@ class _MainScreenState extends State<MainScreen> {
      singletonClass.getChats(),
      singletonClass.getOrganizationData(),
      singletonClass.getPolicyData(),
+      singletonClass.getCompanyNotificationData(),
     ]);
   }
 
@@ -144,11 +145,11 @@ class _MainScreenState extends State<MainScreen> {
                       radius: 25,
                       child: ClipOval(
                         child: (singletonClass.employeeDataList.isNotEmpty &&
-                            singletonClass.employeeDataList.first.data?.profilePic != null &&
-                            singletonClass.employeeDataList.first.data!.profilePic!.isNotEmpty &&
-                            singletonClass.employeeDataList.first.data!.profilePic != "https://www.profilePic.com")
+                            singletonClass.employeeDataList.first.data.first.profilePic != null &&
+                            singletonClass.employeeDataList.first.data.first.profilePic!.isNotEmpty &&
+                            singletonClass.employeeDataList.first.data.first.profilePic != "https://www.profilePic.com")
                             ? Image.network(
-                          singletonClass.employeeDataList.first.data!.profilePic!,
+                          singletonClass.employeeDataList.first.data.first.profilePic!,
                           fit: BoxFit.cover,
                           width: 60,
                           height: 60,
@@ -292,7 +293,7 @@ class _MainScreenState extends State<MainScreen> {
 
     // 1️⃣ Filter valid notice board notifications
     final validNotices = allNotifications.where((n) {
-      if (n.notificationType != 'noticeBoard') return false;
+      if (n.notificationTypeAr != 'noticeBoard' || n.notificationType != 'noticeBoard') return false;
 
       final duration = n.durationSettings;
       if (duration == null) return false;

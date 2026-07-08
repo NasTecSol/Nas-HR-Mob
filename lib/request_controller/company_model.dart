@@ -55,8 +55,8 @@ class Data {
   NotificationSettings? notificationSettings;
   PayrollSettings? payrollSettings;
   ExpenseSettings? expenseSettings;
-
-  Data({this.id, this.name, this.title, this.city, this.country, this.address, this.shortCode, this.licenseId, this.establishmentNo, this.commericalReg, this.logo, this.license, this.phoneNumber, this.email, this.extension, this.rules, this.policies, this.assets, this.documents, this.createdBy, this.organizationId, this.createdAt, this.updatedAt, this.v, this.approvalGroupData, this.request, this.notificationSettings, this.payrollSettings, this.expenseSettings});
+  HeaderFooter? headerFooter;
+  Data({this.id, this.name, this.title, this.city, this.country, this.address, this.shortCode, this.licenseId, this.establishmentNo, this.commericalReg, this.logo, this.license, this.phoneNumber, this.email, this.extension, this.rules, this.policies, this.assets, this.documents, this.createdBy, this.organizationId, this.createdAt, this.updatedAt, this.v, this.approvalGroupData, this.request, this.notificationSettings, this.payrollSettings, this.expenseSettings , this.headerFooter});
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json["_id"];
@@ -88,6 +88,7 @@ class Data {
     notificationSettings = json["notificationSettings"] == null ? null : NotificationSettings.fromJson(json["notificationSettings"]);
     payrollSettings = json["payrollSettings"] == null ? null : PayrollSettings.fromJson(json["payrollSettings"]);
     expenseSettings = json["expenseSettings"] == null ? null : ExpenseSettings.fromJson(json["expenseSettings"]);
+    headerFooter = json["headerFooter"] == null ? null : HeaderFooter.fromJson(json["headerFooter"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -141,6 +142,28 @@ class Data {
     if(expenseSettings != null) {
       _data["expenseSettings"] = expenseSettings?.toJson();
     }
+    if(headerFooter != null) {
+      _data["headerFooter"] = headerFooter?.toJson();
+    }
+    return _data;
+  }
+}
+
+class HeaderFooter {
+  String? defaultHeader;
+  String? defaultFooter;
+
+  HeaderFooter({this.defaultHeader, this.defaultFooter});
+
+  HeaderFooter.fromJson(Map<String, dynamic> json) {
+    defaultHeader = json["defaultHeader"];
+    defaultFooter = json["defaultFooter"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> _data = <String, dynamic>{};
+    _data["defaultHeader"] = defaultHeader;
+    _data["defaultFooter"] = defaultFooter;
     return _data;
   }
 }

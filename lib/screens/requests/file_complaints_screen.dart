@@ -1,49 +1,69 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nashr/widgets/loader.dart';
 import '../../request_controller/company_model.dart';
-import 'package:file_picker/file_picker.dart';
+import '../../widgets/loader.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import '../../request_controller/company_model.dart' show Request, SubTypes;
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../../request_controller/company_model.dart';
-import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../request_controller/attachment_response_model.dart';
-import '../main_screen.dart';
 
-class SpecialLeaveRequestScreen extends StatefulWidget {
+class FileComplaintsScreen extends StatefulWidget {
   final Request? selectedRequest;
-  const SpecialLeaveRequestScreen({super.key, this.selectedRequest});
+  const FileComplaintsScreen({super.key, this.selectedRequest});
 
   @override
-  State<SpecialLeaveRequestScreen> createState() => _SpecialLeaveRequestScreenState();
+  State<FileComplaintsScreen> createState() => _FileComplaintsScreenState();
 }
 
-class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
+class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
   SingletonClass singletonClass = SingletonClass();
+  SubTypes? _selectedSubType;
+  List<SubTypes> subTypeList = [];
   bool isLoading = false;
-  final TextEditingController _totalDays = TextEditingController();
+  final TextEditingController _title = TextEditingController();
   final TextEditingController _notes = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
-  SubTypes? _selectedSubType;
   DateTime? startDate;
-  DateTime? endDate;
   PlatformFile? selectedFile;
+  String _characterCount = "0/300";
+
+  @override
+  void initState() {
+    super.initState();
+    singletonClass.getCompanyData();
+    _filterComplaintRequests();
+  }
+
+  void _filterComplaintRequests() {
+    final complaints = singletonClass.companyDataList.first.data?.request
+        ?.where((request) => request.requestType == "complaintRequest")
+        .toList();
+
+    if (complaints != null && complaints.isNotEmpty) {
+      subTypeList = complaints
+          .expand((request) => (request.subTypes ?? []).cast<SubTypes>())
+          .toList();
+    }
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<SubTypes> subTypeList = widget.selectedRequest?.subTypes ?? [];
-    return  Scaffold(
+    return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Form(
         key: _formKey,
@@ -52,9 +72,11 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
           child: Stack(
             children: [
               ListView(
-                padding: EdgeInsets.zero,
+              padding: EdgeInsets.zero,
+              children: [
+                Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ///Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -101,7 +123,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                       color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 6),
                   /// SubType Dropdown (unchanged functionality)
                   Container(
                     width: double.infinity,
@@ -139,15 +161,14 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                       onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  ///Duration
-                  Text(AppLocalizations.of(context)!.duration,
+                  const SizedBox(height:20),
+                  ///Date
+                  Text(AppLocalizations.of(context)!.selectDate,
                       style: GoogleFonts.inter(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                           color: Colors.grey[700])),
                   const SizedBox(height: 6),
-                  ///Date Picker
                   Row(
                     children: [
                       ///Start Date
@@ -183,7 +204,6 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                               setState(() {
                                 startDate = date;
                               });
-                              calculateTotalDays();
                             }
                           },
 
@@ -200,8 +220,8 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                               children: [
                                 Text(
                                   startDate == null
-                                      ? AppLocalizations.of(context)!.selectDate
-                                      : DateFormat('MMM yyyy').format(startDate!),
+                                      ? "DD/MM/YYYY"
+                                      : DateFormat('yyyy-MM-dd').format(startDate!),
                                   style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
                                 ),
                                 const Icon(Icons.calendar_today_outlined, color: Colors.grey),
@@ -211,141 +231,88 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                         ),
                       ),
                       const SizedBox(width: 5),
-                      Text(AppLocalizations.of(context)!.to,
-                          style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: Colors.grey[700])),
-                      const SizedBox(width: 5),
-                      /// END DATE
-                      Expanded(
-                        child:
-                        InkWell(
-                          onTap: () async {
-                            DateTime? date = await showDatePicker(
-                              context: context,
-                              initialDate: endDate ?? DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-
-                              builder: (BuildContext context, Widget? child) {
-                                return Theme(
-                                  data: ThemeData.light().copyWith(
-                                    colorScheme: ColorScheme.light(
-                                      primary: NasColors.darkBlue,
-                                      onPrimary: Colors.white,
-                                      onSurface: Colors.black,
-                                    ),
-                                    dialogBackgroundColor: Colors.white,
-                                    textButtonTheme: TextButtonThemeData(
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: NasColors.darkBlue,
-                                      ),
-                                    ),
-                                  ),
-                                  child: child!,
-                                );
-                              },
-                            );
-                            if (date != null) {
-                              setState(() => endDate = date);
-                              calculateTotalDays();
-                            }
-                          },
-
-                          child: Container(
-                            height: 48,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  endDate == null
-                                      ? AppLocalizations.of(context)!.selectDate
-                                      : DateFormat('MMM yyyy').format(endDate!),
-                                  style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
-                                ),
-                                const Icon(Icons.calendar_today_outlined, color: Colors.grey),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  ///No of Days
-                  Text(AppLocalizations.of(context)!.totalDays,
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Colors.grey[700])),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: _totalDays,
-                    readOnly: true,
-                    enabled: false, // completely non-editable
+                  const SizedBox(height:20),
+                  Text(
+                    AppLocalizations.of(context)!.title,
                     style: GoogleFonts.inter(
                       fontSize: 15,
-                      color: Colors.black87,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: "0",
-                      hintStyle: GoogleFonts.inter(color: Colors.grey),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  ///Notes
-                  Text(AppLocalizations.of(context)!.notes,
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Colors.grey[700])),
-                  const SizedBox(height: 6),
+                  const SizedBox(height:6),
                   TextFormField(
+                    controller: _title,
                     cursorColor: Colors.grey,
-                    controller: _notes,
-                    maxLines: 3,
-                    textInputAction: TextInputAction.done,
-                    keyboardType: TextInputType.text,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return AppLocalizations.of(context)!.enterNotesValidation;
-                      }
-                      return null;
-                    },
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.typeYourDescription,
-                      hintStyle: GoogleFonts.inter(color: Colors.grey),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder:  OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      hintText: AppLocalizations.of(context)!.typeYourTitleHere,
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.grey,
                       ),
                     ),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.black,
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height:20),
+                  TextFormField(
+                    controller: _notes,
+                    maxLength: 300,
+                    maxLines: 5,
+                    onChanged: (text) {
+                      setState(() {
+                        _characterCount = "${text.length}/300";
+                      });
+                    },
+                    cursorColor: Colors.grey,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder:  OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        borderSide: const BorderSide(color: Colors.grey),
+                      ),
+                      hintText: AppLocalizations.of(context)!.typeYourComplainHere,
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                      counterText: _characterCount,
+                      counterStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    AppLocalizations.of(context)!.maximum300,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey,
+                    ),
+                  ),
                   /// Attachment button (only if required)
-                  if (_selectedSubType != null && _selectedSubType!.docRequired == true)  ...[
+                  if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
                     TextButton(
                       onPressed: () async {
                         FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
@@ -378,9 +345,6 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                               ),
                             );
                           }
-                        } else {
-                          // keep original behaviour of printing cancellation
-                          if (kDebugMode) print('File selection canceled.');
                         }
                       },
                       child: Row(
@@ -450,27 +414,28 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                   ),
                 ],
               ),
-              if(isLoading)
-                Loader()
-            ],
+
+                SizedBox(height: 500),
+              ]
+            ),
+              if (isLoading)
+               Loader(),
+            ]
           ),
         ),
       ),
     );
   }
 
-  ///Helper methods for translation of text values from english to arabic
   String _translateRequestSubtype(String? status, BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     switch (status) {
-      case 'leave Request':
-        return localizations.leaveRequests;
-      case 'Sick Leave':
-        return localizations.sickLeave;
-      case 'Annual Leave':
-        return localizations.annualLeave;
-      case 'Casual Leave':
-        return localizations.casualLeave;
+      case 'Complaint Against Colleague':
+        return localizations.complaintAgainstColleague;
+      case 'Complaint Against Supervisor':
+        return localizations.complaintAgainstSupervisor;
+      case 'General Complaint':
+        return localizations.generalComplaint;
       case 'Advance Salary Request':
         return localizations.advanceSalaryRequest;
       case 'LongTerm Loan Request':
@@ -503,16 +468,36 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
         return localizations.moon;
       case "Bad Behaviour":
         return localizations.badBehaviour;
-      case "Marriage Leave":
-        return localizations.marriageLeave;
-      case "Exam Leave":
-        return localizations.examLeave;
-      case "Death Leave":
-        return localizations.deathLeave;
-      case "Special Document":
-        return localizations.specialDocument;
-      case "Maternity Leave":
-        return localizations.maternityLeave;
+      default:
+        return status!;
+    }
+  }
+
+  String _translateBottomText(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Leave Request':
+        return localizations.leaveRequestBottom;
+      case 'Loan Request':
+        return localizations.loanRequestBottom;
+      case 'Penalty and Fine Requests':
+        return localizations.penaltiesAndFineBottom;
+      case 'OverTime':
+        return localizations.overTime;
+      case 'Training':
+        return localizations.training;
+      case "Complaint Request":
+        return localizations.complaints;
+      case "Allowance Increment":
+        return localizations.allowanceIncrementBottom;
+      case 'Document Request':
+        return localizations.documentRequestBottom;
+      case "Expense Request":
+        return localizations.expenseRequestBottom;
+      case "Special leave Request":
+        return localizations.specialLeaveRequestBottom;
+      case "Approval Document Request":
+        return localizations.approvalDocumentRequestBottom;
       default:
         return status ?? '';
     }
@@ -548,46 +533,6 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
     }
   }
 
-  String _translateBottomText(String? status, BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    switch (status) {
-      case 'Leave Request':
-        return localizations.leaveRequestBottom;
-      case 'Loan Request':
-        return localizations.loanRequestBottom;
-      case 'Penalty and Fine Requests':
-        return localizations.penaltiesAndFineBottom;
-      case 'OverTime':
-        return localizations.overTime;
-      case 'Training':
-        return localizations.training;
-      case "Complaint Request":
-        return localizations.complaints;
-      case "Allowance Increment":
-        return localizations.allowanceIncrementBottom;
-      case 'Document Request':
-        return localizations.documentRequestBottom;
-      case "Expense Request":
-        return localizations.expenseRequestBottom;
-      case "Special leave Request":
-        return localizations.specialLeaveRequestBottom;
-      case "Approval Document Request":
-        return localizations.approvalDocumentRequestBottom;
-      default:
-        return status ?? '';
-    }
-  }
-
-  ///Helper  method to calculate total days
-  void calculateTotalDays() {
-    if (startDate == null || endDate == null) return;
-    int days = endDate!.difference(startDate!).inDays + 1;
-    if (days < 0) days = 0;
-    setState(() {
-      _totalDays.text = days.toString();
-    });
-  }
-
   /// APi methods
   Future<Map<String, dynamic>> uploadDocuments(PlatformFile file) async {
     try {
@@ -619,7 +564,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
       final responseBody = await response.stream.bytesToString();
 
       if (mounted) setState(() => isLoading = false);
-      debugPrint("UPLOAD DOCUMENT RESPONSE${responseBody}");
+
       if (response.statusCode == 200) {
         final decodedJson = json.decode(responseBody);
         final attachmentResponse = AttachmentResponse.fromJson(decodedJson);
@@ -636,150 +581,118 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
   }
 
   Future<void> postRequest() async {
+    String? employeeId = singletonClass.getJWTModel()?.employeeId;
+    String? companyId = singletonClass.getJWTModel()?.companyId;
+    String? branchId = singletonClass.getJWTModel()?.branchId;
+    String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+    String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+    String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
+    String? employeeName = [firstName, middleName, lastName]
+        .where((name) => name != null && name.isNotEmpty)
+        .join(' ');
+
+    String? selectedRequestType = "complaintRequest";
+    String? selectedSubType = _selectedSubType?.requestType;
+
+    // Check if requestType and subType are selected
+    if (selectedSubType == null) {
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        text: AppLocalizations.of(context)!.selectSubType,
+        autoCloseDuration: const Duration(seconds: 5),
+        showCancelBtn: false,
+        showConfirmBtn: false,
+      );
+      return;
+    }
+
+    List<Map<String, dynamic>> requestData = [];
+
+    if (selectedRequestType == 'complaintRequest') {
+      requestData.add({
+        "title": _title.text,
+        "message": _notes.text,
+      });
+    }
+
+    // Construct the data map for the API call
+    Map<String, dynamic> data = {
+      "employeeId": employeeId,
+      "companyId": companyId,
+      "empId": singletonClass.getJWTModel()?.empId,
+      "employeeName": employeeName,
+      "branchId": branchId,
+      "policyId": "${singletonClass.companyDataList.first.data!.policies!.first.policyId}",
+      "requestType": selectedRequestType,
+      "subType": selectedSubType,
+      "requestData": requestData,
+      "approvers": [],
+      "reason": _notes.text,
+      "attachments": [],
+    };
+
+    String body = json.encode(data);
+    debugPrint(body);
+    var uri = Uri.parse('${singletonClass.baseURL}/request/create');
+    debugPrint("$uri");
+    setState(() {
+      isLoading = true;
+    });
+
     try {
-      final jwtModel = singletonClass.getJWTModel();
-
-      final String? employeeId = jwtModel?.employeeId;
-      final String? empId = jwtModel?.empId;
-      final String? companyId = jwtModel?.companyId;
-      final String? branchId = jwtModel?.branchId;
-
-      if (singletonClass.employeeDataList.isEmpty || singletonClass.companyDataList.isEmpty) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: AppLocalizations.of(context)!.employeeOrCompanyMissing,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        return;
-      }
-
-      final String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
-      final String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
-      final String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
-
-      final String employeeName = [firstName, middleName, lastName].where((e) => e != null && e.isNotEmpty).join(' ');
-
-      final String? policyId = singletonClass.companyDataList.first.data?.policies?.first.policyId;
-
-      final String? selectedRequestType = widget.selectedRequest?.requestType;
-      final String? selectedSubType = _selectedSubType?.requestType;
-
-      if (selectedRequestType == null || selectedSubType == null) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: AppLocalizations.of(context)!.selectSubType,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        return;
-      }
-
-      if (startDate == null && endDate == null) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: AppLocalizations.of(context)!.selectDate,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        return;
-      }
-      final List<Map<String, dynamic>> attachments = [];
-      if (selectedFile != null) {
-        if (singletonClass.attachmentResponseDataList.isNotEmpty && singletonClass.attachmentResponseDataList.first.data != null) {
-          attachments.add({
-            "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
-            "url": singletonClass.attachmentResponseDataList.first.data!.url,
-          });
-        }
-      }
-      final Map<String, dynamic> data = {
-        "empId": empId,
-        "employeeId": employeeId,
-        "employeeName": employeeName,
-        "companyId": companyId,
-        "policyId": policyId,
-        "branchId": branchId,
-        "requestType": selectedRequestType,
-        "subType": selectedSubType,
-        "requestData": [
-          {
-            "startDate": startDate!.toIso8601String().split('T').first,
-            "endDate": endDate!.toIso8601String().split('T').first,
-            "duration": _totalDays.text  ,
-            "leaveType": selectedSubType,
-          }
-        ],
-        "approvers": [],
-        "reason": _notes.text,
-        "attachments": attachments,
-      };
-
-      if (kDebugMode) print("REQUEST JSON POST: ${jsonEncode(data)}");
-
-      if (mounted) setState(() => isLoading = true);
-
       final response = await http.post(
-        Uri.parse("${singletonClass.baseURL}/request/create"),
-        headers: singletonClass.getHeaders(),
-        body: json.encode(data),
+        uri,
+        body: body,
+          headers: singletonClass.getHeaders()
       );
 
-      if (mounted) setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+      });
 
       final decodedResponse = json.decode(response.body);
-      if (kDebugMode) print("REQUEST RESPONSE: $decodedResponse");
+      debugPrint(decodedResponse);
 
-      final int statusCode = (decodedResponse['statusCode'] ?? response.statusCode) as int;
+      int responseCode = decodedResponse['statusCode'] ?? response.statusCode;
 
-      if (statusCode == 200) {
-        // Show success alert then close it programmatically and navigate to MainScreen
-        QuickAlert.show(
+      if (responseCode == 200) {
+        await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
-          text: decodedResponse['statusMessage'] ?? "Request completed successfully",
-          autoCloseDuration: const Duration(seconds: 2),
+          title: 'Success',
+          text: decodedResponse['statusMessage'] ??
+              'Request completed successfully.',
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
           showConfirmBtn: false,
         );
-
-        // Close the QuickAlert after a short delay and navigate
-        Future.delayed(const Duration(milliseconds: 900), () {
-          if (!mounted) return;
-          // Close any dialogs (QuickAlert).
-          try {
-            Navigator.of(context, rootNavigator: true).pop();
-          } catch (_) {}
-
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => MainScreen(index: 2, selectedIndex: 0 , showBanner: false)),
-          );
-        });
+        Navigator.pop(context);
       } else {
+        String errorMessage = decodedResponse['errorMessage'] ??
+            'An unexpected error occurred. Please try again.';
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
-          text: decodedResponse['errorMessage'] ?? AppLocalizations.of(context)!.unexpectedError,
-          autoCloseDuration: const Duration(seconds: 4),
+          title: 'Error',
+          text: errorMessage,
+          autoCloseDuration: const Duration(seconds: 5),
+          showCancelBtn: false,
           showConfirmBtn: false,
         );
       }
     } catch (e) {
-      if (mounted) setState(() => isLoading = false);
-      if (kDebugMode) print("ERROR: $e");
-
+      setState(() {
+        isLoading = false;
+      });
+      debugPrint('Error: $e');
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
-        text: AppLocalizations.of(context)!.somethingWentWrong,
-        autoCloseDuration: const Duration(seconds: 4),
+        title: 'Error',
+        text: 'An error occurred. Please check your network connection.',
+        autoCloseDuration: const Duration(seconds: 5),
+        showCancelBtn: false,
         showConfirmBtn: false,
       );
     }

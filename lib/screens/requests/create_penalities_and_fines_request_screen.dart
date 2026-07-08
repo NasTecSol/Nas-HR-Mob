@@ -5,16 +5,15 @@ import 'package:nashr/screens/requests/request_screen.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:nashr/widgets/loader.dart';
 import '../../request_controller/company_model.dart';
+import '../../request_controller/policy_model.dart';
 import '../../request_controller/search_employee_model.dart';
 import '../../singleton_class.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
-import '../../request_controller/company_model.dart' show Request, SubTypes;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import '../../request_controller/company_model.dart';
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
@@ -36,18 +35,22 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
   SingletonClass singletonClass = SingletonClass();
   final TextEditingController _amount = TextEditingController();
   final TextEditingController _notes = TextEditingController();
+  final TextEditingController _detail = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _daysController = TextEditingController();
+  final TextEditingController _hoursController = TextEditingController();
   bool isLoading = false;
-  SubTypes? _selectedSubType;
+  PenaltiesFines? _selectedSubType;
   DateTime? dateTime;
   PlatformFile? selectedFile;
   final List<SearchedResult> _employeeSearchResults = [];
   final List<SearchedResult?> _selectedEmployees = [];
   bool _showSearchResult = false;
+  String _calculatedAmount = "0";
 
   @override
   Widget build(BuildContext context) {
-    final List<SubTypes> subTypeList = widget.selectedRequest?.subTypes ?? [];
+    final List<PenaltiesFines> subTypeList = singletonClass.policyModelDataList.first.data!.penaltiesFines ?? [];
     return  Scaffold(
       backgroundColor: NasColors.backGround,
       body: Form(
@@ -96,53 +99,6 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    _translateBottomText(widget.selectedRequest?.requestName, context),
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  /// SubType Dropdown (unchanged functionality)
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: DropdownButtonFormField<SubTypes>(
-                      dropdownColor: Colors.white,
-                      value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
-                      validator: (value) {
-                        if (value == null) {
-                          return AppLocalizations.of(context)!.selectSubType;
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                      hint: Text(
-                        _translateRequest(widget.selectedRequest?.requestName, context),
-                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                      ),
-                      items: subTypeList.map((SubTypes subType) {
-                        return DropdownMenuItem<SubTypes>(
-                          value: subType,
-                          child: Text(
-                            _translateRequestSubtype(subType.requestName!, context),
-                            style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
-                    ),
                   ),
                   const SizedBox(height: 20),
                   ///Search Employee
@@ -389,8 +345,8 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                                                       _selectedEmployees
                                                           .remove(employee);
                                                     } else {
-                                                      _selectedEmployees
-                                                          .add(employee);
+                                                      _selectedEmployees.add(employee);
+                                                      _calculateAmount();
                                                     }
                                                   });
                                                   Navigator.pop(context);
@@ -440,6 +396,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                                                     } else {
                                                       _selectedEmployees
                                                           .add(employee);
+                                                      _calculateAmount();
                                                     }
                                                   });
                                                   Navigator.pop(
@@ -490,6 +447,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                                                     } else {
                                                       _selectedEmployees
                                                           .add(employee);
+                                                      _calculateAmount();
                                                     }
                                                   });
                                                   Navigator.pop(
@@ -551,6 +509,59 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                         ),
                       ),
                   ],
+                  const SizedBox(height: 20),
+                  Text(
+                    _translateBottomText(widget.selectedRequest?.requestName, context),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  /// SubType Dropdown (unchanged functionality)
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: DropdownButtonFormField<PenaltiesFines>(
+                      dropdownColor: Colors.white,
+                      value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
+                      validator: (value) {
+                        if (value == null) {
+                          return AppLocalizations.of(context)!.selectSubType;
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      hint: Text(
+                        _translateRequest(widget.selectedRequest?.requestName, context),
+                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                      ),
+                      items: subTypeList.map((PenaltiesFines subType) {
+                        return DropdownMenuItem<PenaltiesFines>(
+                          value: subType,
+                          child: Text(
+                            _translateRequestSubtype(subType.penalityName!, context),
+                            style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (PenaltiesFines? newValue) {
+                        setState(() {
+                          _selectedSubType = newValue;
+                        });
+
+                        _calculateAmount();
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   /// DATE Picker
                   Row(
@@ -653,6 +664,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                       hintText: AppLocalizations.of(context)!.enterAmountValidation,
                       hintStyle: GoogleFonts.inter(color: Colors.grey),
                       filled: true,
+                      suffixText: "SAR",
                       fillColor: Colors.white,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       border: OutlineInputBorder(
@@ -662,6 +674,51 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                     ),
                   ),
                   const SizedBox(height: 20),
+                  if (_selectedSubType?.penalityName == "daily salary percentage") ...[
+                    const SizedBox(height: 10),
+                    Text(
+                        AppLocalizations.of(context)!.days,
+                        style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.grey[700])),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _daysController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => _calculateAmount(),
+                      decoration: InputDecoration(
+                        hintText: "Enter days",
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (_selectedSubType?.penalityType == "HourlySalary") ...[
+                    const SizedBox(height: 10),
+                    Text(AppLocalizations.of(context)!.totalHours, style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.grey[700])),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _hoursController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => _calculateAmount(),
+                      decoration: InputDecoration(
+                        hintText: "Enter hours",
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
                   ///Notes
                   Text(AppLocalizations.of(context)!.notes,
                       style: GoogleFonts.inter(
@@ -669,10 +726,47 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                           fontSize: 14,
                           color: Colors.grey[700])),
                   const SizedBox(height: 6),
+
                   TextFormField(
                     cursorColor: Colors.grey,
                     controller: _notes,
                     maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return AppLocalizations.of(context)!.enterNotesValidation;
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.typeYourDescription,
+                      hintStyle: GoogleFonts.inter(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                  ),
+                  ///Detail
+                  const SizedBox(height: 20),
+                  ///Notes
+                  Text(AppLocalizations.of(context)!.description,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.grey[700])),
+                  const SizedBox(height: 6),
+
+                  TextFormField(
+                    cursorColor: Colors.grey,
+                    controller: _detail,
+                    maxLines: 3,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return AppLocalizations.of(context)!.enterNotesValidation;
@@ -693,8 +787,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                   ),
                   const SizedBox(height: 20),
                   /// Attachment button (only if required)
-                  if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
-                    TextButton(
+                   TextButton(
                       onPressed: () async {
                         FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
                         if (result != null && result.files.single.path != null) {
@@ -773,7 +866,6 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                         ],
                       ),
                     ),
-                  ],
                   const SizedBox(height: 20),
                   Center(
                     child: SizedBox(
@@ -995,16 +1087,16 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
         return;
       }
 
-      final String? firstName = singletonClass.employeeDataList.first.data?.firstName;
-      final String? middleName = singletonClass.employeeDataList.first.data?.middleName;
-      final String? lastName = singletonClass.employeeDataList.first.data?.lastName;
+      final String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+      final String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+      final String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
 
       final String employeeName = [firstName, middleName, lastName].where((e) => e != null && e.isNotEmpty).join(' ');
 
       final String? policyId = singletonClass.companyDataList.first.data?.policies?.first.policyId;
 
       final String? selectedRequestType = widget.selectedRequest?.requestType;
-      final String? selectedSubType = _selectedSubType?.requestType;
+      final String? selectedSubType = _selectedSubType?.penalityName;
 
       if (selectedRequestType == null || selectedSubType == null) {
         QuickAlert.show(
@@ -1036,17 +1128,6 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
             "type": singletonClass.attachmentResponseDataList.first.data!.attachmentType,
             "url": singletonClass.attachmentResponseDataList.first.data!.url,
           });
-        } else {
-          await QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: AppLocalizations.of(context)!.internalServerError,
-            text: "Attachment data is missing. Please try again.",
-            autoCloseDuration: const Duration(seconds: 5),
-            showCancelBtn: false,
-            showConfirmBtn: false,
-          );
-          return;
         }
       }
       List<Map<String, dynamic>> employees = _selectedEmployees.map((employee) {
@@ -1054,6 +1135,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
           "empId": employee!.empId,
           "name": employee.employeeName,
           "severity": employee.severity,
+          "amount": double.tryParse(_amount.text) ?? 0.0,
         };
       }).toList();
       final Map<String, dynamic> data = {
@@ -1063,26 +1145,27 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
         "companyId": companyId,
         "policyId": policyId,
         "branchId": branchId,
-        "requestType": selectedRequestType,
+        "requestType": "penalties_fines",
         "subType": selectedSubType,
         "requestData": [
            {
              "employees": employees,
-             "subType": selectedSubType,
-             "amount": _amount.text,
-             "remark": _notes.text,
+             "amount": double.tryParse(_amount.text) ?? 0.0,
+             "remark": _notes.text.toString(),
               "date": dateTime!.toIso8601String().split('T').first,
+              "fine_penality": selectedSubType.toString(),
+             "fineType": _selectedSubType!.fineType.toString(),
+             "details": _detail.text.toString(),
+             "penalityType": selectedSubType.toString(),
+             "penaltyDays": int.tryParse(_daysController.text) ?? 0
           }
         ],
         "approvers": [],
         "reason": _notes.text,
         "attachments": attachments,
       };
-
       if (kDebugMode) print("REQUEST JSON POST: ${jsonEncode(data)}");
-
       if (mounted) setState(() => isLoading = true);
-
       final response = await http.post(
         Uri.parse("${singletonClass.baseURL}/request/create"),
         headers: singletonClass.getHeaders(),
@@ -1166,6 +1249,7 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
       SearchedResult result = SearchedResult(
         empId: employeeData.data?.employees!.first.employeeInfo?.first.empId,
         employeeName: employeeData.data?.employees!.first.firstName,
+        netSalary: employeeData.data!.employees!.first.salaryInfo!.netSalary,
       );
 
       debugPrint(">>>>$result");
@@ -1187,5 +1271,63 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
         SnackBar(content: Text(AppLocalizations.of(context)!.employeeNotFound)),
       );
     }
+  }
+
+  ///Helper method to calculate
+  void _calculateAmount() {
+    if (_selectedSubType == null || _selectedEmployees.isEmpty) return;
+
+    final penalty = _selectedSubType!;
+    final employee = _selectedEmployees.first;
+
+    double netSalary = _toDouble(employee?.netSalary);
+
+    double amount = 0;
+
+    double fineAmount = _toDouble(penalty.fineAmount);
+
+    // Fixed
+    if (penalty.fineType == null || penalty.fineType == "Fixed") {
+      amount = fineAmount;
+    }
+
+    // Percentage
+    else if (penalty.fineType == "Percentage") {
+      double percentage = fineAmount / 100;
+
+      if (penalty.penalityType == "MonthlySalary") {
+        amount = netSalary * percentage;
+      }
+
+      else if (penalty.penalityType == "DailySalary") {
+        double daily = netSalary / 30;
+        amount = daily * percentage;
+
+        int days = int.tryParse(_daysController.text) ?? 1;
+        amount *= days;
+      }
+
+      else if (penalty.penalityType == "HourlySalary") {
+        double hourly = (netSalary / 30) / 8;
+        amount = hourly * percentage;
+
+        int hours = int.tryParse(_hoursController.text) ?? 1;
+        amount *= hours;
+      }
+    }
+
+    _calculatedAmount = amount.toStringAsFixed(2);
+
+    setState(() {
+      _amount.text = _calculatedAmount;
+    });
+  }
+
+  double _toDouble(dynamic value) {
+    if (value == null) return 0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0;
+    return 0;
   }
 }

@@ -11,7 +11,6 @@ import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/company_notifications.dart';
-import 'package:nashr/screens/complaints.dart';
 import 'package:nashr/screens/document_screen.dart';
 import 'package:nashr/screens/manage_time_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
@@ -26,12 +25,14 @@ import 'package:nashr/screens/stores_screen.dart';
 import 'package:nashr/screens/team_attendance_screen.dart';
 import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
+import 'package:nashr/screens/user_activity_screen.dart';
 import 'package:nashr/singleton_class.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../UTILS/auth_services.dart';
 import '../request_controller/attendance_model.dart' hide Data;
+import '../request_controller/role_and_access_model.dart';
 import '../widgets/colors.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
@@ -50,6 +51,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   SingletonClass singletonClass = SingletonClass();
+  final ScrollController specialScrollController = ScrollController();
   double blurAmount = 10.0;
   double opacityAmount = 1.0;
   bool showHeaderContent = true;
@@ -69,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Timer? _timer;
   String _displayWorkedHours = '00:00:00';
 
+
   @override
   void initState() {
     super.initState();
@@ -80,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getClockingData();
     singletonClass.getPolicyData();
     singletonClass.getHRLetter();
-    singletonClass.fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
+    // singletonClass.fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
@@ -123,19 +126,40 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final companies = dashboardModule.accessLevel?.companies ?? [];
 
     if (companies.isNotEmpty && selectedCompanyId == null) {
-      // Auto select 0 index company
-      selectedCompanyId = companies.first.companyId;
+      final defaultCompanyId = singletonClass.getJWTModel()?.companyId;
+      final defaultBranchId = singletonClass.getJWTModel()?.branchId;
+
+      // Find company matching defaultCompanyId or fallback to first company
+      dynamic selectedComp;
+      for (var c in companies) {
+        if (c.companyId == defaultCompanyId) {
+          selectedComp = c;
+          break;
+        }
+      }
+      final company = selectedComp ?? companies.first;
+
+      selectedCompanyId = company.companyId;
       singletonClass.selectedCompanyId = selectedCompanyId;
-      singletonClass.companyName = companies.first.companyName ?? '';
+      singletonClass.companyName = company.companyName ?? '';
 
       // Populate branches of this company
-      singletonClass.availableBranches = companies.first.branches ?? [];
+      singletonClass.availableBranches = company.branches ?? [];
 
       if (singletonClass.availableBranches.isNotEmpty && selectedBranchId == null) {
-        // Auto select 0 index branch
-        selectedBranchId = singletonClass.availableBranches.first.branchId;
+        // Find branch matching defaultBranchId or fallback to first branch
+        dynamic selectedBr;
+        for (var b in singletonClass.availableBranches) {
+          if (b.branchId == defaultBranchId) {
+            selectedBr = b;
+            break;
+          }
+        }
+        final branch = selectedBr ?? singletonClass.availableBranches.first;
+
+        selectedBranchId = branch.branchId;
         singletonClass.branchID = selectedBranchId;
-        singletonClass.branchName = singletonClass.availableBranches.first.branchName ?? '';
+        singletonClass.branchName = branch.branchName ?? '';
 
         // Call your API
         singletonClass.getTeamBranchData();
@@ -198,6 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void startWorkTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      singletonClass.isTimerActive = true;
       _updateWorkedTime();
     });
   }
@@ -205,6 +230,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void stopWorkTimer() {
     _timer?.cancel();
     _timer = null;
+    singletonClass.isTimerActive = false;
   }
 
   void _updateWorkedTime() {
@@ -224,6 +250,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       final today = DateTime.now();
       final dataList = singletonClass.attendanceDataList.first.data!.data;
+
       if (dataList == null || dataList.isEmpty) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
@@ -248,40 +275,68 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       final todayData = todayEntries.last;
+
       final checkInTime = todayData.clockInTime;
       final checkOutTime = todayData.clockOutTime;
 
-      // 🔹 Both checkin/checkout empty → no work today
-      if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
-          (checkOutTime == null || checkOutTime.isEmpty || checkOutTime == 'null')) {
+      // Helper flags (clean and reusable)
+      final hasCheckIn = checkInTime != null &&
+          checkInTime.isNotEmpty &&
+          checkInTime != 'null';
+
+      final hasCheckOut = checkOutTime != null &&
+          checkOutTime.isNotEmpty &&
+          checkOutTime != 'null';
+
+      // 🔹 Case 1: دونوں null/empty → show 00:00:00
+      if (!hasCheckIn && !hasCheckOut) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
         return;
       }
 
-      // 🔹 Case 1: Only check-in available → running session
-      if (checkInTime != null &&
-          checkInTime.isNotEmpty && checkInTime != 'null') {
+      // 🔹 Case 2: Only check-in → start timer
+      if (hasCheckIn && !hasCheckOut) {
         _currentCheckIn = DateTime.tryParse(checkInTime);
         startWorkTimer();
         return;
       }
 
-      if (checkOutTime != null &&
-          checkOutTime.isNotEmpty && checkOutTime != 'null') {
+      // 🔹 Case 3: Both available → stop timer & show total time
+      if (hasCheckIn && hasCheckOut) {
+        final checkIn = DateTime.tryParse(checkInTime);
+        final checkOut = DateTime.tryParse(checkOutTime);
+
+        if (checkIn != null && checkOut != null) {
+          _accumulatedWorkedDuration = checkOut.difference(checkIn);
+          _displayWorkedHours = _formatDuration(_accumulatedWorkedDuration);
+        } else {
+          _displayWorkedHours = "00:00:00";
+        }
+
         stopWorkTimer();
-        _updateWorkedTime();
         return;
       }
-      // Default fallback
+
+      // fallback
       stopWorkTimer();
       _displayWorkedHours = "00:00:00";
+
     } catch (e) {
-      _displayWorkedHours = '00:00:00';
+      _displayWorkedHours = "00:00:00";
       stopWorkTimer();
     }
   }
 
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    final hours = twoDigits(d.inHours);
+    final minutes = twoDigits(d.inMinutes.remainder(60));
+    final seconds = twoDigits(d.inSeconds.remainder(60));
+
+    return "$hours:$minutes:$seconds";
+  }
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -462,6 +517,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     /// Check for Stores
     final hasStores = uiSettings.any((e) =>
     (e.title == "stores" || e.title == "Stores") && e.hidden == false);
+
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -471,24 +527,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
         e.hidden == false);
 
-    /// Check for Complaints - in Approval submenu
-    final hasComplaints = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "Complaints" || sub.title == "complaints") &&
-                sub.hidden == false) ??
-            false;
-      }
-      return false;
-    });
-
     /// Check for Penalties and Fines - in Approval submenu
-    final hasPenaltiesAndFines = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "PenaltiesandFines" || sub.title == "request") &&
-                sub.hidden == false) ??
-            false;
+    final hasPenaltiesAndFines = (uiSettings).any((e) {
+      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
+
+        final subMenus = (e.subMenu is List)
+            ? (e.subMenu as List).cast<SubMenu>()
+            : <SubMenu>[];
+        return subMenus.any((sub) {
+          if ((sub.title?.toLowerCase() == "requests" ||
+              sub.title?.toLowerCase() == "request") &&
+              sub.hidden == false) {
+
+            final innerMenus = (sub.subMenu is List)
+                ? (sub.subMenu as List).cast<SubMenu>()
+                : <SubMenu>[];
+
+            return innerMenus.any((inner) =>
+            inner.title == "PenaltiesandFines" &&
+                inner.hidden == false
+            );
+          }
+          return false;
+        });
       }
       return false;
     });
@@ -529,6 +590,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
+    /// check for user activity
+    final hasUserActivity = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "User Activity" ||
+            sub.title == "userActivity") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
+
     /// Check for Biometric Checkins - in ManageTime submenu
     final hasBiometricCheckins = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
@@ -552,6 +626,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
       return false;
     });
+
      Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
@@ -567,10 +642,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         {
           "icon": "images/Team.png",
           "label": AppLocalizations.of(context)!.teams
-        },
-        {
-          "icon": "images/Complain.png",
-          "label": AppLocalizations.of(context)!.complaints
         },
         {
           "icon": "images/Penalties.png",
@@ -595,6 +666,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         {
           "icon": "images/pc.png",
           "label": AppLocalizations.of(context)!.companyNotifications
+        },
+        {
+          "icon": "images/Group.png",
+          "label": AppLocalizations.of(context)!.userActivity
         },
         {
           "icon": "images/thisMonth.png",
@@ -686,12 +761,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 return false;
                               }
                               if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .complaints &&
-                                  !hasComplaints) {
-                                return false;
-                              }
-                              if (item["label"] ==
                                       AppLocalizations.of(context)!.penalties &&
                                   !hasPenaltiesAndFines) {
                                 return false;
@@ -728,6 +797,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               }
                               if (item["label"] ==
                                   AppLocalizations.of(context)!
+                                      .userActivity &&
+                                  !hasUserActivity) {
+                                return false;
+                              }
+                              if (item["label"] ==
+                                  AppLocalizations.of(context)!
                                       .stores &&
                                   !hasStores) {
                                 return false;
@@ -760,15 +835,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => TeamScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .complaints) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Complaints()),
                                     );
                                   } else if (item["label"] ==
                                       AppLocalizations.of(context)!.penalties) {
@@ -829,6 +895,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               CompanyNotifications()),
                                     );
                                   } else if (item["label"] ==
+                                      AppLocalizations.of(context)!
+                                          .userActivity) {
+                                    _removeOverlay();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              UserActivityScreen()),
+                                    );
+                                  }  else if (item["label"] ==
                                       AppLocalizations.of(context)!
                                           .stores) {
                                     _removeOverlay();
@@ -921,7 +997,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final dashBoardData = singletonClass.employeeDataList.first.data;
+    final dashBoardData = singletonClass.employeeDataList.isNotEmpty
+        ? singletonClass.employeeDataList.first.data
+        : null;
     final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
         ? (singletonClass
                 .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
@@ -934,7 +1012,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     /// Check for stores
     final hasStores = uiSettings.any((e) =>
-    (e.title == "Stores" || e.title == "stores") && e.hidden == false);
+    (e.title == "Stores" || e.title == "stores") && e.hidden == true);
     /// Check for Teams module
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
@@ -944,16 +1022,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
         e.hidden == false);
 
-    /// Check for Complaints - in Approval submenu
-    final hasComplaints = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "Complaints" || sub.title == "complaints") &&
-                sub.hidden == false) ??
-            false;
-      }
-      return false;
-    });
     final hasCompanyNotifications = uiSettings.any((e) {
       if (e.title == "Document" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
@@ -965,12 +1033,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
 
     /// Check for Penalties and Fines - in Approval submenu
-    final hasPenaltiesAndFines = uiSettings.any((e) {
-      if (e.title == "Approval" && e.hidden == false) {
-        return e.subMenu?.any((sub) =>
-                (sub.title == "PenaltiesandFines" || sub.title == "request") &&
-                sub.hidden == false) ??
-            false;
+    final hasPenaltiesAndFines = (uiSettings).any((e) {
+      if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
+
+        final subMenus = (e.subMenu is List)
+            ? (e.subMenu as List).cast<SubMenu>()
+            : <SubMenu>[];
+        return subMenus.any((sub) {
+          if ((sub.title?.toLowerCase() == "requests" ||
+              sub.title?.toLowerCase() == "request") &&
+              sub.hidden == false) {
+
+            final innerMenus = (sub.subMenu is List)
+                ? (sub.subMenu as List).cast<SubMenu>()
+                : <SubMenu>[];
+
+            return innerMenus.any((inner) =>
+            inner.title == "PenaltiesandFines" &&
+                inner.hidden == false
+            );
+          }
+          return false;
+        });
       }
       return false;
     });
@@ -1000,6 +1084,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
+    /// check for user activity
+    final hasUserActivity = uiSettings.any((e) {
+      if ((e.title == "ManageTime" || e.title == "manageTime") &&
+          e.hidden == false) {
+        return e.subMenu?.any((sub) =>
+        (sub.title == "User Activity" ||
+            sub.title == "userActivity") &&
+            sub.hidden == false) ??
+            false;
+      }
+      return false;
+    });
     /// Check for Biometric Checkins - in ManageTime submenu
     final hasBiometricCheckins = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
@@ -1040,6 +1136,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
+    ///Slider
+    final hasSlider = singletonClass.roleAndAccessModelDataList
+        .first.data!
+        .uiSettings!.uiModules!
+        .any((e) {
+      final title = (e.title ?? '').toLowerCase();
+      final showSlider = (e.biometricCheckIn == true || e.onSiteCheckIn == true);
+      return title == 'dashboard' && e.hidden == false && showSlider;
+    });
     ///Dashboard module checks
     final dashboardModule = singletonClass
         .roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
@@ -1089,11 +1194,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: Stack(
               fit: StackFit.expand,
               children: [
-            (dashBoardData?.profilePic != null &&
-            dashBoardData!.profilePic!.isNotEmpty &&
-            dashBoardData.profilePic != "https://www.profilePic.com")
+            (dashBoardData?.first.profilePic != null &&
+            dashBoardData!.first.profilePic!.isNotEmpty &&
+            dashBoardData.first.profilePic != "https://www.profilePic.com")
                 ? Image.network(
-              dashBoardData.profilePic!,
+              dashBoardData.first.profilePic!,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Image.asset(
@@ -1131,10 +1236,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       duration: const Duration(milliseconds: 300),
                       child: GestureDetector(
                         onTap: toggleSheet,
-                        child: (singletonClass.employeeDataList.first.data!.profilePic == "https://www.profilePic.com" ||
-                            singletonClass.employeeDataList.first.data!.profilePic == null ||
-                            singletonClass.employeeDataList.first.data!.profilePic.isEmpty
-                        ) ? ClipOval(
+                        child: (singletonClass.employeeDataList.isEmpty) ||
+                            (singletonClass.employeeDataList.first.data.first.profilePic == null) ||
+                            (singletonClass.employeeDataList.first.data.first.profilePic?.isEmpty == true) ||
+                            (singletonClass.employeeDataList.first.data.first.profilePic == "https://www.profilePic.com") ? ClipOval(
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             radius: 40,
@@ -1153,7 +1258,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             radius: 40,
                             child: ClipOval(
                               child: Image.network(
-                                dashBoardData?.profilePic!,
+                                dashBoardData?.first.profilePic!,
                                 fit: BoxFit.cover,
                                 width: 100,
                                 height: 100,
@@ -1187,7 +1292,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             SizedBox(
                               width: 170,
                               child: Text(
-                                '${dashBoardData?.firstName} ${dashBoardData?.middleName} ${dashBoardData?.lastName}',
+                                '${dashBoardData?.first.firstName} ${dashBoardData?.first.middleName} ${dashBoardData?.first.lastName}',
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -1198,7 +1303,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             SizedBox(
                               width: 170,
                               child: Text(
-                                '${dashBoardData?.profession}',
+                                '${dashBoardData?.first.profession}',
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -1209,7 +1314,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             SizedBox(
                               width: 170,
                               child: Text(
-                                '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.contractInfo!.first.contractId : 'N/A'}',
+                                '${AppLocalizations.of(context)!.contractId} #${(dashBoardData?.first.contractInfo?.isNotEmpty ?? false) ? dashBoardData!.first.contractInfo!.first.contractId : 'N/A'}',
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -2082,117 +2187,102 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Directionality(
-                              textDirection: TextDirection.ltr,
-                              child: GestureDetector(
-                                onHorizontalDragUpdate: (details) {
-                                  setState(() {
-                                    _dragPosition += details.primaryDelta!;
-                                    if (_dragPosition.abs() > MediaQuery.of(context).size.width * 0.7) {
-                                      _isSliderCompleted = true;
-                                    }
-                                  });
-                                },
-                                onHorizontalDragEnd: (details) {
-                                  setState(() {
-                                    if (_isSliderCompleted) {
-                                      _overlayEntry = _createOverlayEntry();
-                                      Overlay.of(context).insert(_overlayEntry!);
-                                    }
-                                    _dragPosition = 0;
-                                    _isSliderCompleted = false;
-                                  });
-                                },
-                                child: Container(
-                                  alignment: Alignment.topLeft,
-                                  decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Color(0xFF444658),
-                                        Color(0xFF677587),
-                                        Color(0xFF78889D),
-                                        Color(0xFF9DB2CE),
-                                        Color(0xFF8799B1),
-                                      ],
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                    ),
-                                  ),
-                                  height: 60,
-                                  child: (() {
-                                    final dataList = singletonClass.attendanceDataList.first.data!.data ?? [];
-                                    final today = DateTime.now();
-                                    final todayEntries = dataList.where((entry) {
-                                      final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-                                      return createdAt != null &&
-                                          createdAt.year == today.year &&
-                                          createdAt.month == today.month &&
-                                          createdAt.day == today.day;
-                                    }).toList();
-                                    final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
-                                    String? checkInTime = todayData?.clockInTime;
-                                    String? checkOutTime = todayData?.clockOutTime;
-                                    String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-
-                                    if ((checkInTime == null || checkInTime.isEmpty || checkInTime == 'null') &&
-                                        (checkOutTime == null || checkOutTime.isEmpty  || checkOutTime == 'null')) {
-                                      displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != "null")) {
-                                      displayText = AppLocalizations.of(context)!.swipeToCheckOut;
-                                    } else if ((checkInTime != null && checkInTime.isNotEmpty && checkInTime != 'null') &&
-                                        (checkOutTime != null && checkOutTime.isNotEmpty && checkOutTime != "null")) {
-                                      displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                    }
-
-                                    // Always show swipe UI
-                                    return Transform.translate(
-                                      offset: Offset(_dragPosition, -1),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          children: [
-                                            _timer != null && _timer!.isActive ?
-                                            Container(
-                                              width: 60,
-                                              height: 50,
-                                              decoration: const BoxDecoration(
-                                                borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                color: Colors.white,
-                                              ),
-                                              child: Lottie.asset('images/working.json'),
-                                            ) : Container(
-                                              width: 60,
-                                              height: 50,
-                                              decoration: const BoxDecoration(
-                                                borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                color: Colors.white,
-                                              ),
-                                              child: Lottie.asset('images/swiper.json'),
-                                            ),
-                                            const SizedBox(width: 50),
-                                            Align(
-                                              alignment: Alignment.center,
-                                              child: Text(
-                                                displayText,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
+                          ///SLider
+                          if(hasSlider)...[
+                            Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Directionality(
+                                  textDirection: TextDirection.ltr,
+                                  child: GestureDetector(
+                                    onHorizontalDragUpdate: (details) {
+                                      setState(() {
+                                        _dragPosition += details.primaryDelta!;
+                                        if (_dragPosition.abs() > MediaQuery.of(context).size.width * 0.7) {
+                                          _isSliderCompleted = true;
+                                        }
+                                      });
+                                    },
+                                    onHorizontalDragEnd: (details) {
+                                      setState(() {
+                                        if (_isSliderCompleted) {
+                                          _overlayEntry = _createOverlayEntry();
+                                          Overlay.of(context).insert(_overlayEntry!);
+                                        }
+                                        _dragPosition = 0;
+                                        _isSliderCompleted = false;
+                                      });
+                                    },
+                                    child: Container(
+                                      alignment: Alignment.topLeft,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.all(Radius.circular(15)),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xFF444658),
+                                            Color(0xFF677587),
+                                            Color(0xFF78889D),
+                                            Color(0xFF9DB2CE),
+                                            Color(0xFF8799B1),
                                           ],
+                                          begin: Alignment.topRight,
+                                          end: Alignment.bottomLeft,
                                         ),
                                       ),
-                                    );
-                                  })(),
-                                ),
-                              ),
-                            )
-                          ),
+                                      height: 60,
+                                      child: (() {
+                                        String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
+                                        if ( _timer != null && _timer!.isActive) {
+                                          displayText = AppLocalizations.of(context)!.swipeToCheckOut;
+                                        } else {
+                                          displayText = AppLocalizations.of(context)!.swipeToCheckIn;
+                                        }
+                                        // Always show swipe UI
+                                        return Transform.translate(
+                                          offset: Offset(_dragPosition, -1),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              children: [
+                                                _timer != null && _timer!.isActive ?
+                                                Container(
+                                                  width: 60,
+                                                  height: 50,
+                                                  decoration: const BoxDecoration(
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                    color: Colors.white,
+                                                  ),
+                                                  child: Lottie.asset('images/working.json'),
+                                                ) : Container(
+                                                  width: 60,
+                                                  height: 50,
+                                                  decoration: const BoxDecoration(
+                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                                    color: Colors.white,
+                                                  ),
+                                                  child: Lottie.asset('images/swiper.json'),
+                                                ),
+                                                const SizedBox(width: 50),
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    displayText,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      })(),
+                                    ),
+                                  ),
+                                )
+                            ),
+                          ],
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -2393,13 +2483,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 singletonClass
                                                         .employeeDataList
                                                         .first
-                                                        .data
-                                                        ?.documentsInfo !=
+                                                        .data.first
+                                                        .documentsInfo !=
                                                     null &&
                                                 singletonClass
                                                     .employeeDataList
                                                     .first
-                                                    .data!
+                                                    .data.first
                                                     .documentsInfo!
                                                     .isNotEmpty)
                                               Positioned(
@@ -2418,7 +2508,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     minHeight: 18,
                                                   ),
                                                   child: Text(
-                                                    '${singletonClass.employeeDataList.first.data!.documentsInfo!.length}',
+                                                    '${singletonClass.employeeDataList.first.data.first.documentsInfo!.length}',
                                                     style: GoogleFonts.inter(
                                                       color: Colors.white,
                                                       fontSize: 12,
@@ -2481,8 +2571,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               ),
                                             ),
                                               if (singletonClass.employeeDataList.isNotEmpty &&
-                                                  singletonClass.employeeDataList.first.data?.assetsInfo != null &&
-                                                  singletonClass.employeeDataList.first.data!.assetsInfo!.isNotEmpty)
+                                                  singletonClass.employeeDataList.first.data.first.assetsInfo != null &&
+                                                  singletonClass.employeeDataList.first.data.first.assetsInfo!.isNotEmpty)
                                                 Positioned(
                                                   right: 0,
                                                   top: 0,
@@ -2499,7 +2589,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       minHeight: 18,
                                                     ),
                                                     child: Text(
-                                                      '${singletonClass.employeeDataList.first.data!.assetsInfo!.length}',
+                                                      '${singletonClass.employeeDataList.first.data.first.assetsInfo!.length}',
                                                       style: GoogleFonts.inter(
                                                         color: Colors.white,
                                                         fontSize: 12,
@@ -2564,57 +2654,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         const SizedBox(height: 5),
                                         Text(
                                           AppLocalizations.of(context)!.teams,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(width: 20),
-                                  ],
-                                  if (hasComplaints)...[
-                                    Column(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                    const Complaints()));
-                                          },
-                                          child: Container(
-                                            height: 65,
-                                            width: 65,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.5),
-                                                  spreadRadius: 1,
-                                                  blurRadius: 0.5,
-                                                  offset: const Offset(0, 0),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child: Image.asset(
-                                                'images/Complain.png',
-                                                fit: BoxFit.contain,
-                                                width: 30,
-                                                height: 30,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Text(
-                                          AppLocalizations.of(context)!
-                                              .complaints,
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -2879,6 +2918,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                     const SizedBox(width: 20),
                                   ],
+                                  if (hasUserActivity)...[
+                                    Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                  const UserActivityScreen()));
+                                        },
+                                        child: Container(
+                                          height: 65,
+                                          width: 65,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                spreadRadius: 1,
+                                                blurRadius: 0.5,
+                                                offset: const Offset(0, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              'images/Group.png',
+                                              fit: BoxFit.contain,
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        AppLocalizations.of(context)!.userActivity,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                    const SizedBox(width: 20),
+                                  ],
                                   if (hasStores)...[
                                   Column(
                                     children: [
@@ -2956,12 +3045,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Column(
                                   children: [
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
                                       children: [
                                         Text(
-                                          AppLocalizations.of(context)!
-                                              .empLeaveBalance,
+                                          AppLocalizations.of(context)!.empLeaveBalance,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
@@ -2971,364 +3058,177 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(height: 5),
                                     SizedBox(
-                                        height: 105,
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
+                                      height: 150,
+                                      child: StatefulBuilder(
+                                        builder: (context, setState) {
+                                          final PageController controller = PageController();
+                                          int currentPage = 0;
+                                          Timer? timer;
+
+                                          double parseNum(dynamic value) {
+                                            if (value == null) return 0;
+                                            if (value is num) return value.toDouble();
+                                            return double.tryParse(value.toString()) ?? 0;
+                                          }
+
+                                          Future.delayed(Duration.zero, () {
+                                            timer ??= Timer.periodic(const Duration(seconds: 4), (t) {
+                                              if (controller.hasClients) {
+                                                currentPage++;
+                                                if (currentPage > 1) currentPage = 0;
+
+                                                controller.animateToPage(
+                                                  currentPage,
+                                                  duration: const Duration(milliseconds: 500),
+                                                  curve: Curves.easeIn,
+                                                );
+                                              }
+                                            });
+                                          });
+
+                                          // Safe accessor for employee data
+                                          final employeeData = singletonClass.employeeDataList.isNotEmpty
+                                              ? singletonClass.employeeDataList.first.data.isNotEmpty
+                                              ? singletonClass.employeeDataList.first.data.first
+                                              : null
+                                              : null;
+
+                                          final leaveBalance = employeeData?.leaveBalance;
+
+                                          return PageView(
+                                            controller: controller,
                                             children: [
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 4.0,
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .annualLeave,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/thisMonthIcon.png"),
+
+                                              /// 🔹 PAGE 1
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 12, bottom: 12),
+                                                child: Column(
+                                                  children: [
+
+                                                    /// Annual + Casual
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: leaveBalance?.annualLeave != null
+                                                              ? buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.annualLeave,
+                                                            used: parseNum(leaveBalance!.annualLeave!.used),
+                                                            total: parseNum(leaveBalance.annualLeave!.entitlement),
+                                                            gradient: [Colors.blue, Colors.lightBlueAccent],
                                                           )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.annualLeave!.entitlement.toStringAsFixed(0)}",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontSize: 18,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
+                                                              : const SizedBox.shrink(),
+                                                        ),
+                                                        const SizedBox(width: 12),
+                                                        Expanded(
+                                                          child: leaveBalance?.casualLeave != null
+                                                              ? buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.casualLeave,
+                                                            used: parseNum(leaveBalance!.casualLeave!.used),
+                                                            total: parseNum(leaveBalance.casualLeave!.entitlement),
+                                                            gradient: [Colors.green, Colors.lightGreenAccent],
+                                                          )
+                                                              : const SizedBox.shrink(),
+                                                        ),
+                                                      ],
+                                                    ),
+
+                                                    const SizedBox(height: 25),
+
+                                                    /// Short + Sick
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: leaveBalance?.shortLeavesMonthlyBal != null
+                                                              ? buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.shortLeaves,
+                                                            used: parseNum(leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes),
+                                                            total: 480,
+                                                            isMinutes: true,
+                                                            gradient: [Colors.orange, Colors.deepOrangeAccent],
+                                                          )
+                                                              : const SizedBox.shrink(),
+                                                        ),
+                                                        const SizedBox(width: 12),
+                                                        Expanded(
+                                                          child: leaveBalance?.sickLeave != null
+                                                              ? buildLeaveBar(
+                                                            context,
+                                                            title: AppLocalizations.of(context)!.sickLeave,
+                                                            used: parseNum(leaveBalance!.sickLeave!.used),
+                                                            total: parseNum(leaveBalance.sickLeave!.entitlement),
+                                                            gradient: [Colors.red, Colors.redAccent],
+                                                          )
+                                                              : const SizedBox.shrink(),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .remoteDaysThisMonth,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/remoteIcon.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "0/0",
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .casualLeave,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/thisMonth.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.casualLeave!.entitlement}",
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 95,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width: 2.0,
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .shortLeaves,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        12),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/image.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            formatMinutesToHoursAndMinutes(
+
+                                              /// 🔹 PAGE 2 (Special Leaves)
+                                              leaveBalance?.specialLeave != null && leaveBalance!.specialLeave!.isNotEmpty
+                                                  ? SingleChildScrollView(
+                                                controller: specialScrollController,
+                                                child: Column(
+                                                  children: List.generate(
+                                                    (leaveBalance.specialLeave!.length / 2).ceil(),
+                                                        (index) {
+                                                      final leaves = leaveBalance.specialLeave!;
+                                                      final first = leaves[index * 2];
+                                                      final second = (index * 2 + 1 < leaves.length)
+                                                          ? leaves[index * 2 + 1]
+                                                          : null;
+
+                                                      // Safe name resolver — never crashes on null leaveName
+                                                      final firstName = (first.leaveName != null && first.leaveName!.isNotEmpty)
+                                                          ? _translateRequestSubtype2(first.leaveName, context)
+                                                          : '';
+                                                      final secondName = (second?.leaveName != null && second!.leaveName!.isNotEmpty)
+                                                          ? _translateRequestSubtype2(second.leaveName, context)
+                                                          : '';
+
+                                                      return Padding(
+                                                        padding: const EdgeInsets.only(top: 12, bottom: 12),
+                                                        child: Row(
+                                                          children: [
+                                                            Expanded(
+                                                              child: buildLeaveBar(
                                                                 context,
-                                                                singletonClass
-                                                                    .employeeDataList
-                                                                    .first
-                                                                    .data!
-                                                                    .leaveBalance!
-                                                                    .shortLeavesMonthlyBal!
-                                                                    .shortLeavesMinutes!
-                                                                    .toInt()),
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 90,
-                                                width: 180,
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    left: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          2.0, // Set the border width
-                                                    ),
-                                                    right: BorderSide(
-                                                      color:
-                                                          NasColors.lightBlue,
-                                                      width:
-                                                          4.0, // Set the border width
-                                                    ),
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(5.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                              width: 110,
-                                                              child: Text(
-                                                                AppLocalizations.of(
-                                                                        context)!
-                                                                    .sickLeave,
-                                                                style: GoogleFonts.inter(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    fontSize:
-                                                                        13),
-                                                              )),
-                                                          SizedBox(
-                                                            height: 50,
-                                                            width: 50,
-                                                            child: Image.asset(
-                                                                "images/thisMonth.png"),
-                                                          )
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.used}/${singletonClass.employeeDataList.first.data!.leaveBalance!.sickLeave!.entitlement}",
-                                                            style: GoogleFonts.inter(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )
-                                                        ],
-                                                      )
-                                                    ],
+                                                                title: firstName,
+                                                                used: parseNum(first.used),
+                                                                total: parseNum(first.entitlement),
+                                                                gradient: [NasColors.amber, NasColors.yellow],
+                                                              ),
+                                                            ),
+                                                            const SizedBox(width: 12),
+                                                            Expanded(
+                                                              child: second == null
+                                                                  ? const SizedBox.shrink()
+                                                                  : buildLeaveBar(
+                                                                context,
+                                                                title: secondName,
+                                                                used: parseNum(second.used),
+                                                                total: parseNum(second.entitlement),
+                                                                gradient: [NasColors.onTime, NasColors.completed],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
                                                   ),
                                                 ),
                                               )
+                                                  : const SizedBox.shrink(),
                                             ],
-                                          ),
-                                        )),
+                                          );
+                                        },
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),
@@ -3346,6 +3246,59 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+  Widget buildLeaveBar(
+      BuildContext context, {
+        required String title,
+        required double used,
+        required double total,
+        required List<Color> gradient,
+        bool isMinutes = false,
+      }) {
+    final safeTotal = total == 0 ? 1 : total;
+    final progress = (used / safeTotal).clamp(0.0, 1.0);
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Text(title, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+            const Spacer(),
+            Text(
+              isMinutes
+                  ? formatMinutesToHoursAndMinutes(context, used.toInt())
+                  : "${used.toInt()}/${total.toInt()}",
+              style: GoogleFonts.inter(fontSize: 11),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+              FractionallySizedBox(
+                widthFactor: progress,
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: gradient),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  double parseNum(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0;
   }
 
   String _translateSecondaryStatus(String? status, BuildContext context) {
@@ -3736,5 +3689,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     }
     return null;
+  }
+
+  String _translateRequestSubtype2(String? status, BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Sick Leave':
+        return localizations.sickLeave;
+      case 'Annual Leave':
+        return localizations.annualLeave;
+      case 'Casual Leave':
+        return localizations.casualLeave;
+      case 'Advancesalaryrequest':
+        return localizations.advanceSalaryRequest;
+      case 'LongTermloanrequest':
+        return localizations.longTermLoanRequest;
+      case "Housingallowance":
+        return localizations.housingAllowance;
+      case "Travelingallowance":
+        return localizations.travellingAllowance;
+      case 'Salaryincrementalallowance':
+        return localizations.salaryIncrementalAllowance;
+      case "Salaryslip":
+        return localizations.salarySlip;
+      case "Promotionalletter":
+        return localizations.promotionalLetter;
+      case "Contract":
+        return localizations.contract;
+      case "ID Card":
+        return localizations.idCard;
+      case "Advanceexpense":
+        return localizations.advanceExpense;
+      case "Businessexpense":
+        return localizations.businessExpense;
+      case "Reimbursement":
+        return localizations.reimbursement;
+      case "Disbursement":
+        return localizations.disbursement;
+      case "Star":
+        return localizations.star;
+      case "Moon":
+        return localizations.moon;
+      case "Badbehaviour":
+        return localizations.badBehaviour;
+      case "Marriage Leave":
+        return localizations.marriageLeave;
+      case "Exams Leave":
+        return localizations.examLeave;
+      case "Exam Leave":
+        return localizations.examLeave;
+      case "Death Leave":
+        return localizations.deathLeave;
+      case "Specialdocument":
+        return localizations.specialDocument;
+      default:
+        return status!;
+    }
   }
 }

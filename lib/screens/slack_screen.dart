@@ -740,8 +740,8 @@ class _SlackScreenState extends State<SlackScreen> {
     final participants = [
       {
         "id": currentUserId,
-        "name": singletonClass.employeeDataList.first.data?.userName ?? "You",
-        "designation": singletonClass.employeeDataList.first.data?.employeeInfo?.first.designation ?? "",
+        "name": singletonClass.employeeDataList.first.data.first.userName ?? "You",
+        "designation": singletonClass.employeeDataList.first.data.first.employeeInfo?.first.designation ?? "",
         "isOnline": true,
         "lastSeen": ""
       },
@@ -791,8 +791,8 @@ class _SlackScreenState extends State<SlackScreen> {
     final participants = [
       {
         "id": currentUserId,
-        "name": singletonClass.employeeDataList.first.data?.userName ?? "You",
-        "designation": singletonClass.employeeDataList.first.data?.employeeInfo?.first.designation ?? "",
+        "name": singletonClass.employeeDataList.first.data.first.userName ?? "You",
+        "designation": singletonClass.employeeDataList.first.data.first.employeeInfo?.first.designation ?? "",
         "isOnline": true,
         "lastSeen": ""
       },

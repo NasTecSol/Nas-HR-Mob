@@ -22,23 +22,59 @@ class ProjectScreen extends StatefulWidget {
 
 class _ProjectScreenState extends State<ProjectScreen> {
   SingletonClass singletonClass = SingletonClass();
-  bool isLoading = false;
+  bool isLoading = true;
   int _selectedOptionIndex = 0;
+  List<Data> _allProjectsList = [];
+  List<Data> _myProjectsList = [];
 
   @override
   void initState() {
     super.initState();
-    getTasks();
+    _loadAllData();
+  }
+
+  Future<void> _loadAllData() async {
+    if (!mounted) return;
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await getTasks();
+    } catch (e) {
+      debugPrint("Error fetching tasks: $e");
+    }
+
+    final String? grade = singletonClass.getJWTModel()?.grade;
+    if (grade == "L0" || grade == "L1") {
+      try {
+        final allRes = await getAllProjects();
+        if (allRes != null && allRes.data != null) {
+          _allProjectsList = allRes.data!;
+        }
+      } catch (e) {
+        debugPrint("Error fetching all projects: $e");
+      }
+    }
+
+    try {
+      final myRes = await getProjectsData();
+      if (myRes != null && myRes.data != null) {
+        _myProjectsList = myRes.data!;
+      }
+    } catch (e) {
+      debugPrint("Error fetching my projects: $e");
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> fetchLatestProjectData() async {
-    try {
-      getAllProjects();
-      getTasks();
-      getProjectsData();
-    } catch (e) {
-      debugPrint("Error fetching data: $e");
-    }
+    await _loadAllData();
   }
 
   @override
@@ -101,610 +137,58 @@ class _ProjectScreenState extends State<ProjectScreen> {
                   ],
               ),
               const SizedBox(height: 20),
-              if(singletonClass.getJWTModel()?.grade == "L0" || singletonClass.getJWTModel()?.grade == "L1" )...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    buildOptionsCard(0, AppLocalizations.of(context)!.all),
-                    buildOptionsCard(1, AppLocalizations.of(context)!.myProjects),
-                  ],
+              if (isLoading) ...[
+                const Expanded(
+                  child: Center(
+                    child: Loader(),
+                  ),
                 ),
-                if(_selectedOptionIndex == 0)...[
-                  Expanded(
-                    child: FutureBuilder(
-                      future: getAllProjects(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Loader();
-                        } else if (snapshot.hasError) {
-                          return Center(
-                            child: Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/error.json'),
-                              ),
-                            ),
-                          );
-                        } else if (snapshot.hasData) {
-                          if (singletonClass.projectsDataList.isEmpty ||
-                              singletonClass.projectsDataList.first.data == null ||
-                              singletonClass.projectsDataList.first.data!.isEmpty) {
-                            return Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  children: [
-                                    Center(
-                                      child: SizedBox(
-                                        height: 200,
-                                        width: 200,
-                                        child: Lottie.asset('images/empty.json'),
-                                      ),
-                                    ),
-                                    Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w500,
-                                        color: NasColors.darkBlue,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          return ListView.builder(
-                            padding: const EdgeInsets.all(5),
-                            itemCount: singletonClass.projectsDataList.first.data!
-                                .length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final project = singletonClass.projectsDataList.first.data![index];
-                              final taskCount = getTaskCountForProject("${project.id}");
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            TaskScreen(projectData: project),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    color: Colors.transparent,
-                                    child: Row(
-                                      children: [
-                                        ClipOval(
-                                          child: Image.network(
-                                            project.logo ?? '',
-                                            fit: BoxFit.cover,
-                                            width: 50,
-                                            height: 50,
-                                            errorBuilder: (context, error,
-                                                stackTrace) {
-                                              return Image.asset(
-                                                'images/DP.png',
-                                                fit: BoxFit.cover,
-                                                width: 50,
-                                                height: 50,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              project.name ?? '---',
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.black,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 5),
-                                            Text(
-                                              project.projectKey ?? '---',
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.w400,
-                                                color: Colors.grey,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(width: 10),
-                                        if(project.adminId == singletonClass.getJWTModel()?.employeeId)...[
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${AppLocalizations.of(context)!.admin} ☆",
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              SizedBox(height: 25),
-                                            ],
-                                          ),
-                                        ]else...[
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${AppLocalizations.of(context)!.member} ",
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              SizedBox(height: 25),
-                                            ],
-                                          ),
-                                        ],
-                                        Spacer(),
-                                        Container(
-                                          padding: const EdgeInsets.all(2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          constraints: const BoxConstraints(
-                                            minWidth: 18,
-                                            minHeight: 18,
-                                          ),
-                                          child: Text(
-                                            '$taskCount',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        } else {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  Center(
-                                    child: SizedBox(
-                                      height: 200,
-                                      width: 200,
-                                      child: Lottie.asset('images/empty.json'),
-                                    ),
-                                  ),
-                                  Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                      },
+              ] else ...[
+                if (singletonClass.getJWTModel()?.grade == "L0" ||
+                    singletonClass.getJWTModel()?.grade == "L1") ...[
+                  SizedBox(
+                    height: 54,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.zero,
+                      children: [
+                        _FilterChip(
+                          label: AppLocalizations.of(context)!.all,
+                          count: _allProjectsList.length,
+                          selected: _selectedOptionIndex == 0,
+                          accentColor: NasColors.darkBlue,
+                          onTap: () {
+                            setState(() {
+                              _selectedOptionIndex = 0;
+                            });
+                          },
+                        ),
+                        _FilterChip(
+                          label: AppLocalizations.of(context)!.myProjects,
+                          count: _myProjectsList.length,
+                          selected: _selectedOptionIndex == 1,
+                          accentColor: NasColors.onTime,
+                          onTap: () {
+                            setState(() {
+                              _selectedOptionIndex = 1;
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                ],
-                if(_selectedOptionIndex == 1)...[
+                  const SizedBox(height: 10),
                   Expanded(
-                    child: FutureBuilder(
-                      future: getProjectsData(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Loader();
-                        } else if (snapshot.hasError) {
-                          return Center(
-                            child: Center(
-                              child: SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset('images/error.json'),
-                              ),
-                            ),
-                          );
-                        } else if (snapshot.hasData) {
-                          if (singletonClass.projectsDataList.isEmpty ||
-                              singletonClass.projectsDataList.first.data == null ||
-                              singletonClass.projectsDataList.first.data!.isEmpty) {
-                            return Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  children: [
-                                    Center(
-                                      child: SizedBox(
-                                        height: 200,
-                                        width: 200,
-                                        child: Lottie.asset('images/empty.json'),
-                                      ),
-                                    ),
-                                    Text(
-                                      AppLocalizations.of(context)!.noData,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w500,
-                                        color: NasColors.darkBlue,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          return ListView.builder(
-                            padding: const EdgeInsets.all(5),
-                            itemCount: singletonClass.projectsDataList.first.data!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final project = singletonClass.projectsDataList.first.data![index];
-                              final taskCount = getTaskCountForProject("${project.id}");
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            TaskScreen(projectData: project),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    color: Colors.transparent,
-                                    child: Row(
-                                      children: [
-                                        ClipOval(
-                                          child: Image.network(
-                                            project.logo ?? '',
-                                            fit: BoxFit.cover,
-                                            width: 50,
-                                            height: 50,
-                                            errorBuilder: (context, error,
-                                                stackTrace) {
-                                              return Image.asset(
-                                                'images/DP.png',
-                                                fit: BoxFit.cover,
-                                                width: 50,
-                                                height: 50,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              project.name ?? '---',
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.black,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 5),
-                                            Text(
-                                              project.projectKey ?? '---',
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.w400,
-                                                color: Colors.grey,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 10),
-                                        if(project.adminId == singletonClass.getJWTModel()?.employeeId)...[
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${AppLocalizations.of(context)!.admin} ☆",
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              SizedBox(height: 25),
-                                            ],
-                                          ),
-                                        ]else...[
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${AppLocalizations.of(context)!.member} ",
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              SizedBox(height: 25),
-                                            ],
-                                          ),
-                                        ],
-                                        Spacer(),
-                                        Container(
-                                          padding: const EdgeInsets.all(2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          constraints: const BoxConstraints(
-                                            minWidth: 18,
-                                            minHeight: 18,
-                                          ),
-                                          child: Text(
-                                            '$taskCount',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        } else {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  Center(
-                                    child: SizedBox(
-                                      height: 200,
-                                      width: 200,
-                                      child: Lottie.asset('images/empty.json'),
-                                    ),
-                                  ),
-                                  Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                      },
+                    child: _buildProjectsList(
+                      _selectedOptionIndex == 0 ? _allProjectsList : _myProjectsList,
                     ),
+                  ),
+                ] else ...[
+                  Expanded(
+                    child: _buildProjectsList(_myProjectsList),
                   ),
                 ],
               ],
-              if(singletonClass.getJWTModel()?.grade == "L2" || singletonClass.getJWTModel()?.grade == "L3" || singletonClass.getJWTModel()?.grade == "L4"  )...[
-                Expanded(
-                  child: FutureBuilder(
-                    future: getProjectsData(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Loader();
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Center(
-                            child: SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: Lottie.asset('images/error.json'),
-                            ),
-                          ),
-                        );
-                      } else if (snapshot.hasData) {
-                        if (singletonClass.projectsDataList.isEmpty ||
-                            singletonClass.projectsDataList.first.data == null ||
-                            singletonClass.projectsDataList.first.data!.isEmpty) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                children: [
-                                  Center(
-                                    child: SizedBox(
-                                      height: 200,
-                                      width: 200,
-                                      child: Lottie.asset('images/empty.json'),
-                                    ),
-                                  ),
-                                  Text(
-                                    AppLocalizations.of(context)!.noData,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: NasColors.darkBlue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                        return ListView.builder(
-                          padding: const EdgeInsets.all(5),
-                          itemCount: singletonClass.projectsDataList.first.data!.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final project = singletonClass.projectsDataList.first.data![index];
-                            final taskCount = getTaskCountForProject("${project.id}");
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10.0),
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          TaskScreen(projectData: project),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  color: Colors.transparent,
-                                  child: Row(
-                                    children: [
-                                      ClipOval(
-                                        child: Image.network(
-                                          project.logo ?? '',
-                                          fit: BoxFit.cover,
-                                          width: 50,
-                                          height: 50,
-                                          errorBuilder: (context, error,
-                                              stackTrace) {
-                                            return Image.asset(
-                                              'images/DP.png',
-                                              fit: BoxFit.cover,
-                                              width: 50,
-                                              height: 50,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            project.name ?? '---',
-                                            style: GoogleFonts.poppins(
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.black,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Text(
-                                            project.projectKey ?? '---',
-                                            style: GoogleFonts.poppins(
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.grey,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 10),
-                                      if(project.adminId == singletonClass.getJWTModel()?.employeeId)...[
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${AppLocalizations.of(context)!.admin} ☆",
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.grey,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            SizedBox(height: 25),
-                                          ],
-                                        ),
-                                      ]else...[
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${AppLocalizations.of(context)!.member} ",
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.grey,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            SizedBox(height: 25),
-                                          ],
-                                        ),
-                                      ],
-                                      Spacer(),
-                                      Container(
-                                        padding: const EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        constraints: const BoxConstraints(
-                                          minWidth: 18,
-                                          minHeight: 18,
-                                        ),
-                                        child: Text(
-                                          '$taskCount',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      } else {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ]
             ],
           ),
         ),
@@ -712,100 +196,193 @@ class _ProjectScreenState extends State<ProjectScreen> {
     );
   }
 
-  ///method
-  Widget buildOptionsCard(int index, String title) {
+  Widget _buildProjectsList(List<Data> list) {
+    if (list.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 200,
+                width: 200,
+                child: Lottie.asset('images/empty.json'),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                AppLocalizations.of(context)!.noData,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: list.length,
+      itemBuilder: (BuildContext context, int index) {
+        return _buildProjectCard(list[index]);
+      },
+    );
+  }
+
+  Widget _buildProjectCard(Data project) {
+    final taskCount = getTaskCountForProject("${project.id}");
+    final isAdmin = project.adminId == singletonClass.getJWTModel()?.employeeId;
+
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedOptionIndex = index;
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TaskScreen(projectData: project),
+          ),
+        );
       },
-      child: SizedBox(
-        height: 70,
-        width: 140,
-        child: Stack(
-          children: [ Card(
-                color: _selectedOptionIndex == index
-                    ? NasColors.darkBlue
-                    : Colors.white,
-                margin: const EdgeInsets.all(10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  side: BorderSide(
-                    color: _selectedOptionIndex == index
-                        ? Colors.white
-                        : Colors.white,
-                    width: 0,
-                  ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.12),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: project.logo == null || project.logo!.isEmpty
+                      ? _getThemeColorForProject(project.name ?? '')
+                      : Colors.transparent,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: project.logo != null && project.logo!.isNotEmpty
+                      ? Image.network(
+                          project.logo!,
+                          fit: BoxFit.cover,
+                          width: 50,
+                          height: 50,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildDefaultProjectIcon(project.name ?? ''),
+                        )
+                      : _buildDefaultProjectIcon(project.name ?? ''),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
-                      textAlign: TextAlign.center,
+                      project.name ?? '---',
                       style: GoogleFonts.inter(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: _selectedOptionIndex == index
-                            ? Colors.white
-                            : NasColors.darkBlue,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                        fontSize: 16,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            project.projectKey ?? '---',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: isAdmin 
+                                ? NasColors.pending.withOpacity(0.12) 
+                                : NasColors.darkBlue.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            isAdmin 
+                                ? "${AppLocalizations.of(context)!.admin} ★" 
+                                : AppLocalizations.of(context)!.member,
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                              color: isAdmin ? NasColors.pending : NasColors.darkBlue,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            if (index == 0)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
+              const SizedBox(width: 8),
+              if (taskCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
+                    color: NasColors.red.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  constraints: const BoxConstraints(
-                    minWidth: 18,
-                    minHeight: 18,
-                  ),
-                  child: Text(
-                    '${singletonClass.projectsDataList.isNotEmpty && singletonClass.projectsDataList.first.data != null ? singletonClass.projectsDataList.first.data!.length : 0}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.assignment_rounded,
+                        size: 14,
+                        color: NasColors.rose,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$taskCount',
+                        style: GoogleFonts.inter(
+                          color: NasColors.brightRed,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            if (index == 1)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 18,
-                    minHeight: 18,
-                  ),
-                  child: Text(
-                    '${singletonClass.projectsDataList.isNotEmpty && singletonClass.projectsDataList.first.data != null ? singletonClass.projectsDataList.first.data!.length : 0}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-        ]),
-
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -879,6 +456,32 @@ class _ProjectScreenState extends State<ProjectScreen> {
     }
     return null ;
   }
+
+  Widget _buildDefaultProjectIcon(String name) {
+    return Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'P',
+        style: GoogleFonts.inter(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Color _getThemeColorForProject(String name) {
+    final int hash = name.hashCode.abs();
+    final List<Color> colors = [
+      Colors.blue.shade600,
+      Colors.teal.shade600,
+      Colors.indigo.shade600,
+      Colors.purple.shade600,
+      Colors.orange.shade600,
+      Colors.amber.shade700,
+    ];
+    return colors[hash % colors.length];
+  }
 }
 class SearchedResults {
   dynamic empId;
@@ -904,5 +507,84 @@ class SearchedResults {
       'employeeId': employeeId,
       'designation': designation,
     };
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final int count;
+  final bool selected;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.count,
+    required this.selected,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        margin: const EdgeInsets.only(right: 12, top: 4, bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? accentColor : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            if (selected)
+              BoxShadow(
+                color: accentColor.withOpacity(0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              )
+            else
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.08),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+          ],
+          border: Border.all(
+            color: selected ? Colors.transparent : Colors.grey.shade200,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+                color: selected ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: selected ? Colors.white.withOpacity(0.2) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$count',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: selected ? Colors.white : Colors.grey.shade600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -572,6 +572,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 TextFormField(
                   cursorColor: Colors.grey,
                   controller: _notes,
+                  textInputAction: TextInputAction.done,
+                  keyboardType: TextInputType.text,
                   maxLines: 3,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -908,9 +910,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         return;
       }
 
-      final String? firstName = singletonClass.employeeDataList.first.data?.firstName;
-      final String? middleName = singletonClass.employeeDataList.first.data?.middleName;
-      final String? lastName = singletonClass.employeeDataList.first.data?.lastName;
+      final String? firstName = singletonClass.employeeDataList.first.data.first.firstName;
+      final String? middleName = singletonClass.employeeDataList.first.data.first.middleName;
+      final String? lastName = singletonClass.employeeDataList.first.data.first.lastName;
 
       final String employeeName = [firstName, middleName, lastName].where((e) => e != null && e.isNotEmpty).join(' ');
 
@@ -936,18 +938,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           context: context,
           type: QuickAlertType.error,
           text: AppLocalizations.of(context)!.selectDate,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        return;
-      }
-
-      if (selectedFile == null) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: AppLocalizations.of(context)!.attachDocuments,
           autoCloseDuration: const Duration(seconds: 5),
           showCancelBtn: false,
           showConfirmBtn: false,
@@ -1065,7 +1055,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   ///Helper method to calculate remaining days
   double? _getRemainingLeaveBalance(String? requestName) {
     if (requestName == null) return null;
-    var leaveBalance = singletonClass.employeeDataList.first.data!.leaveBalance;
+    var leaveBalance = singletonClass.employeeDataList.first.data.first.leaveBalance;
     for (var entry in leaveBalance!.toJson().entries) {
       print('Checking entry: ${entry.key}');
       if (entry.key.toLowerCase() == requestName.toLowerCase()) {
