@@ -150,6 +150,7 @@ class _TaskScreenState extends State<TaskScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
@@ -326,15 +327,19 @@ class _TaskScreenState extends State<TaskScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      statusTitle,
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black87,
+                    Expanded(
+                      child: Text(
+                        statusTitle,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black87,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -454,21 +459,32 @@ class _TaskScreenState extends State<TaskScreen> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    hasPriority ? Icons.bug_report_rounded : Icons.assignment_rounded,
-                    color: hasPriority ? Colors.red.shade400 : NasColors.darkBlue,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    task.taskId ?? 'NO-KEY',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade600,
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          hasPriority ? Icons.bug_report_rounded : Icons.assignment_rounded,
+                          color: hasPriority ? Colors.red.shade400 : NasColors.darkBlue,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            task.taskId ?? 'NO-KEY',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   if (task.estimatedDuration != null && task.estimatedDuration!.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -547,14 +563,19 @@ class _TaskScreenState extends State<TaskScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    task.type ?? 'Task',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: hasPriority ? Colors.red.shade400 : Colors.blue.shade600,
+                  Expanded(
+                    child: Text(
+                      task.type ?? 'Task',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: hasPriority ? Colors.red.shade400 : Colors.blue.shade600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   _buildAssigneesRow(task.assignTo),
                 ],
               ),
