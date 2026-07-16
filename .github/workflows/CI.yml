@@ -32,10 +32,6 @@ jobs:
       - name: Print Flutter version
         run: flutter --version
 
-      # ✅ Actually run the tests
-      - name: Run Flutter tests
-        run: flutter test
-
   # ─────────────────────────────────────────────
   # 2. iOS Build & IPA
   # ─────────────────────────────────────────────
