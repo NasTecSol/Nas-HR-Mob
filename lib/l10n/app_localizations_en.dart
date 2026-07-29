@@ -758,9 +758,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get approval => 'Approval';
 
   @override
-  String get balance => 'Balance';
-
-  @override
   String get absentCount => 'Absent Count';
 
   @override
@@ -1131,7 +1128,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get high => 'High';
 
   @override
-  String get insufficientBalance => 'Insufficient Leave Balance';
+  String get insufficient => 'Insufficient';
+
+  @override
+  String get balance => 'Balance';
 
   @override
   String get ok => 'OK';

@@ -41,7 +41,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   PlatformFile? selectedFile;
   TimeOfDay? startTime;
   TimeOfDay? endTime;
-
+  // Computed — no stored bool needed
   @override
   Widget build(BuildContext context) {
     final List<SubTypes> subTypeList = widget.selectedRequest?.subTypes ?? [];
@@ -139,24 +139,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                     }).toList(),
 
                     onChanged: (SubTypes? newValue) {
-                      if(newValue!.requestName == 'Short Leave' || newValue.requestName == 'UnPaid Leave '){
-                        setState(() {
-                          _selectedSubType = newValue;
-                        });
-                      } else {
-                        double? remainingBalance = _getRemainingLeaveBalance(newValue.requestType);
-                        if (remainingBalance == null ||
-                            remainingBalance <= 0) {
-                          _showWarningDialog(context,
-                              '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
-
-                          _selectedSubType = null;
-                        } else {
-                          setState(() {
-                            _selectedSubType = newValue;
-                          });
-                        }
-                      }
+                      setState(() {
+                        _selectedSubType = newValue;
+                      });
                     },
                   ),
                 ),
@@ -677,27 +662,59 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                   ),
                 ],
                 const SizedBox(height: 20),
-                Center(
-                  child: SizedBox(
-                    width: 140,
-                    height: 45,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          postRequest();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: NasColors.darkBlue,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context)!.requests,
-                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                // ── Leave-balance-aware request button ──────────────────
+                Builder(builder: (context) {
+                  final bool hasSufficientBalance = _isBalanceSufficient(_selectedSubType);
+                  return Center(
+                    child: SizedBox(
+                      width: 140,
+                      height: 45,
+                      child: ElevatedButton(
+                        onPressed: hasSufficientBalance
+                            ? () {
+                                if (_formKey.currentState!.validate()) {
+                                  postRequest();
+                                }
+                              }
+                            : () {
+                                // Show remaining balance info for the selected leave type
+                                final String leaveName = _selectedSubType != null
+                                    ? _translateRequestSubtype(_selectedSubType!.requestName, context)
+                                    : AppLocalizations.of(context)!.leaveRequests;
+                                final double? balance =
+                                    _getRemainingLeaveBalance(_selectedSubType?.requestType);
+                                final String balanceText = balance != null
+                                    ? '$leaveName: ${balance.toStringAsFixed(1)} ${AppLocalizations.of(context)!.days}'
+                                    : '$leaveName ${AppLocalizations.of(context)!.balance}';
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      balanceText,
+                                      style: GoogleFonts.inter(color: Colors.white),
+                                    ),
+                                    backgroundColor: Colors.grey[700],
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              hasSufficientBalance ? NasColors.darkBlue : Colors.grey[400],
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.requests,
+                          style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: hasSufficientBalance ? Colors.white : Colors.white70),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                }),
 
               ],
             ),
@@ -1052,7 +1069,22 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   }
 
 
+  /// Returns true when the selected leave type has enough balance to request,
+  /// or when balance is not applicable (shortLeave / unPaidLeave / nothing selected yet).
+  bool _isBalanceSufficient(SubTypes? subType) {
+    if (subType == null) return true; // nothing chosen yet — show enabled
+    final String? name = subType.requestName;
+    // These types don't consume a counted balance
+    if (name == 'shortLeave' || name == 'unPaidLeave' ||
+        name == 'Short Leave' || name == 'UnPaid Leave ') {
+      return true;
+    }
+    final double? remaining = _getRemainingLeaveBalance(subType.requestType);
+    return remaining != null && remaining > 0;
+  }
+
   ///Helper method to calculate remaining days
+
   double? _getRemainingLeaveBalance(String? requestName) {
     if (requestName == null) return null;
     var leaveBalance = singletonClass.employeeDataList.first.data.first.leaveBalance;
@@ -1061,7 +1093,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       if (entry.key.toLowerCase() == requestName.toLowerCase()) {
         print('Found entry: ${entry.key}: ${entry.value}');
 
-        if (entry.key == 'UnPaid Leave ' || entry.key == 'Short Leave') {
+        if (entry.key == 'unPaidLeave' || entry.key == 'shortLeave') {
           print('No balance check needed for ${entry.key}');
           return null; // or any sentinel value indicating balance not required
         }
@@ -1113,37 +1145,4 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     final diffMinutes = endMinutes - startMinutes;
     return diffMinutes / 60;
   }
-
-
-  ///Alert Dialogue
-  void _showWarningDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(
-            AppLocalizations.of(context)!.insufficientBalance,
-            style: GoogleFonts.inter(color: Colors.black),
-          ),
-          content: Text(
-            message,
-            style: GoogleFonts.inter(color: Colors.black),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                AppLocalizations.of(context)!.ok,
-                style: GoogleFonts.inter(color: Colors.black),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
 }

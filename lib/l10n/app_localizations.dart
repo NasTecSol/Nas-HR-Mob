@@ -1592,12 +1592,6 @@ abstract class AppLocalizations {
   /// **'Approval'**
   String get approval;
 
-  /// No description provided for @balance.
-  ///
-  /// In en, this message translates to:
-  /// **'Balance'**
-  String get balance;
-
   /// No description provided for @absentCount.
   ///
   /// In en, this message translates to:
@@ -2336,11 +2330,17 @@ abstract class AppLocalizations {
   /// **'High'**
   String get high;
 
-  /// No description provided for @insufficientBalance.
+  /// No description provided for @insufficient.
   ///
   /// In en, this message translates to:
-  /// **'Insufficient Leave Balance'**
-  String get insufficientBalance;
+  /// **'Insufficient'**
+  String get insufficient;
+
+  /// No description provided for @balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
 
   /// No description provided for @ok.
   ///

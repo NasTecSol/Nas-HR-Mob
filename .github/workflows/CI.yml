@@ -6,6 +6,12 @@ on:
       - releases_ios
       - releases_android
 
+# Cancel any in-progress run on the same branch when a new push arrives.
+# This ensures only ONE pipeline is active at a time per branch.
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ─────────────────────────────────────────────
   # 1. Flutter Test (runs on every push)
