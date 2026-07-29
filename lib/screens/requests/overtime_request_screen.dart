@@ -147,54 +147,33 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-          child: Stack(
-            children: [ ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                /// HEADER
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new_outlined,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      AppLocalizations.of(context)!.applyRequests,
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
+      body: Stack(
+        children: [
+          Form(
+            key: _formKey,
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _buildHeader(context),
                 ),
-                if (singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.approvalType == "both" &&
-                    ["L0", "L1", "L2", "L3"].contains(singletonClass.getJWTModel()?.grade)) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                    child: Column(
+                      children: [
+                        if (singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.approvalType == "both" &&
+                            ["L0", "L1", "L2", "L3"].contains(singletonClass.getJWTModel()?.grade)) ...[
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade100),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -472,6 +451,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                     ),
                     child: DropdownButtonFormField<SubTypes>(
                       dropdownColor: Colors.white,
+                      isExpanded: true,
                       value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
                       validator: (value) {
                         if (value == null) {
@@ -599,6 +579,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                     ),
                     child: DropdownButtonFormField<String>(
                       dropdownColor: Colors.white,
+                      isExpanded: true,
                       value: _selectedPaidAsType,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -610,7 +591,6 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                         }
                         return null;
                       },
-                      isExpanded: true,
                       items: paidAsList.map((e) {
                         return DropdownMenuItem<String>(
                           value: e['type']?.toString(),
@@ -751,9 +731,23 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                   ),
 
                   const SizedBox(height: 20),
-                ]
-                else if (singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.approvalType == "manager" &&
-                    ["L0", "L1", "L2", "L3"].contains(singletonClass.getJWTModel()?.grade)) ...[
+                              ],
+                            ),
+                          ),
+                        ]
+                        else if (singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.approvalType == "manager" &&
+                            ["L0", "L1", "L2", "L3"].contains(singletonClass.getJWTModel()?.grade)) ...[
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade100),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                   if (_selectedEmployees.isNotEmpty) ...[
                     SizedBox(
                       height: 60,
@@ -1007,6 +1001,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                     ),
                     child: DropdownButtonFormField<SubTypes>(
                       dropdownColor: Colors.white,
+                      isExpanded: true,
                       value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
                       validator: (value) {
                         if (value == null) {
@@ -1134,6 +1129,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                     ),
                     child: DropdownButtonFormField<String>(
                       dropdownColor: Colors.white,
+                      isExpanded: true,
                       value: _selectedPaidAsType,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -1145,7 +1141,6 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                         }
                         return null;
                       },
-                      isExpanded: true,
                       items: paidAsList.map((e) {
                         return DropdownMenuItem<String>(
                           value: e['type']?.toString(),
@@ -1286,9 +1281,23 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                   ),
 
                   const SizedBox(height: 20),
-                ]
-                else if (singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.approvalType == "employee" &&
-                      singletonClass.getJWTModel()?.grade == "L4") ...[
+                              ],
+                            ),
+                          ),
+                        ]
+                        else if (singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.approvalType == "employee" &&
+                              singletonClass.getJWTModel()?.grade == "L4") ...[
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade100),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                     const SizedBox(height: 20),
                     Text(
                       _translateBottomText(
@@ -1310,6 +1319,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                       ),
                       child: DropdownButtonFormField<SubTypes>(
                         dropdownColor: Colors.white,
+                      isExpanded: true,
                         value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
                         validator: (value) {
                           if (value == null) {
@@ -1437,6 +1447,7 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                       ),
                       child: DropdownButtonFormField<String>(
                         dropdownColor: Colors.white,
+                      isExpanded: true,
                         value: _selectedPaidAsType,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
@@ -1448,7 +1459,6 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                           }
                           return null;
                         },
-                        isExpanded: true,
                         items: paidAsList.map((e) {
                           return DropdownMenuItem<String>(
                             value: e['type']?.toString(),
@@ -1588,39 +1598,110 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                  ],
-                Center(
-                  child: SizedBox(
-                    width: 140,
-                    height: 45,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          postRequest();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: NasColors.darkBlue,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context)!.requests,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [NasColors.darkBlue, NasColors.lightBlue]),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  postRequest();
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                              child: Text(
+                                AppLocalizations.of(context)!.requests,
+                                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
               ],
             ),
-              if(isLoading)
-                Loader(),
-            ]
+          ),
+          if (isLoading) const Loader(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [BoxShadow(color: NasColors.darkBlue.withOpacity(0.28), blurRadius: 16, offset: const Offset(0, 6))],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    height: 40, width: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(child: Text(AppLocalizations.of(context)!.applyRequests,
+                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))),
+              ]),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.22)),
+                ),
+                child: Row(children: [
+                  Container(height: 38, width: 38,
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                    child: const Icon(Icons.event_note_rounded, color: Colors.white, size: 20)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(_translateBottomText(widget.selectedRequest?.requestName, context),
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.75))),
+                    Text(_translateRequest(widget.selectedRequest?.requestName, context),
+                      style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                  ])),
+                ]),
+              ),
+            ],
           ),
         ),
       ),

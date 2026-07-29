@@ -65,362 +65,310 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-          child: Stack(
-            children: [
-              ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Container(
-                          height: 40,
-                          width: 40,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader(context)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
                             color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.4),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: const Offset(0, 3),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade100),
+                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(AppLocalizations.of(context)!.subType, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: NasColors.darkBlue, letterSpacing: 0.3)),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey.shade200),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))],
+                                ),
+                                child: DropdownButtonFormField<SubTypes>(
+                                  dropdownColor: Colors.white,
+                                  isExpanded: true,
+                                  value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
+                                  validator: (value) {
+                                    if (value == null) return AppLocalizations.of(context)!.selectSubType;
+                                    return null;
+                                  },
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                  ),
+                                  hint: Text(
+                                    _translateRequest(widget.selectedRequest?.requestName, context),
+                                    style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                                  ),
+                                  items: subTypeList.map((SubTypes subType) {
+                                    return DropdownMenuItem<SubTypes>(
+                                      value: subType,
+                                      child: Text(
+                                        _translateRequestSubtype(subType.requestName!, context),
+                                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              Text(AppLocalizations.of(context)!.selectDate, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: NasColors.darkBlue, letterSpacing: 0.3)),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  DateTime? date = await showDatePicker(
+                                    context: context,
+                                    initialDate: startDate ?? DateTime.now(),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2101),
+                                    builder: (BuildContext context, Widget? child) {
+                                      return Theme(
+                                        data: ThemeData.light().copyWith(
+                                          colorScheme: ColorScheme.light(primary: NasColors.darkBlue, onPrimary: Colors.white, onSurface: Colors.black),
+                                          dialogBackgroundColor: Colors.white,
+                                          textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: NasColors.darkBlue)),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+                                  if (date != null) setState(() => startDate = date);
+                                },
+                                child: Container(
+                                  height: 52,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade200),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        startDate == null ? "DD/MM/YYYY" : DateFormat('yyyy-MM-dd').format(startDate!),
+                                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
+                                      ),
+                                      const Icon(Icons.calendar_today_outlined, color: Colors.grey),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              Text(AppLocalizations.of(context)!.title, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: NasColors.darkBlue, letterSpacing: 0.3)),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _title,
+                                cursorColor: Colors.grey,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: NasColors.darkBlue)),
+                                  hintText: AppLocalizations.of(context)!.typeYourTitleHere,
+                                  hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                ),
+                                style: GoogleFonts.inter(fontSize: 14, color: Colors.black),
+                              ),
+                              const SizedBox(height: 20),
+
+                              Text(AppLocalizations.of(context)!.notes, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: NasColors.darkBlue, letterSpacing: 0.3)),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _notes,
+                                maxLength: 300,
+                                maxLines: 5,
+                                onChanged: (text) => setState(() => _characterCount = "${text.length}/300"),
+                                cursorColor: Colors.grey,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: NasColors.darkBlue)),
+                                  hintText: AppLocalizations.of(context)!.typeYourComplainHere,
+                                  hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey),
+                                  counterText: _characterCount,
+                                  counterStyle: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                ),
+                                style: GoogleFonts.inter(fontSize: 14, color: Colors.black),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(AppLocalizations.of(context)!.maximum300, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.grey)),
+                              
+                              if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
+                                const SizedBox(height: 20),
+                                TextButton(
+                                  onPressed: () async {
+                                    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
+                                    if (result != null && result.files.single.path != null) {
+                                      final PlatformFile file = result.files.single;
+                                      setState(() => selectedFile = file);
+                                      final results = await uploadDocuments(file);
+                                      final bool success = results["success"] as bool;
+                                      final String message = results["message"] as String;
+                                      if (!success && context.mounted) {
+                                        setState(() => selectedFile = null);
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => AlertDialog(
+                                            backgroundColor: Colors.white,
+                                            title: Text(AppLocalizations.of(context)!.uploadFailedTitle),
+                                            content: Text(message),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(),
+                                                child: Text(AppLocalizations.of(context)!.ok, style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black)),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      const Icon(Icons.add, color: Colors.black, size: 20),
+                                      const SizedBox(width: 5),
+                                      Text(AppLocalizations.of(context)!.attachDocuments, textAlign: TextAlign.center, style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 15)),
+                                      const SizedBox(width: 10),
+                                      if (selectedFile != null)
+                                        Stack(
+                                          clipBehavior: Clip.none,
+                                          alignment: Alignment.topRight,
+                                          children: [
+                                            ClipOval(child: Image.file(File(selectedFile!.path!), width: 80, height: 80, fit: BoxFit.cover)),
+                                            Positioned(
+                                              top: -5,
+                                              right: -5,
+                                              child: GestureDetector(
+                                                onTap: () => setState(() => selectedFile = null),
+                                                child: Container(width: 20, height: 20, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle), child: const Icon(Icons.close, color: Colors.white, size: 14)),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(colors: [NasColors.darkBlue, NasColors.lightBlue]),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: ElevatedButton(
+                                    onPressed: () { if (_formKey.currentState!.validate()) { postRequest(); } },
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                                    child: Text(AppLocalizations.of(context)!.requests, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_outlined,
-                            color: Colors.black,
-                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        AppLocalizations.of(context)!.applyRequests,
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    _translateBottomText(widget.selectedRequest?.requestName, context),
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  /// SubType Dropdown (unchanged functionality)
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: DropdownButtonFormField<SubTypes>(
-                      dropdownColor: Colors.white,
-                      value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
-                      validator: (value) {
-                        if (value == null) {
-                          return AppLocalizations.of(context)!.selectSubType;
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                      hint: Text(
-                        _translateRequest(widget.selectedRequest?.requestName, context),
-                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                      ),
-                      items: subTypeList.map((SubTypes subType) {
-                        return DropdownMenuItem<SubTypes>(
-                          value: subType,
-                          child: Text(
-                            _translateRequestSubtype(subType.requestName!, context),
-                            style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
-                    ),
-                  ),
-                  const SizedBox(height:20),
-                  ///Date
-                  Text(AppLocalizations.of(context)!.selectDate,
-                      style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Colors.grey[700])),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      ///Start Date
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            DateTime? date = await showDatePicker(
-                              context: context,
-                              initialDate: startDate ?? DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-
-                              builder: (BuildContext context, Widget? child) {
-                                return Theme(
-                                  data: ThemeData.light().copyWith(
-                                    colorScheme: ColorScheme.light(
-                                      primary: NasColors.darkBlue,
-                                      onPrimary: Colors.white,
-                                      onSurface: Colors.black,
-                                    ),
-                                    dialogBackgroundColor: Colors.white,
-                                    textButtonTheme: TextButtonThemeData(
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: NasColors.darkBlue,
-                                      ),
-                                    ),
-                                  ),
-                                  child: child!,
-                                );
-                              },
-                            );
-                            if (date != null) {
-                              setState(() {
-                                startDate = date;
-                              });
-                            }
-                          },
-
-                          child: Container(
-                            height: 48,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  startDate == null
-                                      ? "DD/MM/YYYY"
-                                      : DateFormat('yyyy-MM-dd').format(startDate!),
-                                  style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
-                                ),
-                                const Icon(Icons.calendar_today_outlined, color: Colors.grey),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                    ],
-                  ),
-                  const SizedBox(height:20),
-                  Text(
-                    AppLocalizations.of(context)!.title,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height:6),
-                  TextFormField(
-                    controller: _title,
-                    cursorColor: Colors.grey,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder:  OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      hintText: AppLocalizations.of(context)!.typeYourTitleHere,
-                      hintStyle: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height:20),
-                  TextFormField(
-                    controller: _notes,
-                    maxLength: 300,
-                    maxLines: 5,
-                    onChanged: (text) {
-                      setState(() {
-                        _characterCount = "${text.length}/300";
-                      });
-                    },
-                    cursorColor: Colors.grey,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder:  OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      hintText: AppLocalizations.of(context)!.typeYourComplainHere,
-                      hintStyle: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                      counterText: _characterCount,
-                      counterStyle: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    AppLocalizations.of(context)!.maximum300,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  /// Attachment button (only if required)
-                  if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
-                    TextButton(
-                      onPressed: () async {
-                        FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
-                        if (result != null && result.files.single.path != null) {
-                          final PlatformFile file = result.files.single;
-                          setState(() => selectedFile = file);
-
-                          final results = await uploadDocuments(file);
-                          final bool success = results["success"] as bool;
-                          final String message = results["message"] as String;
-
-                          if (!success && context.mounted) {
-                            setState(() => selectedFile = null);
-                            // keep behavior same but show AlertDialog as in original
-                            showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                backgroundColor: Colors.white,
-                                title: Text(AppLocalizations.of(context)!.uploadFailedTitle),
-                                content: Text(message),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(),
-                                    child: Text(
-                                      AppLocalizations.of(context)!.ok,
-                                      style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.add, color: Colors.black, size: 20),
-                          const SizedBox(width: 5),
-                          Text(
-                            AppLocalizations.of(context)!.attachDocuments,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 15),
-                          ),
-                          const SizedBox(width: 10),
-                          if (selectedFile != null)
-                            Stack(
-                              clipBehavior: Clip.none,
-                              alignment: Alignment.topRight,
-                              children: [
-                                ClipOval(
-                                  child: Image.file(
-                                    File(selectedFile!.path!),
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: -5,
-                                  right: -5,
-                                  child: GestureDetector(
-                                    onTap: () => setState(() => selectedFile = null),
-                                    child: Container(
-                                      width: 20,
-                                      height: 20,
-                                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                                      child: const Icon(Icons.close, color: Colors.white, size: 14),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  Center(
-                    child: SizedBox(
-                      width: 140,
-                      height: 45,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            postRequest();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: NasColors.darkBlue,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: Text(
-                          AppLocalizations.of(context)!.requests,
-                          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
+            ],
+          ),
+          if (isLoading) Loader(),
+        ],
+      ),
+    );
+  }
 
-                SizedBox(height: 500),
-              ]
-            ),
-              if (isLoading)
-               Loader(),
-            ]
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [BoxShadow(color: NasColors.darkBlue.withOpacity(0.28), blurRadius: 16, offset: const Offset(0, 6))],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    height: 40, width: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(child: Text(AppLocalizations.of(context)!.applyRequests,
+                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))),
+              ]),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.22)),
+                ),
+                child: Row(children: [
+                  Container(height: 38, width: 38,
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                    child: const Icon(Icons.event_note_rounded, color: Colors.white, size: 20)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(_translateBottomText(widget.selectedRequest?.requestName, context),
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.75))),
+                    Text(_translateRequest(widget.selectedRequest?.requestName, context),
+                      style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                  ])),
+                ]),
+              ),
+            ],
           ),
         ),
       ),
