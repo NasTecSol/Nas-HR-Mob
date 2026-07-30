@@ -141,13 +141,12 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
       backgroundColor: NasColors.backGround,
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: _buildHeader(context),
-              ),
-              SliverToBoxAdapter(
-                child: Form(
+          Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Form(
                   key: _formKey,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
@@ -547,7 +546,7 @@ class _SpecialLeaveRequestScreenState extends State<SpecialLeaveRequestScreen> {
                   ),
                 ),
               ),
-            ],
+              )],
           ),
           if (isLoading) Loader()
         ],

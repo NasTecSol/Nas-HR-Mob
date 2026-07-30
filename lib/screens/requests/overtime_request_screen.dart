@@ -151,15 +151,14 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
         children: [
           Form(
             key: _formKey,
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _buildHeader(context),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-                    child: Column(
+            child: Column(
+              children: [
+                _buildHeader(context),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                      child: Column(
                       children: [
                         if (singletonClass.policyModelDataList.first.data!.attendancePolicy!.overtimePolicy!.approvalType == "both" &&
                             ["L0", "L1", "L2", "L3"].contains(singletonClass.getJWTModel()?.grade)) ...[
@@ -1633,9 +1632,9 @@ class _OvertimeRequestScreenState extends State<OvertimeRequestScreen> {
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            ],
+          ),),
           if (isLoading) const Loader(),
         ],
       ),

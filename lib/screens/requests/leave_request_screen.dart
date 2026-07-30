@@ -51,53 +51,52 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       body: Form(
         key: _formKey,
         child: Stack(children: [
-          CustomScrollView(
-            slivers: [
-              // ── Gradient header ──────────────────────────────────────────
-              SliverToBoxAdapter(child: _buildHeader(context)),
+          Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── Leave Type card ──
+                        _sectionLabel(AppLocalizations.of(context)!.leaveRequests),
+                        const SizedBox(height: 8),
+                        _buildLeaveTypeDropdown(context, subTypeList),
 
-              // ── Form body ─────────────────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Leave Type card ──
-                      _sectionLabel(AppLocalizations.of(context)!.leaveRequests),
-                      const SizedBox(height: 8),
-                      _buildLeaveTypeDropdown(context, subTypeList),
-
-                      const SizedBox(height: 20),
-
-                      // ── Date / Time section ──
-                      if (_selectedSubType?.requestName == 'Short Leave') ...[
-                        _buildShortLeaveFields(context),
-                      ] else ...[
-                        _buildRegularLeaveFields(context),
-                      ],
-
-                      const SizedBox(height: 20),
-
-                      // ── Notes ──
-                      _sectionLabel(AppLocalizations.of(context)!.notes),
-                      const SizedBox(height: 8),
-                      _buildNotesField(context),
-
-                      const SizedBox(height: 20),
-
-                      // ── Attachment ──
-                      if (_selectedSubType != null &&
-                          _selectedSubType!.docRequired == true) ...[
-                        _buildAttachmentButton(context),
                         const SizedBox(height: 20),
+
+                        // ── Date / Time section ──
+                        if (_selectedSubType?.requestName == 'Short Leave') ...[
+                          _buildShortLeaveFields(context),
+                        ] else ...[
+                          _buildRegularLeaveFields(context),
+                        ],
+
+                        const SizedBox(height: 20),
+
+                        // ── Notes ──
+                        _sectionLabel(AppLocalizations.of(context)!.notes),
+                        const SizedBox(height: 8),
+                        _buildNotesField(context),
+
+                        const SizedBox(height: 20),
+
+                        // ── Attachment ──
+                        if (_selectedSubType != null &&
+                            _selectedSubType!.docRequired == true) ...[
+                          _buildAttachmentButton(context),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // ── Submit button ──
+                        _buildSubmitButton(context),
+
+                        const SizedBox(height: 32),
                       ],
-
-                      // ── Submit button ──
-                      _buildSubmitButton(context),
-
-                      const SizedBox(height: 32),
-                    ],
+                    ),
                   ),
                 ),
               ),

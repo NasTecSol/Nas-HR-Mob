@@ -67,13 +67,14 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
       backgroundColor: NasColors.backGround,
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _buildHeader(context)),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-                  child: Form(
+          Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                    child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
@@ -298,6 +299,7 @@ class _FileComplaintsScreenState extends State<FileComplaintsScreen> {
                         ),
                       ],
                     ),
+                  ),
                   ),
                 ),
               ),

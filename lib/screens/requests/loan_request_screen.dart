@@ -122,13 +122,12 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
         key: _formKey,
         child: Stack(
           children: [
-            CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _buildHeader(context),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
+            Column(
+              children: [
+                _buildHeader(context),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,7 +567,7 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
                     ),
                   ),
                 ),
-              ],
+                )],
             ),
             if (isLoading) const Loader(),
           ],

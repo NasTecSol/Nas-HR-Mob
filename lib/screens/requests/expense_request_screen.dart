@@ -168,11 +168,12 @@ class _ExpenseRequestScreenState extends State<ExpenseRequestScreen> {
         children: [
           Form(
             key: _formKey,
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader(context)),
-                SliverToBoxAdapter(
-                  child: Padding(
+            child: Column(
+              children: [
+                _buildHeader(context),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,7 +515,7 @@ class _ExpenseRequestScreenState extends State<ExpenseRequestScreen> {
                     ),
                   ),
                 ),
-              ],
+                )],
             ),
           ),
           if (isLoading) const Loader(),

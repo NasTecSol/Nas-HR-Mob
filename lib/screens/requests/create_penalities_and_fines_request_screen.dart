@@ -57,13 +57,14 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
         key: _formKey,
         child: Stack(
           children: [
-            CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader(context)),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-                    child: Column(
+            Column(
+              children: [
+                _buildHeader(context),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Search Employee Card
@@ -744,8 +745,9 @@ class _CreatePenalitiesAndFinesRequestScreenState extends State<CreatePenalities
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
             if (isLoading) const Loader(),
           ],
         ),
