@@ -438,48 +438,96 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> with Single
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(context),
-            _buildFilterChips(context),
-            _buildDateStrip(context),
-            const SizedBox(height: 8),
-            _buildActionRow(context),
-            const SizedBox(height: 8),
-            Expanded(child: _buildBody(context)),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildHeader(context),
+          _buildFilterChips(context),
+          _buildDateStrip(context),
+          const SizedBox(height: 8),
+          _buildActionRow(context),
+          const SizedBox(height: 8),
+          Expanded(child: _buildBody(context)),
+        ],
       ),
     );
   }
 
-  /// ──────────────────────── App Bar ────────────────────────────────
+  /// ──────────────────────── App Bar / Header ───────────────────────
 
-  Widget _buildAppBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      child: Row(
-        children: [
-          _circleButton(
-            icon: Icons.arrow_back_ios_new_rounded,
-            onTap: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            AppLocalizations.of(context)!.attendanceHistory,
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: NasColors.darkBlue,
-            ),
-          ),
-          const Spacer(),
-          _circleButton(
-            icon: Icons.calendar_month_rounded,
-            onTap: () => _pickDateRange(context),
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.attendanceHistory,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _pickDateRange(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_month_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

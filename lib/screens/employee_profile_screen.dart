@@ -24,7 +24,7 @@ class EmployeeProfileScreen extends StatefulWidget {
   final bool isTeamMate;
 
   const EmployeeProfileScreen(
-      {super.key, this.teamData,this.employees ,required this.isTeamMate});
+      {super.key, this.teamData, this.employees, required this.isTeamMate});
 
   @override
   State<EmployeeProfileScreen> createState() => _EmployeeProfileScreenState();
@@ -42,1591 +42,1421 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     _employeeDetailsFuture = getEmployeeDetailsData();
   }
 
+  // ── Header Widget (Gradient Header Matching TeamScreen) ───────────────────
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  singletonClass.employeeDetailsAttendanceDataList.clear();
+                  singletonClass.employeeDetailsDataList.clear();
+                },
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Text(
+                AppLocalizations.of(context)!.employeeProfile,
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
         ? (singletonClass
-        .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
-        [])
+                .roleAndAccessModelDataList.first.data?.uiSettings?.uiModules ??
+            [])
         : [];
+
     /// Check for onboarding
     final hasOnboarding = uiSettings.any((e) {
       if (e.title == "Teams" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "Onboarding & Offboarding") &&
-            sub.hidden == false) ??
+                (sub.title == "Onboarding & Offboarding") &&
+                sub.hidden == false) ??
             false;
       }
       return false;
     });
+
+    final name = widget.teamData?.userName ?? widget.employees?.userName ?? 'N/A';
+    final designation = widget.teamData?.designation ??
+        widget.employees?.employeeInfo?.first.designation ??
+        'N/A';
+    final grade = widget.teamData?.grade ??
+        widget.employees?.employeeInfo?.first.grade ??
+        'N/A';
+    final empId = widget.teamData?.empId ??
+        widget.employees?.employeeInfo?.first.empId ??
+        'N/A';
+
     return Scaffold(
-        backgroundColor: NasColors.backGround,
-        body: ListView(padding: EdgeInsets.zero, children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          singletonClass.employeeDetailsAttendanceDataList.clear();
-                          singletonClass.employeeDetailsDataList.clear();
-                        },
-                        icon: Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withValues(alpha: 0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+      backgroundColor: NasColors.backGround,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: isLoading
+                    ? const Center(child: Loader())
+                    : FutureBuilder<EmployeeDetailsData?>(
+                        future: _employeeDetailsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: Loader());
+                          }
+                          if (snapshot.hasError) {
+                            debugPrint('Error: ${snapshot.error}');
+                            return Center(
+                              child: Text(
+                                AppLocalizations.of(context)!.errorFetchData,
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: NasColors.darkBlue,
                                 ),
-                              ]),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_outlined,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 0.0, top: 0.0),
-                      child: Text(
-                        AppLocalizations.of(context)!.employeeProfile,
-                        style: GoogleFonts.inter(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                isLoading == false ? FutureBuilder<EmployeeDetailsData?>(
-                    future: _employeeDetailsFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        // Show loader while waiting for data
-                        return Loader();
-                      }
-                      if (snapshot.hasError) {
-                        debugPrint('Error: ${snapshot.error}');
-                        return Center(
-                          child: Text(
-                            AppLocalizations.of(context)!.errorFetchData,
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        );
-                      } else if (!snapshot.hasData || snapshot.data == null) {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Center(
-                                  child: SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: Lottie.asset('images/empty.json'),
-                                  ),
-                                ),
-                                Text(
-                                  AppLocalizations.of(context)!.noData,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: NasColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      } else {
-                        final employeeDetails = snapshot.data!.data;
-                        return Column(
-                          children: [
-                            const SizedBox(height: 20),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.4),
-                                    spreadRadius: 5,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
                               ),
+                            );
+                          } else if (!snapshot.hasData || snapshot.data == null) {
+                            return Center(
                               child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      height: 100,
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
+                                    SizedBox(
+                                      height: 180,
+                                      width: 180,
+                                      child: Lottie.asset('images/empty.json'),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      AppLocalizations.of(context)!.noData,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: NasColors.darkBlue,
                                       ),
-                                      child: ClipOval(
-                                        child: (employeeDetails != null &&
-                                            employeeDetails.isNotEmpty &&
-                                            (employeeDetails.first.profilePic?.isNotEmpty ?? false))
-                                            ? Image.network(
-                                          employeeDetails.first.profilePic!,
-                                          fit: BoxFit.cover,
-                                          width: 100,
-                                          height: 100,
-                                          errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                            return Image.asset(
-                                              'images/DP.png',
-                                              fit: BoxFit.cover,
-                                              width: 100,
-                                              height: 100,
-                                            );
-                                          },
-                                        )
-                                            : Image.asset(
-                                          'images/DP.png',
-                                          fit: BoxFit.cover,
-                                          width: 100,
-                                          height: 100,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          } else {
+                            final employeeDetails = snapshot.data!.data;
+                            return ListView(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 16),
+                              children: [
+                                // ── Employee Summary Card ─────────────────
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: Colors.grey.shade100),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height: 80,
+                                          width: 80,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: NasColors.lightBlue.withOpacity(0.3),
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: ClipOval(
+                                            child: (employeeDetails != null &&
+                                                    employeeDetails.isNotEmpty &&
+                                                    (employeeDetails.first.profilePic?.isNotEmpty ?? false))
+                                                ? Image.network(
+                                                    employeeDetails.first.profilePic!,
+                                                    fit: BoxFit.cover,
+                                                    width: 80,
+                                                    height: 80,
+                                                    errorBuilder: (context, exception, stackTrace) {
+                                                      return Image.asset(
+                                                        'images/DP.png',
+                                                        fit: BoxFit.cover,
+                                                        width: 80,
+                                                        height: 80,
+                                                      );
+                                                    },
+                                                  )
+                                                : Image.asset(
+                                                    'images/DP.png',
+                                                    fit: BoxFit.cover,
+                                                    width: 80,
+                                                    height: 80,
+                                                  ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                name,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: NasColors.darkBlue,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                designation,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Row(
+                                                children: [
+                                                  if (grade != 'N/A') ...[
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                      decoration: BoxDecoration(
+                                                        color: NasColors.darkBlue.withOpacity(0.08),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                      child: Text(
+                                                        grade,
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: NasColors.darkBlue,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                  ],
+                                                  if (empId != 'N/A')
+                                                    Text(
+                                                      "ID: $empId",
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Colors.grey.shade500,
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (hasOnboarding)
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => RegisterBiometricDeviceScreen(
+                                                    empId: empId,
+                                                    firstName: widget.employees?.firstName,
+                                                    lastName: widget.employees?.lastName,
+                                                    userName: name,
+                                                    fromTeamScreen: true,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            child: Container(
+                                              height: 40,
+                                              width: 40,
+                                              decoration: BoxDecoration(
+                                                color: Colors.red.withOpacity(0.08),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Center(
+                                                child: Image.asset(
+                                                  'images/fingerprint.png',
+                                                  width: 24,
+                                                  height: 24,
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // ── Options Tabs Row ──────────────────────
+                                if (widget.isTeamMate == true) ...[
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        buildOptionsCard(0, AppLocalizations.of(context)!.profile),
+                                        buildOptionsCard(1, AppLocalizations.of(context)!.leaveBalance),
+                                        buildOptionsCard(2, AppLocalizations.of(context)!.attendance),
+                                        buildOptionsCard(3, AppLocalizations.of(context)!.documents),
+                                        buildOptionsCard(4, AppLocalizations.of(context)!.assets),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(
+                                      5,
+                                      (index) => AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
+                                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                                        width: _selectedOptionIndex == index ? 18.0 : 8.0,
+                                        height: 8.0,
+                                        decoration: BoxDecoration(
+                                          color: _selectedOptionIndex == index
+                                              ? NasColors.darkBlue
+                                              : Colors.grey.shade300,
+                                          borderRadius: BorderRadius.circular(4),
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+
+                                // ── Tab 0: Profile / Personal Information ─
+                                if (_selectedOptionIndex == 0) ...[
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: Colors.grey.shade100),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
                                       child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Align(
-                                            alignment: Alignment.topLeft,
+                                          Center(
                                             child: Text(
-                                              widget.teamData?.userName ??
-                                                  'N/A',
-                                              maxLines: 2,
-                                              softWrap: true,
-                                              overflow: TextOverflow.ellipsis,
+                                              AppLocalizations.of(context)!.personalInformation,
                                               style: GoogleFonts.inter(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                                color: NasColors.darkBlue,
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              widget.teamData?.designation ??
-                                                  'N/A',
-                                              maxLines: 2,
-                                              softWrap: true,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.black,
-                                              ),
-                                            ),
+                                          const SizedBox(height: 16),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.gender,
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? employeeDetails!.first.gender ?? '___'
+                                                : '___',
                                           ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              widget.teamData?.grade ?? 'N/A',
-                                              maxLines: 2,
-                                              softWrap: true,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.black,
-                                              ),
-                                            ),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.nationality,
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? employeeDetails!.first.nationality ?? '___'
+                                                : '___',
                                           ),
-                                          const SizedBox(height: 10),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Text(
-                                              widget.teamData?.empId ?? 'N/A',
-                                              maxLines: 2,
-                                              softWrap: true,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.black,
-                                              ),
-                                            ),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.birthDate,
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? employeeDetails!.first.dob ?? '___'
+                                                : '___',
+                                          ),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.age,
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? employeeDetails!.first.age.toString()
+                                                : '___',
+                                          ),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.martialStatus,
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? employeeDetails!.first.martialStatus ?? '___'
+                                                : '___',
+                                          ),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.phoneNo,
+                                            widget.isTeamMate == false
+                                                ? maskPhoneNumber(
+                                                    (employeeDetails?.isNotEmpty ?? false)
+                                                        ? (employeeDetails!.first.phoneNumber?.first.mobileNumber?.toString() ?? '')
+                                                        : '',
+                                                  )
+                                                : (employeeDetails?.isNotEmpty ?? false)
+                                                    ? (employeeDetails!.first.phoneNumber?.first.mobileNumber?.toString() ?? '___')
+                                                    : '___',
+                                          ),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.address,
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? employeeDetails!.first.address?.streetAddress ?? '___'
+                                                : '___',
+                                          ),
+                                          _buildDetailField(
+                                            AppLocalizations.of(context)!.passportNo,
+                                            (employeeDetails?.isNotEmpty ?? false)
+                                                ? employeeDetails!.first.passport?.id ?? '___'
+                                                : '___',
+                                            isLast: true,
                                           ),
                                         ],
                                       ),
                                     ),
-                                    if (hasOnboarding)
-                                    IconButton  (
-                                      onPressed: (){
-                                        Navigator.push(context, MaterialPageRoute(builder: (context)=> RegisterBiometricDeviceScreen(empId: widget.employees!.employeeInfo!.first.empId, firstName: widget.employees!.firstName, lastName: widget.employees!.lastName, userName: widget.employees!.userName , fromTeamScreen: true,)));
-                                      },
-                                      icon: Image.asset(
-                                        'images/fingerprint.png',   // your image path
-                                        width: 30,
-                                        height: 30,
-                                        color: Colors.red,         // optional if you want color overlay
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 15),
-                            if (widget.isTeamMate == true)
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: [
-                                    buildOptionsCard(0,
-                                        AppLocalizations.of(context)!.profile),
-                                    buildOptionsCard(
-                                        1,
-                                        AppLocalizations.of(context)!
-                                            .leaveBalance),
-                                    buildOptionsCard(
-                                        2,
-                                        AppLocalizations.of(context)!
-                                            .attendance),
-                                    buildOptionsCard(
-                                        3,
-                                        AppLocalizations.of(context)!
-                                            .documents),
-                                    buildOptionsCard(4,
-                                        AppLocalizations.of(context)!.assets),
-                                  ],
-                                ),
-                              ),
-                            const SizedBox(height: 10),
-                            if (widget.isTeamMate == true)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(
-                                    5,
-                                    (index) => AnimatedContainer(
-                                          duration:
-                                              const Duration(milliseconds: 300),
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 4),
-                                          width: _selectedOptionIndex == index
-                                              ? 18.0
-                                              : 8.0,
-                                          height: 8.0,
-                                          decoration: BoxDecoration(
-                                            color: _selectedOptionIndex == index
-                                                ? NasColors.darkBlue
-                                                : Colors.grey,
-                                            // Active color
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                        )),
-                              ),
-                            const SizedBox(height: 10),
-                            if (_selectedOptionIndex == 0) ...[
-                              Container(
-                                width: 400,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(25),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withAlpha(100),
-                                      spreadRadius: 5,
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(25),
-                                  child: Column(
-                                    children: [
-                                      Align(
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          AppLocalizations.of(context)!
-                                              .personalInformation,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.gender,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.gender ?? '___' : '___'}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!
-                                              .nationality,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.nationality ?? '___' : '___'}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!
-                                              .birthDate,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.dob ?? '___' : '___'}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.age,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.age ?? '___' : '___'}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!
-                                              .martialStatus,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.martialStatus ?? '___' : '___'}",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.phoneNo,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          widget.isTeamMate == false
-                                              ? maskPhoneNumber(
-                                            (employeeDetails?.isNotEmpty ?? false)
-                                                ? (employeeDetails!.first.phoneNumber?.first.mobileNumber?.toString() ?? '')
-                                                : '',
-                                          )
-                                              : (employeeDetails?.isNotEmpty ?? false)
-                                              ? (employeeDetails!.first.phoneNumber?.first.mobileNumber?.toString() ?? '___')
-                                              : '___',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      if(widget.isTeamMate == true)...[
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            AppLocalizations.of(context)!.address,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[400],
-                                            ),
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.address?.streetAddress ?? '___' : '___'}",
-                                            maxLines: 2,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey[700],
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            AppLocalizations.of(context)!
-                                                .passportNo,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[400],
-                                            ),
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            "${(employeeDetails?.isNotEmpty ?? false) ? employeeDetails!.first.passport?.id ?? '___' : '___'}",
-                                            maxLines: 2,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey[700],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
                                   ),
-                                ),
-                              ),
-                            ],
-                            if (_selectedOptionIndex == 1) ...[
-                              // ANNUAL LEAVE
-                              if (employeeDetails != null &&
-                                  employeeDetails.isNotEmpty)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(25),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
-                                        spreadRadius: 5,
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          AppLocalizations.of(context)!
-                                              .annualLeave,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  AppLocalizations.of(context)!
-                                                      .leaveUsed,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 20),
-                                                Text(
-                                                  "${employeeDetails.first.leaveBalance?.annualLeave?.used ?? 0}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: 75,
-                                              child: VerticalDivider(
-                                                color: Colors.grey[400],
-                                                thickness: 1,
-                                              ),
-                                            ),
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  AppLocalizations.of(context)!
-                                                      .leaveRemaining,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 20),
-                                                Text(
-                                                  "${employeeDetails.first.leaveBalance?.annualLeave?.remaining ?? 0}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(height: 20),
-                              if (employeeDetails != null &&
-                                  employeeDetails.isNotEmpty)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(25),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.4),
-                                        spreadRadius: 5,
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          AppLocalizations.of(context)!
-                                              .sickLeave,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  AppLocalizations.of(context)!
-                                                      .leaveUsed,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 20),
-                                                Text(
-                                                  "${employeeDetails.first.leaveBalance?.sickLeave?.used ?? 0}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: 75,
-                                              child: VerticalDivider(
-                                                color: Colors.grey[400],
-                                                thickness: 1,
-                                              ),
-                                            ),
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  AppLocalizations.of(context)!
-                                                      .leaveRemaining,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 20),
-                                                Text(
-                                                  "${employeeDetails.first.leaveBalance?.sickLeave?.remaining ?? 0}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(height: 20),
+                                ],
 
-                              // LEAVE HISTORY
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(25),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
-                                      spreadRadius: 5,
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
+                                // ── Tab 1: Leave Balance ──────────────────
+                                if (_selectedOptionIndex == 1) ...[
+                                  if (employeeDetails != null && employeeDetails.isNotEmpty) ...[
+                                    _buildLeaveCard(
+                                      context,
+                                      title: AppLocalizations.of(context)!.annualLeave,
+                                      used: employeeDetails.first.leaveBalance?.annualLeave?.used ?? 0,
+                                      remaining: employeeDetails.first.leaveBalance?.annualLeave?.remaining ?? 0,
                                     ),
+                                    const SizedBox(height: 14),
+                                    _buildLeaveCard(
+                                      context,
+                                      title: AppLocalizations.of(context)!.sickLeave,
+                                      used: employeeDetails.first.leaveBalance?.sickLeave?.used ?? 0,
+                                      remaining: employeeDetails.first.leaveBalance?.sickLeave?.remaining ?? 0,
+                                    ),
+                                    const SizedBox(height: 14),
                                   ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: Colors.grey.shade100),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Row(
                                         children: [
                                           Text(
-                                            AppLocalizations.of(context)!
-                                                .leaveHistory,
+                                            AppLocalizations.of(context)!.leaveHistory,
                                             style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
                                               color: NasColors.darkBlue,
                                             ),
                                           ),
                                           const SizedBox(width: 10),
                                           Icon(
-                                            Icons.history,
+                                            Icons.history_rounded,
                                             color: NasColors.darkBlue,
-                                          )
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                            if (_selectedOptionIndex == 2) ...[
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(25),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
-                                      spreadRadius: 5,
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            AppLocalizations.of(context)
-                                                    ?.attendance ??
-                                                'Attendance',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500,
-                                              color: NasColors.darkBlue,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Icon(Icons.history,
-                                              color: NasColors.darkBlue),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Flexible(
-                                        fit: FlexFit.loose,
-                                        child: ListView.separated(
-                                          padding: EdgeInsets.zero,
-                                          shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          itemCount: singletonClass.employeeDetailsAttendanceDataList.first.data?.first.data?.length ?? 0,
-                                          separatorBuilder: (_, __) => const Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 10),
-                                            child: Divider(
-                                                color: Colors.grey,
-                                                thickness: 1,
-                                                height: 20),
-                                          ),
-                                          itemBuilder: (context, index) {
-                                            final attendanceList = singletonClass.employeeDetailsAttendanceDataList.first.data?.first.data;
-                                            if (attendanceList == null || attendanceList.isEmpty) {
-                                              return Center(
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(20.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Center(
-                                                        child: SizedBox(
-                                                          height: 200,
-                                                          width: 200,
-                                                          child: Lottie.asset('images/empty.json'),
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        AppLocalizations.of(context)!.noData,
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 18,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                            final reversedList = attendanceList.toList();
-                                            if (index >= reversedList.length) {
-                                              return SizedBox();
-                                            }
-                                            final attendance = reversedList[index];
-
-                                            int breakTime = attendance.breakTime ?? 0;
-                                            int breakHours = breakTime ~/ 60;
-                                            int breakMinutes = breakTime % 60;
-
-                                            String date = "___";
-                                            if (attendance.updatedAt != null) {
-                                              try {
-                                                date = DateFormat('dd-MM-yyyy')
-                                                    .format(DateTime.parse(
-                                                        attendance.updatedAt!));
-                                              } catch (_) {
-                                                date = "___";
-                                              }
-                                            }
-
-                                            int? lateMinutes = int.tryParse(
-                                                formatMinutes(
-                                                    attendance.lateMinutes));
-                                            int? earlyCheckOut = int.tryParse(
-                                                formatMinutes(
-                                                    attendance.earlyCheckOut));
-
-                                            return Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 10),
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey
-                                                        .withOpacity(0.3),
-                                                    blurRadius: 6,
-                                                    offset: const Offset(0, 4),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Column(
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      ClipOval(
-                                                        child: CircleAvatar(
-                                                          backgroundColor:
-                                                              Colors.white,
-                                                          radius: 30,
-                                                          child: Image.asset(
-                                                            'images/DP.png',
-                                                            fit: BoxFit.cover,
-                                                            width: 100,
-                                                            height: 100,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 5),
-                                                      Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          SizedBox(
-                                                            width:150,
-                                                            child: Text(
-                                                              attendance.name?.isNotEmpty == true
-                                                                  ? attendance.name! : "___",
-                                                              style: GoogleFonts.inter(
-                                                                fontSize: 15,
-                                                                fontWeight: FontWeight.bold,
-                                                                color: Colors.black,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                              height: 5),
-                                                          Text(
-                                                            _translateStatus(attendance.status, context),
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: getStatusColor(
-                                                                  attendance
-                                                                          .status ??
-                                                                      ""),
-                                                              fontSize: 13,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const Spacer(),
-                                                      Builder(
-                                                        builder: (_) {
-                                                          int workedMinutes =
-                                                              attendance
-                                                                      .totalHoursWorked ??
-                                                                  0;
-                                                          double progress =
-                                                              (workedMinutes /
-                                                                      (11 * 60))
-                                                                  .clamp(
-                                                                      0.0, 1.0);
-
-                                                          return Column(
-                                                            children: [
-                                                              Text(
-                                                                "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
-                                                                style:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontSize: 13,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 5),
-                                                              SizedBox(
-                                                                width: 80,
-                                                                height: 8,
-                                                                child:
-                                                                    ClipRRect(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8),
-                                                                  child:
-                                                                      LinearProgressIndicator(
-                                                                    value:
-                                                                        progress,
-                                                                    backgroundColor:
-                                                                        Colors.grey[
-                                                                            300],
-                                                                    valueColor:
-                                                                        AlwaysStoppedAnimation<
-                                                                            Color>(
-                                                                      progress >=
-                                                                              1.0
-                                                                          ? Colors
-                                                                              .green
-                                                                          : Colors
-                                                                              .orange,
-                                                                    ),
-                                                                    minHeight:
-                                                                        8,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          );
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        attendance.empId
-                                                                    ?.isNotEmpty ==
-                                                                true
-                                                            ? attendance.empId!
-                                                            : "___",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 5),
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        date,
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                      const Spacer(),
-                                                      Text(
-                                                        "${breakHours}h ${breakMinutes}m",
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                      const Icon(Icons.coffee,
-                                                          size: 20,
-                                                          color: Colors.brown),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  const Divider(
-                                                      color: Colors.grey),
-                                                  Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 8),
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          Colors.grey.shade200,
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .only(
-                                                        bottomLeft:
-                                                            Radius.circular(15),
-                                                        bottomRight:
-                                                            Radius.circular(15),
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Column(
-                                                          children: [
-                                                            Text(
-                                                              AppLocalizations.of(
-                                                                          context)
-                                                                      ?.checkIn ??
-                                                                  "Check In",
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors.grey,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 5),
-                                                            Text(
-                                                              singletonClass
-                                                                  .formatCheckInTime(
-                                                                      attendance
-                                                                              .clockInTime ??
-                                                                          "" , context),
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: (lateMinutes !=
-                                                                            null &&
-                                                                        lateMinutes >
-                                                                            0)
-                                                                    ? NasColors
-                                                                        .pending
-                                                                    : Colors
-                                                                        .black,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Column(
-                                                          children: [
-                                                            Text(
-                                                              AppLocalizations.of(
-                                                                          context)
-                                                                      ?.checkOut ??
-                                                                  "Check Out",
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors.grey,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 5),
-                                                            Text(
-                                                              singletonClass
-                                                                  .formatCheckInTime(
-                                                                      attendance
-                                                                              .clockOutTime ??
-                                                                          "" , context),
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: (lateMinutes !=
-                                                                            null &&
-                                                                        lateMinutes >
-                                                                            0)
-                                                                    ? NasColors
-                                                                        .pending
-                                                                    : Colors
-                                                                        .black,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Column(
-                                                          children: [
-                                                            Text(
-                                                              AppLocalizations.of(
-                                                                          context)
-                                                                      ?.late ??
-                                                                  "Late",
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors.grey,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 5),
-                                                            Text(
-                                                              "${lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${lateMinutes % 60}${AppLocalizations.of(context)!.m}",
-                                                              style: GoogleFonts.inter(
-                                                                fontSize: 13,
-                                                                fontWeight: FontWeight.bold,
-                                                                color: NasColors.pending,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Column(
-                                                          children: [
-                                                            Text(
-                                                              AppLocalizations.of(
-                                                                          context)
-                                                                      ?.earlyLeft ??
-                                                                  "Early Left",
-                                                              style: GoogleFonts
-                                                                  .inter(
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color:
-                                                                    Colors.grey,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 5),
-                                                            Text(
-                                                              "${earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${earlyCheckOut % 60}${AppLocalizations.of(context)!.m}",
-                                                              style: GoogleFonts.inter(
-                                                                fontSize: 13,
-                                                                fontWeight: FontWeight.bold,
-                                                                color: NasColors.onTime,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                            if (_selectedOptionIndex == 3) ...[
-                              Column(
-                                children: [
-                                  (singletonClass.employeeDetailsDataList.isNotEmpty &&
-                                      singletonClass.employeeDetailsDataList.first.data != null &&
-                                      singletonClass.employeeDetailsDataList.first.data!.isNotEmpty &&
-                                      singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo != null &&
-                                      singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo!.isNotEmpty)
-                                      ? ListView.builder(
-                                    padding: EdgeInsets.zero,
-                                    shrinkWrap: true,
-                                    itemCount: singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo?.length ?? 0,
-                                    itemBuilder: (BuildContext context, int index) {
-                                      final documents = singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo?.reversed.toList()[index];
-                                      const String s3BaseUrl = 'https://nastecsol-hr-store.s3.amazonaws.com/';
-
-                                      final String url = [
-                                        documents?.url,
-                                        documents?.remarks,
-                                      ].firstWhere(
-                                            (value) => value != null && value.contains(s3BaseUrl),
-                                        orElse: () => '',
-                                      );
-                                      final fileType = url.split('.').last.toLowerCase();
-                                      final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
-                                      if(documents!.type == "Doc_editor_shared"){
-                                        return SizedBox.shrink();
-                                      }
-                                      return Transform.translate(
-                                        offset: Offset(0, index == 0 ? 0 : -10),
-                                        child: GestureDetector(
-                                          onTap: () async {
-                                            if (url.isNotEmpty) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => FileViewerScreen(
-                                                    url: url,
-                                                    fileName: "${documents.type}",
-                                                  ),
-                                                ),
-                                              );
-                                            } else {
-                                              debugPrint('Invalid attachment URL');
-                                            }
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.only(
-                                                top: 10.0, left: 30, right: 10),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                if (index != 0)
-                                                  const BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 10,
-                                                    spreadRadius: 10,
-                                                    offset: Offset(0, -6),
-                                                  ),
-                                                const BoxShadow(
-                                                  color: Colors.black12,
-                                                  blurRadius: 10,
-                                                  offset: Offset(0, 5),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  documents.type == "Doc_Contract_Emp"
-                                                      ? AppLocalizations.of(context)!
-                                                      .employmentContract
-                                                      :  documents.type == "Doc_Uploaded_EMP" ? AppLocalizations.of(context)!.uploadedDocument : documents.type ?? '',
-                                                  maxLines: 2,
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 10),
-                                                Row(
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  children: [
-                                                    Icon(Icons.arrow_forward_ios_outlined,
-                                                      color: Colors.grey,
-                                                      size: 20,
-                                                    )
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius: BorderRadius.circular(10),
-                                                      child: isImage
-                                                          ? Image.network(
-                                                        url,
-                                                        height: 60,
-                                                        width: double.infinity,
-                                                        fit: BoxFit.cover,
-                                                        alignment: Alignment.topCenter,
-                                                      )
-                                                          : Image.asset(
-                                                        _getFileIcon(url),
-                                                        height: 60,
-                                                        width: 60,
-                                                      ),
-                                                    ),
-                                                    Spacer(),
-                                                    GestureDetector(
-                                                      onTap: () async {
-                                                        if (url.isNotEmpty) {
-                                                          final uri = Uri.parse(url);
-                                                          if (await canLaunchUrl(uri)) {
-                                                            await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                                          } else {
-                                                            debugPrint('Could not launch $url');
-                                                          }
-                                                        } else {
-                                                          debugPrint('Invalid download URL');
-                                                        }
-                                                      },
-                                                      child:  Image.asset(
-                                                        'images/download.png',
-                                                        height: 35,
-                                                        width: 35,
-                                                      ),
-                                                    ),
-                                                    SizedBox(width: 20),
-                                                  ],
-                                                ),
-                                                SizedBox(height: 10),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  )
-                                      : Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20.0),
-                                      child: Column(
-                                        children: [
-                                          Center(
-                                            child: SizedBox(
-                                              height: 200,
-                                              width: 200,
-                                              child: Lottie.asset('images/empty.json'),
-                                            ),
-                                          ),
-                                          Text(
-                                            AppLocalizations.of(context)!.noData,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w500,
-                                              color: NasColors.darkBlue,
-                                            ),
+                                            size: 20,
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
                                 ],
-                              ),
-                            ],
-                            if (_selectedOptionIndex == 4) ...[
-                              (singletonClass.employeeDetailsDataList.isNotEmpty &&
-                                  singletonClass.employeeDetailsDataList.first.data != null &&
-                                  singletonClass.employeeDetailsDataList.first.data!.isNotEmpty &&
-                                  singletonClass.employeeDetailsDataList.first.data!.first.assetsInfo != null &&
-                                  singletonClass.employeeDetailsDataList.first.data!.first.assetsInfo!.isNotEmpty)
-                                  ? ListView.builder(
-                                padding: const EdgeInsets.all(5),
-                                shrinkWrap: true,
-                                itemCount: singletonClass
-                                    .employeeDetailsDataList.first.data!.first.assetsInfo!.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  final assets = singletonClass
-                                      .employeeDetailsDataList.first.data!.first.assetsInfo![index];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => EmployeeDetailsScreenAssets(
-                                                assetsInfo: assets,
-                                              )));
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 15),
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                        color: NasColors.containerColor,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.3),
-                                            spreadRadius: 2,
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 0),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
+
+                                // ── Tab 2: Attendance ─────────────────────
+                                if (_selectedOptionIndex == 2) ...[
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: Colors.grey.shade100),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Container(
-                                            height: 165,
-                                            width: 80,
-                                            decoration: BoxDecoration(
-                                              borderRadius: const BorderRadius.only(
-                                                topLeft: Radius.circular(15),
-                                                bottomLeft: Radius.circular(15),
-                                              ),
-                                              color: NasColors.darkBlue,
-                                              image: DecorationImage(
-                                                image: AssetImage(
-                                                  _getImageForEventType(assets.assetType ?? ""),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                AppLocalizations.of(context)?.attendance ?? 'Attendance',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: NasColors.darkBlue,
                                                 ),
-                                                fit: BoxFit.fitWidth,
                                               ),
-                                            ),
+                                              const SizedBox(width: 10),
+                                              Icon(
+                                                Icons.history_rounded,
+                                                color: NasColors.darkBlue,
+                                                size: 20,
+                                              ),
+                                            ],
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Row(children: [
-                                                  Text(
-                                                    assets.assetName ?? "",
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 15,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 2.5),
-                                                  Column(
-                                                    children: [
-                                                      Text(
-                                                        assets.assetType ?? "",
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: NasColors.darkBlue,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 5),
-                                                      Container(
-                                                        height: 30,
-                                                        width: 50,
-                                                        decoration: BoxDecoration(
-                                                          shape: BoxShape.rectangle,
-                                                          color: NasColors.onTime,
-                                                          borderRadius: BorderRadius.circular(10),
-                                                        ),
-                                                        child: Center(
-                                                          child: Text(
-                                                            "Status",
-                                                            textAlign: TextAlign.center,
-                                                            style: GoogleFonts.inter(
-                                                              fontWeight: FontWeight.bold,
-                                                              color: Colors.white,
-                                                              fontSize: 10,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ]),
-                                                const SizedBox(height: 20),
-                                                Text(
-                                                  "${AppLocalizations.of(context)!.id}# ${assets.assetId ?? ""}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 20),
-                                                Text(
-                                                  "${AppLocalizations.of(context)!.assignedAt} ${assets.issueDateFrom ?? ""}",
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: NasColors.darkBlue,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
+                                          const SizedBox(height: 14),
+                                          _buildAttendanceList(context),
                                         ],
                                       ),
                                     ),
-                                  );
-                                },
+                                  ),
+                                ],
+
+                                // ── Tab 3: Documents ──────────────────────
+                                if (_selectedOptionIndex == 3) ...[
+                                  _buildDocumentsSection(context),
+                                ],
+
+                                // ── Tab 4: Assets ─────────────────────────
+                                if (_selectedOptionIndex == 4) ...[
+                                  _buildAssetsSection(context),
+                                ],
+                              ],
+                            );
+                          }
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Helper: Detail Field Row ─────────────────────────────────────────────
+  Widget _buildDetailField(String label, String value, {bool isLast = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: NasColors.darkBlue,
+            ),
+          ),
+          if (!isLast) ...[
+            const SizedBox(height: 10),
+            Divider(color: Colors.grey.shade100, height: 1),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Helper: Leave Card ───────────────────────────────────────────────────
+  Widget _buildLeaveCard(
+    BuildContext context, {
+    required String title,
+    required int used,
+    required int remaining,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: NasColors.darkBlue,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.leaveUsed,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "$used",
+                      style: GoogleFonts.inter(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  height: 45,
+                  width: 1,
+                  color: Colors.grey.shade200,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.leaveRemaining,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "$remaining",
+                      style: GoogleFonts.inter(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: NasColors.lightBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Helper: Attendance List ──────────────────────────────────────────────
+  Widget _buildAttendanceList(BuildContext context) {
+    if (singletonClass.employeeDetailsAttendanceDataList.isEmpty ||
+        singletonClass.employeeDetailsAttendanceDataList.first.data == null ||
+        singletonClass.employeeDetailsAttendanceDataList.first.data!.isEmpty ||
+        singletonClass.employeeDetailsAttendanceDataList.first.data!.first.data == null ||
+        singletonClass.employeeDetailsAttendanceDataList.first.data!.first.data!.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 140,
+                width: 140,
+                child: Lottie.asset('images/empty.json'),
+              ),
+              Text(
+                AppLocalizations.of(context)!.noData,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final attendanceList = singletonClass.employeeDetailsAttendanceDataList.first.data!.first.data!;
+
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: attendanceList.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final attendance = attendanceList[index];
+
+        int breakTime = attendance.breakTime ?? 0;
+        int breakHours = breakTime ~/ 60;
+        int breakMinutes = breakTime % 60;
+
+        String date = "___";
+        if (attendance.updatedAt != null) {
+          try {
+            date = DateFormat('dd-MM-yyyy').format(DateTime.parse(attendance.updatedAt!));
+          } catch (_) {
+            date = "___";
+          }
+        }
+
+        int? lateMinutes = int.tryParse(formatMinutes(attendance.lateMinutes));
+        int? earlyCheckOut = int.tryParse(formatMinutes(attendance.earlyCheckOut));
+
+        return Container(
+          padding: const EdgeInsets.all(12.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.grey.shade50,
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  ClipOval(
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 22,
+                      child: Image.asset(
+                        'images/DP.png',
+                        fit: BoxFit.cover,
+                        width: 44,
+                        height: 44,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          attendance.name?.isNotEmpty == true ? attendance.name! : "___",
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: NasColors.darkBlue,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _translateStatus(attendance.status, context),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: getStatusColor(attendance.status ?? ""),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Builder(
+                    builder: (_) {
+                      int workedMinutes = attendance.totalHoursWorked ?? 0;
+                      double progress = (workedMinutes / (11 * 60)).clamp(0.0, 1.0);
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            "${workedMinutes ~/ 60}h ${workedMinutes % 60}m",
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: 70,
+                            height: 6,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                backgroundColor: Colors.grey[300],
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  progress >= 1.0 ? Colors.green : Colors.orange,
+                                ),
+                                minHeight: 6,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    attendance.empId?.isNotEmpty == true ? attendance.empId! : "___",
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  Text(
+                    date,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.coffee_rounded, size: 16, color: Colors.brown.shade400),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${breakHours}h ${breakMinutes}m",
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildTimeColumn(
+                      AppLocalizations.of(context)?.checkIn ?? "Check In",
+                      singletonClass.formatCheckInTime(attendance.clockInTime ?? "", context),
+                      textColor: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black87,
+                    ),
+                    _buildTimeColumn(
+                      AppLocalizations.of(context)?.checkOut ?? "Check Out",
+                      singletonClass.formatCheckInTime(attendance.clockOutTime ?? "", context),
+                      textColor: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black87,
+                    ),
+                    _buildTimeColumn(
+                      AppLocalizations.of(context)?.late ?? "Late",
+                      "${lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${lateMinutes % 60}${AppLocalizations.of(context)!.m}",
+                      textColor: NasColors.pending,
+                    ),
+                    _buildTimeColumn(
+                      AppLocalizations.of(context)?.earlyLeft ?? "Early Left",
+                      "${earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${earlyCheckOut % 60}${AppLocalizations.of(context)!.m}",
+                      textColor: NasColors.onTime,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTimeColumn(String label, String value, {Color textColor = Colors.black87}) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade500,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Helper: Documents Section ────────────────────────────────────────────
+  Widget _buildDocumentsSection(BuildContext context) {
+    final docsInfo = (singletonClass.employeeDetailsDataList.isNotEmpty &&
+            singletonClass.employeeDetailsDataList.first.data != null &&
+            singletonClass.employeeDetailsDataList.first.data!.isNotEmpty)
+        ? singletonClass.employeeDetailsDataList.first.data!.first.documentsInfo
+        : null;
+
+    if (docsInfo == null || docsInfo.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 180,
+                width: 180,
+                child: Lottie.asset('images/empty.json'),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                AppLocalizations.of(context)!.noData,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: docsInfo.length,
+      itemBuilder: (BuildContext context, int index) {
+        final documents = docsInfo[index];
+        const String s3BaseUrl = 'https://nastecsol-hr-store.s3.amazonaws.com/';
+
+        final String url = [
+          documents.url,
+          documents.remarks,
+        ].firstWhere(
+          (value) => value != null && value.contains(s3BaseUrl),
+          orElse: () => '',
+        );
+
+        final fileType = url.split('.').last.toLowerCase();
+        final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);
+
+        if (documents.type == "Doc_editor_shared") {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () async {
+                if (url.isNotEmpty) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FileViewerScreen(
+                        url: url,
+                        fileName: "${documents.type}",
+                      ),
+                    ),
+                  );
+                } else {
+                  debugPrint('Invalid attachment URL');
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: Row(
+                  children: [
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: NasColors.darkBlue.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: isImage
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  url,
+                                  height: 44,
+                                  width: 44,
+                                  fit: BoxFit.cover,
+                                ),
                               )
-                                  : Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    children: [
-                                      Center(
-                                        child: SizedBox(
-                                          height: 200,
-                                          width: 200,
-                                          child: Lottie.asset('images/empty.json'),
-                                        ),
-                                      ),
-                                      Text(
-                                        AppLocalizations.of(context)!.noData,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: NasColors.darkBlue,
-                                        ),
-                                      ),
-                                    ],
+                            : Image.asset(
+                                _getFileIcon(url),
+                                height: 30,
+                                width: 30,
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            documents.type == "Doc_Contract_Emp"
+                                ? AppLocalizations.of(context)!.employmentContract
+                                : documents.type == "Doc_Uploaded_EMP"
+                                    ? AppLocalizations.of(context)!.uploadedDocument
+                                    : documents.type ?? '',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: NasColors.darkBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        if (url.isNotEmpty) {
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            debugPrint('Could not launch $url');
+                          }
+                        } else {
+                          debugPrint('Invalid download URL');
+                        }
+                      },
+                      child: Container(
+                        height: 36,
+                        width: 36,
+                        decoration: BoxDecoration(
+                          color: NasColors.darkBlue.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            'images/download.png',
+                            height: 20,
+                            width: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: NasColors.darkBlue,
+                      size: 14,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Helper: Assets Section ───────────────────────────────────────────────
+  Widget _buildAssetsSection(BuildContext context) {
+    final assetsInfo = (singletonClass.employeeDetailsDataList.isNotEmpty &&
+            singletonClass.employeeDetailsDataList.first.data != null &&
+            singletonClass.employeeDetailsDataList.first.data!.isNotEmpty)
+        ? singletonClass.employeeDetailsDataList.first.data!.first.assetsInfo
+        : null;
+
+    if (assetsInfo == null || assetsInfo.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 180,
+                width: 180,
+                child: Lottie.asset('images/empty.json'),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                AppLocalizations.of(context)!.noData,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: assetsInfo.length,
+      itemBuilder: (BuildContext context, int index) {
+        final assets = assetsInfo[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmployeeDetailsScreenAssets(
+                      assetsInfo: assets,
+                    ),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    Container(
+                      height: 70,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [NasColors.darkBlue, NasColors.lightBlue],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          _getImageForEventType(assets.assetType ?? ""),
+                          height: 38,
+                          width: 38,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  assets.assetName ?? "",
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: NasColors.onTime,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  "Active",
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 10,
                                   ),
                                 ),
                               ),
-                            ]
-
-                          ],
-                        );
-                      }
-                    }) : Loader(),
-              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            assets.assetType ?? "",
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "${AppLocalizations.of(context)!.id}# ${assets.assetId ?? ""}",
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: NasColors.darkBlue,
+                                ),
+                              ),
+                              Text(
+                                "${AppLocalizations.of(context)!.assignedAt} ${assets.issueDateFrom ?? ""}",
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-        ]));
+        );
+      },
+    );
+  }
+
+  // ── Option Tab Button (Pill Design Matching TeamScreen) ──────────────────
+  Widget buildOptionsCard(int index, String title) {
+    final bool isSelected = _selectedOptionIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedOptionIndex = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 42,
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [NasColors.darkBlue, NasColors.lightBlue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : Colors.grey.shade200,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? NasColors.darkBlue.withOpacity(0.25)
+                  : Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : NasColors.darkBlue,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String maskPhoneNumber(String number) {
+    if (number.length < 4) return number;
+    String prefix = number.substring(0, 3);
+    String suffix = number.substring(number.length - 1);
+    String masked = '*' * (number.length - 4);
+    return '$prefix$masked$suffix';
+  }
+
+  Future<EmployeeDetailsData?> getEmployeeDetailsData() async {
+    String? employeeId = widget.teamData?.empId ?? widget.employees?.employeeInfo?.first.empId;
+    setState(() {
+      isLoading = true;
+    });
+    var client = http.Client();
+    var uri = Uri.parse(
+        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
+    var response = await client.get(uri, headers: singletonClass.getHeaders());
+    debugPrint(response.body);
+    setState(() {
+      isLoading = false;
+    });
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var employeeData = EmployeeDetailsData.fromJson(responseBody);
+      singletonClass.setEmployeeDetailsData([employeeData]);
+      getEmployeeAttendanceData();
+      return employeeData;
+    }
+    return null;
+  }
+
+  ///EMPLOYEE ATTENDANCE DATA API CALL
+  Future<EmployeeDetailsAttendanceData?> getEmployeeAttendanceData(
+      {
+        int limit = 10000,
+        int page = 0,
+      }
+      ) async {
+    String? employeeId =
+        singletonClass.employeeDetailsDataList.first.data?.first.id;
+    setState(() {
+      isLoading = true;
+    });
+    var client = http.Client();
+
+    DateTime now = DateTime.now();
+    DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
+
+    String firstDateString =
+        '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
+    String currentDateString =
+        '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
+
+    var uri = Uri.parse(
+        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
+
+    var response = await client.get(uri, headers: singletonClass.getHeaders());
+    debugPrint("Employee Attendance Data${response.body}");
+    debugPrint(employeeId);
+    debugPrint(firstDateString);
+    debugPrint(currentDateString);
+    setState(() {
+      isLoading = false;
+    });
+    if (response.statusCode == 200) {
+      var responseBody = json.decode(response.body);
+      var attendance = EmployeeDetailsAttendanceData.fromJson(responseBody);
+      singletonClass.setEmployeeAttendanceDataList([attendance]);
+      return attendance;
+    }
+
+    return null;
   }
 
   String _getFileIcon(String fileUrl) {
@@ -1693,128 +1523,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     }
   }
 
-  Widget buildOptionsCard(int index, String title) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedOptionIndex = index;
-        });
-      },
-      child: SizedBox(
-        height: 65,
-        width: 140,
-        child: Card(
-          color:
-              _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
-          margin: const EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: BorderSide(
-              color:
-                  _selectedOptionIndex == index ? Colors.white : Colors.white,
-              width: 0,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: _selectedOptionIndex == index
-                      ? Colors.white
-                      : NasColors.darkBlue,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String maskPhoneNumber(String number) {
-    if (number.length < 4) return number; // in case number is too short
-    String prefix = number.substring(0, 3); // e.g. +92
-    String suffix = number.substring(number.length - 1); // last digit
-    String masked = '*' * (number.length - 4); // mask middle part
-    return '$prefix$masked$suffix';
-  }
-
-  Future<EmployeeDetailsData?> getEmployeeDetailsData() async {
-    String? employeeId = widget.teamData?.empId;
-    setState(() {
-      isLoading = true;
-    });
-    var client = http.Client();
-    var uri = Uri.parse(
-        '${singletonClass.baseURL}/employee/getDataByEMPId/$employeeId');
-    var response = await client.get(uri, headers: singletonClass.getHeaders());
-    debugPrint(response.body);
-    setState(() {
-      isLoading = false;
-    });
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var employeeData = EmployeeDetailsData.fromJson(responseBody);
-      singletonClass.setEmployeeDetailsData([employeeData]);
-      getEmployeeAttendanceData();
-      return employeeData;
-    }
-    return null;
-  }
-
-  ///EMPLOYEE ATTENDANCE DATA API CALL
-  Future<EmployeeDetailsAttendanceData?> getEmployeeAttendanceData(
-      {
-        int limit = 10000,
-        int page = 0,
-      }
-      ) async {
-    String? employeeId =
-        singletonClass.employeeDetailsDataList.first.data?.first.id;
-    setState(() {
-      isLoading = true;
-    });
-    var client = http.Client();
-
-    // Get current date
-    DateTime now = DateTime.now();
-
-    // Get the first date of the current month
-    DateTime firstDateOfMonth = DateTime(now.year, now.month, 1);
-
-    // Format the dates in 'MM-dd-yyyy' format
-    String firstDateString =
-        '${firstDateOfMonth.month.toString().padLeft(2, '0')}-${firstDateOfMonth.day.toString().padLeft(2, '0')}-${firstDateOfMonth.year}';
-    String currentDateString =
-        '${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.year}';
-
-    var uri = Uri.parse(
-        '${singletonClass.baseURL}/c-emp-attendance/getDataByEmployeeId/$employeeId/$currentDateString/$firstDateString?limit=$limit&page=$page');
-
-    var response = await client.get(uri, headers: singletonClass.getHeaders());
-    debugPrint("Employee Attendance Data${response.body}");
-    debugPrint(employeeId);
-    debugPrint(firstDateString);
-    debugPrint(currentDateString);
-    setState(() {
-      isLoading = false;
-    });
-    if (response.statusCode == 200) {
-      var responseBody = json.decode(response.body);
-      var attendance = EmployeeDetailsAttendanceData.fromJson(responseBody);
-      singletonClass.setEmployeeAttendanceDataList([attendance]);
-      return attendance;
-    }
-
-    return null;
-  }
-
   String _getImageForEventType(String eventType) {
     switch (eventType) {
       case 'laptop':
@@ -1822,7 +1530,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       case 'car':
         return 'images/Car.png';
       default:
-        return 'images/Vector.png'; // Default image for company or other types
+        return 'images/Vector.png';
     }
   }
 }

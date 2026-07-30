@@ -106,7 +106,99 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+  Widget _buildHeader(BuildContext context) {
+    String titleText = AppLocalizations.of(context)!.myProfile;
+    if (_selectedOptionIndex2 == 1) titleText = AppLocalizations.of(context)!.bankAccounts;
+    if (_selectedOptionIndex2 == 2) titleText = AppLocalizations.of(context)!.loans;
+    if (_selectedOptionIndex2 == 3) titleText = AppLocalizations.of(context)!.familyInfo;
+    if (_selectedOptionIndex2 == 4) titleText = AppLocalizations.of(context)!.shiftInfo;
+    if (_selectedOptionIndex2 == 5) titleText = AppLocalizations.of(context)!.signature;
 
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      titleText,
+                      style: GoogleFonts.inter(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  if (_selectedOptionIndex2 == 0)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: const Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    buildOptionsCard2(0, AppLocalizations.of(context)!.profile),
+                    buildOptionsCard2(1, AppLocalizations.of(context)!.bankAccounts),
+                    buildOptionsCard2(2, AppLocalizations.of(context)!.loans),
+                    buildOptionsCard2(3, AppLocalizations.of(context)!.familyInfo),
+                    buildOptionsCard2(4, AppLocalizations.of(context)!.shiftInfo),
+                    buildOptionsCard2(5, AppLocalizations.of(context)!.signature),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,130 +210,15 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Scaffold(
       backgroundColor: NasColors.backGround,
       body: Stack(
-        children: [ Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              color: Colors.white,
-              child: Padding(
-                padding:
-                    const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        if(_selectedOptionIndex2 == 0)...[
-                          Text(
-                            AppLocalizations.of(context)!.myProfile,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        if(_selectedOptionIndex2 == 1)...[
-                          Text(
-                            AppLocalizations.of(context)!.bankAccounts,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        if(_selectedOptionIndex2 == 2)...[
-                          Text(
-                            AppLocalizations.of(context)!.loans,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        if(_selectedOptionIndex2 == 3)...[
-                          Text(
-                            AppLocalizations.of(context)!.familyInfo,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        if(_selectedOptionIndex2 == 4)...[
-                          Text(
-                            AppLocalizations.of(context)!.shiftInfo,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        if(_selectedOptionIndex2 == 5)...[
-                          Text(
-                            AppLocalizations.of(context)!.signature,
-                            style: GoogleFonts.inter(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: NasColors.darkBlue,
-                            ),
-                          ),
-                        ],
-                        const Spacer(),
-                        if (_selectedOptionIndex2 == 0)
-                          IconButton(
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=> const SettingScreen()));
-                            },
-                            icon: Container(
-                              height: 40,
-                              width: 40,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.4),
-                                    spreadRadius: 5,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.settings,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          buildOptionsCard2(0, AppLocalizations.of(context)!.profile),
-                          buildOptionsCard2(1, AppLocalizations.of(context)!.bankAccounts),
-                          buildOptionsCard2(2, AppLocalizations.of(context)!.loans),
-                          buildOptionsCard2(3, AppLocalizations.of(context)!.familyInfo),
-                          buildOptionsCard2(4, AppLocalizations.of(context)!.shiftInfo),
-                          buildOptionsCard2(5, AppLocalizations.of(context)!.signature),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (_selectedOptionIndex2 == 0)...[
-              Expanded(
-                child: Container(
-                  color: Colors.white,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              if (_selectedOptionIndex2 == 0)...[
+                Expanded(
+                  child: Container(
+                    color: NasColors.backGround,
                   child: RefreshIndicator(
                     color: NasColors.darkBlue,
                     backgroundColor: Colors.white,
@@ -261,14 +238,17 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       width: 400,
                                       margin: const EdgeInsets.only(top: 30),
                                       decoration: BoxDecoration(
-                                        color: NasColors.darkBlue.withOpacity(_expanded ? 1 : 0.9), // fade effect
-                                        borderRadius: BorderRadius.circular(_expanded ? 30 : 60), // round animation
+                                        gradient: LinearGradient(
+                                          colors: [NasColors.darkBlue, NasColors.lightBlue],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(_expanded ? 24 : 32),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.grey.withOpacity(0.4),
-                                            spreadRadius: 5,
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 3),
+                                            color: NasColors.darkBlue.withOpacity(0.25),
+                                            blurRadius: 14,
+                                            offset: const Offset(0, 5),
                                           ),
                                         ],
                                       ),
@@ -455,15 +435,20 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         height: 35,
                                         width: 35,
                                         decoration: BoxDecoration(
-                                            borderRadius:
-                                            BorderRadius.circular(15),
-                                            color: Colors.white,
-                                            border: Border.all(
-                                                color: Colors.black, width: 1)),
-                                        child: const Icon(
-                                          Icons.camera_alt_outlined,
-                                          color: Colors.black,
-                                            size: 27,
+                                          borderRadius: BorderRadius.circular(12),
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.15),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          Icons.camera_alt_rounded,
+                                          color: NasColors.darkBlue,
+                                          size: 20,
                                         ),
                                       ),
                                       onPressed: () async {
@@ -505,24 +490,23 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ],
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(20.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                             child: Container(
-                              width: 400,
+                              width: double.infinity,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
+                                borderRadius: BorderRadius.circular(20),
                                 color: Colors.white,
+                                border: Border.all(color: NasColors.darkBlue.withOpacity(0.06)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.4),
-                                    spreadRadius: 5,
-                                    blurRadius: 10,
-                                    offset: const Offset(0,
-                                        3),
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(25),
+                                padding: const EdgeInsets.all(20),
                                 child: Column(
                                   children: [
                                     Align(
@@ -531,9 +515,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         AppLocalizations.of(context)!
                                             .personalInformation,
                                         style: GoogleFonts.inter(
-                                          fontSize: 20,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: NasColors.darkBlue,
                                         ),
                                       ),
                                     ),
@@ -772,7 +756,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (_selectedOptionIndex2 == 1)...[
               Expanded(
                 child: Container(
-                    color: Colors.white,
+                    color: NasColors.backGround,
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Column(
@@ -801,14 +785,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       padding: const EdgeInsets.all(10.0),
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(25),
+                                          borderRadius: BorderRadius.circular(20),
                                           color: Colors.white,
+                                          border: Border.all(color: NasColors.darkBlue.withOpacity(0.06)),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.grey.withOpacity(0.4),
-                                              spreadRadius: 5,
-                                              blurRadius: 10,
-                                              offset: const Offset(0, 3),
+                                              color: Colors.black.withOpacity(0.04),
+                                              blurRadius: 12,
+                                              offset: const Offset(0, 4),
                                             ),
                                           ],
                                         ),
@@ -1190,7 +1174,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (_selectedOptionIndex2 == 2)...[
               Expanded(
                 child: Container(
-                  color: Colors.white,
+                  color: NasColors.backGround,
                   child: const LoanScreen(),
                 ),
               ),
@@ -1198,26 +1182,25 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (_selectedOptionIndex2 == 3)...[
               Expanded(
                 child: Container(
-                    color: Colors.white,
+                    color: NasColors.backGround,
                     child: ListView(
                       padding: EdgeInsets.zero,
                       children: [
                         Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(20.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                               child: Container(
-                                width: 400,
+                                width: double.infinity,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(25),
+                                  borderRadius: BorderRadius.circular(20),
                                   color: Colors.white,
+                                  border: Border.all(color: NasColors.darkBlue.withOpacity(0.06)),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
-                                      spreadRadius: 5,
-                                      blurRadius: 10,
-                                      offset: const Offset(0,
-                                          3),
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
@@ -1485,25 +1468,25 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (_selectedOptionIndex2 == 4)...[
               Expanded(
                 child: Container(
-                  color: Colors.white,
+                  color: NasColors.backGround,
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
                       Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(20.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                             child: Container(
-                              width: 400,
+                              width: double.infinity,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
+                                borderRadius: BorderRadius.circular(20),
                                 color: Colors.white,
+                                border: Border.all(color: NasColors.darkBlue.withOpacity(0.06)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.4),
-                                    spreadRadius: 5,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
@@ -1736,7 +1719,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (_selectedOptionIndex2 == 5)...[
               Expanded(
                 child: Container(
-                    color: Colors.white,
+                    color: NasColors.backGround,
                     child: RefreshIndicator(
                       color: NasColors.darkBlue,
                       backgroundColor: Colors.white,
@@ -1854,86 +1837,86 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   ///Cards
   Widget buildOptionsCard(int index, String title) {
+    final isSelected = _selectedOptionIndex == index;
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedOptionIndex = index;
         });
       },
-      child: SizedBox(
-        height: 70,
-        width: 140,
-        child: Card(
-          color:
-              _selectedOptionIndex == index ? NasColors.darkBlue : Colors.white,
-          margin: const EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(
-              color:
-                  _selectedOptionIndex == index ? Colors.white : Colors.white,
-              width: 0,
-            ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? NasColors.darkBlue : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? NasColors.darkBlue : NasColors.darkBlue.withOpacity(0.15),
+            width: 1.5,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: _selectedOptionIndex == index
-                      ? Colors.white
-                      : NasColors.darkBlue,
-                ),
-              ),
-            ],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: NasColors.darkBlue.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : [],
+        ),
+        child: Center(
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              color: isSelected ? Colors.white : NasColors.darkBlue,
+            ),
           ),
         ),
       ),
     );
   }
+
   Widget buildOptionsCard2(int index, String title) {
+    final isSelected = _selectedOptionIndex2 == index;
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedOptionIndex2 = index;
         });
       },
-      child: SizedBox(
-        height: 60,
-        width: 130,
-        child: Card(
-          color:
-          _selectedOptionIndex2 == index ? NasColors.darkBlue : Colors.white,
-          margin: const EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: BorderSide(
-              color:
-              _selectedOptionIndex2 == index ? Colors.white : Colors.white,
-              width: 0,
-            ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.18),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.3),
+            width: 1.5,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _selectedOptionIndex2 == index
-                      ? Colors.white
-                      : NasColors.darkBlue,
-                ),
-              ),
-            ],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : [],
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            color: isSelected ? NasColors.darkBlue : Colors.white,
           ),
         ),
       ),
