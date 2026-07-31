@@ -408,30 +408,35 @@ class _BranchEmployeeProfileScreen extends State<BranchEmployeeProfileScreen> {
                                             (employeeDetails?.isNotEmpty ?? false)
                                                 ? employeeDetails!.first.gender ?? '___'
                                                 : '___',
+                                            icon: Icons.person_outline_rounded,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.nationality,
                                             (employeeDetails?.isNotEmpty ?? false)
                                                 ? employeeDetails!.first.nationality ?? '___'
                                                 : '___',
+                                            icon: Icons.flag_outlined,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.birthDate,
                                             (employeeDetails?.isNotEmpty ?? false)
                                                 ? employeeDetails!.first.dob ?? '___'
                                                 : '___',
+                                            icon: Icons.cake_outlined,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.age,
                                             (employeeDetails?.isNotEmpty ?? false)
                                                 ? employeeDetails!.first.age.toString()
                                                 : '___',
+                                            icon: Icons.calendar_today_outlined,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.martialStatus,
                                             (employeeDetails?.isNotEmpty ?? false)
                                                 ? employeeDetails!.first.martialStatus ?? '___'
                                                 : '___',
+                                            icon: Icons.favorite_border_rounded,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.phoneNo,
@@ -444,18 +449,21 @@ class _BranchEmployeeProfileScreen extends State<BranchEmployeeProfileScreen> {
                                                 : (employeeDetails?.isNotEmpty ?? false)
                                                     ? (employeeDetails!.first.phoneNumber?.first.mobileNumber?.toString() ?? '___')
                                                     : '___',
+                                            icon: Icons.phone_outlined,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.address,
                                             (employeeDetails?.isNotEmpty ?? false)
                                                 ? employeeDetails!.first.address?.streetAddress ?? '___'
                                                 : '___',
+                                            icon: Icons.location_on_outlined,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.passportNo,
                                             (employeeDetails?.isNotEmpty ?? false)
-                                                ? employeeDetails!.first.passport?.id ?? '___'
+                                                ? employeeDetails!.first.passport?.id.toString() ?? '___'
                                                 : '___',
+                                            icon: Icons.badge_outlined,
                                             isLast: true,
                                           ),
                                         ],
@@ -587,32 +595,54 @@ class _BranchEmployeeProfileScreen extends State<BranchEmployeeProfileScreen> {
     );
   }
 
-  // ── Helper: Detail Field Row ─────────────────────────────────────────────
-  Widget _buildDetailField(String label, String value, {bool isLast = false}) {
+  Widget _buildDetailField(String label, String value, {IconData? icon, bool isLast = false}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: NasColors.darkBlue,
-            ),
+          Row(
+            children: [
+              if (icon != null) ...[
+                Container(
+                  height: 34,
+                  width: 34,
+                  decoration: BoxDecoration(
+                    color: NasColors.darkBlue.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 18, color: NasColors.darkBlue),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           if (!isLast) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Divider(color: Colors.grey.shade100, height: 1),
           ],
         ],
@@ -627,6 +657,9 @@ class _BranchEmployeeProfileScreen extends State<BranchEmployeeProfileScreen> {
     required int used,
     required int remaining,
   }) {
+    final bool isSick = title.toLowerCase().contains('sick') || title.contains('مرضي');
+    final IconData cardIcon = isSick ? Icons.medical_services_outlined : Icons.beach_access_rounded;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -644,13 +677,28 @@ class _BranchEmployeeProfileScreen extends State<BranchEmployeeProfileScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: NasColors.darkBlue,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: 32,
+                  width: 32,
+                  decoration: BoxDecoration(
+                    color: NasColors.darkBlue.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(cardIcon, size: 18, color: NasColors.darkBlue),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: NasColors.darkBlue,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
             Row(
@@ -907,21 +955,25 @@ class _BranchEmployeeProfileScreen extends State<BranchEmployeeProfileScreen> {
                     _buildTimeColumn(
                       AppLocalizations.of(context)?.checkIn ?? "Check In",
                       singletonClass.formatCheckInTime(attendance.clockInTime ?? "", context),
+                      icon: Icons.login_rounded,
                       textColor: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black87,
                     ),
                     _buildTimeColumn(
                       AppLocalizations.of(context)?.checkOut ?? "Check Out",
                       singletonClass.formatCheckInTime(attendance.clockOutTime ?? "", context),
+                      icon: Icons.logout_rounded,
                       textColor: (lateMinutes != null && lateMinutes > 0) ? NasColors.pending : Colors.black87,
                     ),
                     _buildTimeColumn(
                       AppLocalizations.of(context)?.late ?? "Late",
                       "${lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${lateMinutes % 60}${AppLocalizations.of(context)!.m}",
+                      icon: Icons.schedule_rounded,
                       textColor: NasColors.pending,
                     ),
                     _buildTimeColumn(
                       AppLocalizations.of(context)?.earlyLeft ?? "Early Left",
                       "${earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${earlyCheckOut % 60}${AppLocalizations.of(context)!.m}",
+                      icon: Icons.timer_off_rounded,
                       textColor: NasColors.onTime,
                     ),
                   ],
@@ -934,16 +986,25 @@ class _BranchEmployeeProfileScreen extends State<BranchEmployeeProfileScreen> {
     );
   }
 
-  Widget _buildTimeColumn(String label, String value, {Color textColor = Colors.black87}) {
+  Widget _buildTimeColumn(String label, String value, {IconData? icon, Color textColor = Colors.black87}) {
     return Column(
       children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade500,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 12, color: Colors.grey.shade500),
+              const SizedBox(width: 3),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade500,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 3),
         Text(

@@ -106,6 +106,55 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            height: 38,
+            width: 38,
+            decoration: BoxDecoration(
+              color: NasColors.darkBlue.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: NasColors.darkBlue,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[500],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value.trim().isNotEmpty ? value : "---",
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[850],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeader(BuildContext context) {
     String titleText = AppLocalizations.of(context)!.myProfile;
     if (_selectedOptionIndex2 == 1) titleText = AppLocalizations.of(context)!.bankAccounts;
@@ -508,6 +557,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               child: Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Align(
                                       alignment: Alignment.center,
@@ -521,225 +571,73 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ),
                                       ),
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.gender,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
+                                    const SizedBox(height: 12),
+                                    _buildInfoRow(
+                                      Icons.person_outline_rounded,
+                                      AppLocalizations.of(context)!.gender,
+                                      (employeeProfile.gender?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile.gender!
+                                          : "---",
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        (employeeProfile.gender?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile.gender!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.flag_outlined,
+                                      AppLocalizations.of(context)!.nationality,
+                                      (employeeProfile.nationality?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile.nationality!
+                                          : "---",
                                     ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!
-                                            .nationality,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.cake_outlined,
+                                      AppLocalizations.of(context)!.birthDate,
+                                      (employeeProfile.dob?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile.dob!
+                                          : "---",
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        (employeeProfile.nationality?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile.nationality!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.calendar_today_outlined,
+                                      AppLocalizations.of(context)!.age,
+                                      (employeeProfile.age != null &&
+                                              employeeProfile.age!.toString().trim().isNotEmpty)
+                                          ? employeeProfile.age!.toString()
+                                          : "---",
                                     ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.birthDate,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.favorite_border_rounded,
+                                      AppLocalizations.of(context)!.martialStatus,
+                                      (employeeProfile.martialStatus?.trim().isNotEmpty ?? false)
+                                          ? employeeProfile.martialStatus!
+                                          : "---",
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        (employeeProfile.dob?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile.dob!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.phone_outlined,
+                                      AppLocalizations.of(context)!.phoneNo,
+                                      (employeeProfile.phoneNumber?.isNotEmpty == true &&
+                                              (employeeProfile.phoneNumber?.first.mobileNumber
+                                                      ?.toString()
+                                                      .isNotEmpty ??
+                                                  false))
+                                          ? employeeProfile.phoneNumber!.first.mobileNumber!
+                                              .toString()
+                                          : "---",
                                     ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.age,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.location_on_outlined,
+                                      AppLocalizations.of(context)!.address,
+                                      [
+                                        employeeProfile.address?.city,
+                                        employeeProfile.address?.streetAddress,
+                                        employeeProfile.address?.country
+                                      ]
+                                          .where((e) => e != null && e.trim().isNotEmpty)
+                                          .join(" "),
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        (employeeProfile.age != null && employeeProfile.age!.toString().trim().isNotEmpty)
-                                            ? employeeProfile.age!.toString()
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!
-                                            .martialStatus,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        (employeeProfile.martialStatus?.trim().isNotEmpty ?? false)
-                                            ? employeeProfile.martialStatus!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.phoneNo,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        (employeeProfile.phoneNumber?.isNotEmpty == true &&
-                                            (employeeProfile.phoneNumber?.first.mobileNumber?.toString().isNotEmpty ?? false))
-                                            ? employeeProfile.phoneNumber!.first.mobileNumber!.toString()
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.address,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        [
-                                          employeeProfile.address?.city,
-                                          employeeProfile.address?.streetAddress,
-                                          employeeProfile.address?.country
-                                        ]
-                                            .where((e) => e != null && e.trim().isNotEmpty)
-                                            .join(" ")
-                                            .trim()
-                                            .isNotEmpty
-                                            ? [
-                                          employeeProfile.address?.city,
-                                          employeeProfile.address?.streetAddress,
-                                          employeeProfile.address?.country
-                                        ]
-                                            .where((e) => e != null && e.trim().isNotEmpty)
-                                            .join(" ")
-                                            : "---",
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!
-                                            .passportNo,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        (employeeProfile.passport?.id != null &&
-                                            employeeProfile.passport!.id.toString().isNotEmpty)
-                                            ? employeeProfile.passport!.id.toString()
-                                            : "---",
-                                        maxLines: 2,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.badge_outlined,
+                                      AppLocalizations.of(context)!.passportNo,
+                                      (employeeProfile.passport?.id != null &&
+                                              employeeProfile.passport!.id.toString().isNotEmpty)
+                                          ? employeeProfile.passport!.id.toString()
+                                          : "---",
                                     ),
                                   ],
                                 ),
@@ -1207,252 +1105,92 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 child: Padding(
                                   padding: const EdgeInsets.all(25),
                                   child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Align(
                                         alignment: Alignment.center,
                                         child: Text(
                                           AppLocalizations.of(context)!.familyInfo,
                                           style: GoogleFonts.inter(
-                                            fontSize: 20,
+                                            fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.black,
+                                            color: NasColors.darkBlue,
                                           ),
                                         ),
                                       ),
-
-                                      // Father Name
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.fatherName,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
+                                      const SizedBox(height: 12),
+                                      _buildInfoRow(
+                                        Icons.person_rounded,
+                                        AppLocalizations.of(context)!.fatherName,
+                                        (familyInfo?.fatherName?.toString().isNotEmpty ?? false)
+                                            ? familyInfo!.fatherName.toString()
+                                            : "---",
                                       ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.fatherName?.toString().isNotEmpty ?? false)
-                                              ? familyInfo!.fatherName.toString()
-                                              : "---",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
+                                      _buildInfoRow(
+                                        Icons.person_2_rounded,
+                                        AppLocalizations.of(context)!.motherName,
+                                        (familyInfo?.motherName?.toString().isNotEmpty ?? false)
+                                            ? familyInfo!.motherName.toString()
+                                            : "---",
                                       ),
-                                      const SizedBox(height: 10),
-
-                                      // Mother Name
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.motherName,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
+                                      _buildInfoRow(
+                                        Icons.home_outlined,
+                                        AppLocalizations.of(context)!.address,
+                                        (familyInfo?.familyAddress?.streetAddress?.toString().isNotEmpty ?? false)
+                                            ? familyInfo!.familyAddress!.streetAddress.toString()
+                                            : "---",
                                       ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.motherName?.toString().isNotEmpty ?? false)
-                                              ? familyInfo!.motherName.toString()
-                                              : "---",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
+                                      _buildInfoRow(
+                                        Icons.public_rounded,
+                                        AppLocalizations.of(context)!.country,
+                                        (familyInfo?.familyAddress?.country?.toString().isNotEmpty ?? false)
+                                            ? familyInfo!.familyAddress!.country.toString()
+                                            : "---",
                                       ),
-                                      const SizedBox(height: 10),
-
-                                      // Address
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.address,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
+                                      _buildInfoRow(
+                                        Icons.location_city_rounded,
+                                        AppLocalizations.of(context)!.city,
+                                        (familyInfo?.familyAddress?.city?.toString().isNotEmpty ?? false)
+                                            ? familyInfo!.familyAddress!.city.toString()
+                                            : "---",
                                       ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.familyAddress?.streetAddress?.toString().isNotEmpty ?? false)
-                                              ? familyInfo!.familyAddress!.streetAddress.toString()
-                                              : "---",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
+                                      _buildInfoRow(
+                                        Icons.phone_rounded,
+                                        AppLocalizations.of(context)!.familyPhoneNo,
+                                        (familyInfo?.familyContactNumber?.toString().isNotEmpty ?? false)
+                                            ? familyInfo!.familyContactNumber.toString()
+                                            : "---",
                                       ),
-                                      const SizedBox(height: 10),
-
-                                      // Country
+                                      const SizedBox(height: 16),
                                       Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.country,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.familyAddress?.country?.toString().isNotEmpty ?? false)
-                                              ? familyInfo!.familyAddress!.country.toString()
-                                              : "---",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-
-                                      // City
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.city,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.familyAddress?.city?.toString().isNotEmpty ?? false)
-                                              ? familyInfo!.familyAddress!.city.toString()
-                                              : "---",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-
-                                      // Family Phone No
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.familyPhoneNo,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.familyContactNumber?.toString().isNotEmpty ?? false)
-                                              ? familyInfo!.familyContactNumber.toString()
-                                              : "---",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-
-                                      // Emergency Contact
-                                      Align(
-                                        alignment: Alignment.topLeft,
+                                        alignment: Alignment.center,
                                         child: Text(
                                           AppLocalizations.of(context)!.emergencyContact,
                                           style: GoogleFonts.inter(
-                                            fontSize: 20,
+                                            fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.black,
+                                            color: NasColors.darkBlue,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 10),
-
-                                      // Relation
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.relation,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
+                                      const SizedBox(height: 8),
+                                      _buildInfoRow(
+                                        Icons.people_alt_outlined,
+                                        AppLocalizations.of(context)!.relation,
+                                        (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
+                                            ? (familyInfo!.emergencyContactInfo!.first.relationType?.toString().isNotEmpty ?? false
+                                                ? familyInfo.emergencyContactInfo!.first.relationType.toString()
+                                                : "---")
+                                            : "---",
                                       ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
-                                              ? (familyInfo!.emergencyContactInfo!.first.relationType?.toString().isNotEmpty ?? false
-                                              ? familyInfo.emergencyContactInfo!.first.relationType.toString()
-                                              : "---")
-                                              : "---",
-                                          maxLines: 2,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-
-                                      // Emergency Contact Number
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.phoneNo,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Text(
-                                          (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
-                                              ? (familyInfo!.emergencyContactInfo!.first.relationContactNumber?.toString().isNotEmpty ?? false
-                                              ? familyInfo.emergencyContactInfo!.first.relationContactNumber.toString()
-                                              : "---")
-                                              : "---",
-                                          maxLines: 2,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
+                                      _buildInfoRow(
+                                        Icons.contact_phone_outlined,
+                                        AppLocalizations.of(context)!.phoneNo,
+                                        (familyInfo?.emergencyContactInfo?.isNotEmpty ?? false)
+                                            ? (familyInfo!.emergencyContactInfo!.first.relationContactNumber?.toString().isNotEmpty ?? false
+                                                ? familyInfo.emergencyContactInfo!.first.relationContactNumber.toString()
+                                                : "---")
+                                            : "---",
                                       ),
                                     ],
                                   ),
@@ -1501,207 +1239,57 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         style: GoogleFonts.inter(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                          color: NasColors.darkBlue,
                                         ),
                                       ),
                                     ),
-
-                                    /// Department
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.department,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
+                                    const SizedBox(height: 12),
+                                    _buildInfoRow(
+                                      Icons.business_rounded,
+                                      AppLocalizations.of(context)!.department,
+                                      shiftInfo?.first.depName?.isNotEmpty == true
+                                          ? shiftInfo!.first.depName!
+                                          : "---",
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        shiftInfo?.first.depName?.isNotEmpty == true
-                                            ? shiftInfo!.first.depName!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.work_outline_rounded,
+                                      AppLocalizations.of(context)!.jobTitle,
+                                      shiftInfo?.first.jobTitle?.isNotEmpty == true
+                                          ? shiftInfo!.first.jobTitle!
+                                          : "---",
                                     ),
-                                    const SizedBox(height: 10),
-
-                                    /// Job Title
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.jobTitle,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.description_outlined,
+                                      AppLocalizations.of(context)!.jobDescription,
+                                      shiftInfo?.first.jobDescription?.isNotEmpty == true
+                                          ? shiftInfo!.first.jobDescription!
+                                          : "---",
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        shiftInfo?.first.jobTitle?.isNotEmpty == true
-                                            ? shiftInfo!.first.jobTitle!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.supervisor_account_outlined,
+                                      AppLocalizations.of(context)!.reportingManager,
+                                      shiftInfo?.first.reportingManager?.isNotEmpty == true
+                                          ? shiftInfo!.first.reportingManager!
+                                          : "---",
                                     ),
-                                    const SizedBox(height: 10),
-
-                                    /// Job Description
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.jobDescription,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.schedule_rounded,
+                                      AppLocalizations.of(context)!.employeeShift,
+                                      employeeProfile.shiftInfo?.shiftName?.isNotEmpty == true
+                                          ? employeeProfile.shiftInfo!.shiftName!
+                                          : "---",
                                     ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        shiftInfo?.first.jobDescription?.isNotEmpty == true
-                                            ? shiftInfo!.first.jobDescription!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.access_time_rounded,
+                                      "${AppLocalizations.of(context)!.from} - ${AppLocalizations.of(context)!.to}",
+                                      "${employeeProfile.shiftInfo?.timeFrom != null ? singletonClass.formatWithDateTime(employeeProfile.shiftInfo!.timeFrom) : "NA"}  ➔  ${employeeProfile.shiftInfo?.timeTo != null ? singletonClass.formatWithDateTime(employeeProfile.shiftInfo!.timeTo) : "NA"}",
                                     ),
-                                    const SizedBox(height: 10),
-
-                                    /// Reporting Manager
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.reportingManager,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        shiftInfo?.first.reportingManager?.isNotEmpty == true
-                                            ? shiftInfo!.first.reportingManager!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-
-                                    /// Employee Shift
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.employeeShift,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        employeeProfile.shiftInfo?.shiftName?.isNotEmpty ==
-                                            true
-                                            ? employeeProfile.shiftInfo!.shiftName!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-
-                                    /// Shift Info (from - to)
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.shiftInfo,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "${AppLocalizations.of(context)!.from}: ${employeeProfile.shiftInfo?.timeFrom != null ? singletonClass.formatWithDateTime(employeeProfile.shiftInfo!.timeFrom) : "NA"}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "${AppLocalizations.of(context)!.to}: ${employeeProfile.shiftInfo?.timeTo != null ? singletonClass.formatWithDateTime(employeeProfile.shiftInfo!.timeTo) : "NA"}",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-
-                                    /// Location
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.location,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        shiftInfo?.first.location?.isNotEmpty == true
-                                            ? shiftInfo!.first.location!
-                                            : "---",
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
+                                    _buildInfoRow(
+                                      Icons.location_on_outlined,
+                                      AppLocalizations.of(context)!.location,
+                                      shiftInfo?.first.location?.isNotEmpty == true
+                                          ? shiftInfo!.first.location!
+                                          : "---",
                                     ),
                                   ],
                                 ),

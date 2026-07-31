@@ -958,42 +958,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              // SUBMIT BUTTON
-                              GestureDetector(
-                                onTap: _handleSubmit,
-                                child: Container(
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        NasColors.blue,
-                                        NasColors.lightBlue,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: NasColors.blue.withOpacity(0.3),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.create,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 40),
                         ],
                       ),
                     ),
