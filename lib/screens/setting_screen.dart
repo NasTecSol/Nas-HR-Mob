@@ -8,7 +8,6 @@ import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nashr/l10n/app_localizations.dart';
-import '../UTILS/auth_services.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -19,15 +18,12 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   SingletonClass singletonClass = SingletonClass();
-  bool _isToggled = false;
   bool isBiometricEnabled = false;
-  bool _isBiometricEnabled = false;
   bool _isNotificationToggled = true;
 
   @override
   void initState() {
     super.initState();
-    _loadBiometricState();
     _initializeSettings();
   }
 
@@ -35,25 +31,6 @@ class _SettingScreenState extends State<SettingScreen> {
     _isNotificationToggled = await _loadNotificationState();
     setState(() {});
   }
-
-  // Load the state from SharedPreferences
-  Future<void> _loadBiometricState() async {
-    final preferences = await SharedPreferences.getInstance();
-    isBiometricEnabled = preferences.getBool('biometric_enabled') ?? false;
-
-    setState(() {
-      _isBiometricEnabled = isBiometricEnabled;
-      _isToggled = isBiometricEnabled;
-    });
-  }
-
-  // Save the state to SharedPreferences
-  Future<void> _saveBiometricState(bool value) async {
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setBool('biometric_enabled', value);
-  }
-
-  final AuthService _authService = AuthService();
 
   logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -203,105 +180,6 @@ class _SettingScreenState extends State<SettingScreen> {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               children: [
-                _buildSettingTile(
-                  icon: Icons.fingerprint_rounded,
-                  title: AppLocalizations.of(context)!.biometrics,
-                  trailing: Switch(
-                    value: _isToggled,
-                    onChanged: (bool value) async {
-                      setState(() {
-                        _isToggled = value;
-                      });
-
-                      if (_isToggled) {
-                        if (!(await _authService.checkBiometricAvailability())) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  AppLocalizations.of(context)!.pleaseSetupBiometric,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                          setState(() {
-                            _isToggled = false;
-                          });
-                          return;
-                        }
-
-                        bool isAuthenticated =
-                            await _authService.authenticateWithBiometrics(context);
-                        if (isAuthenticated) {
-                          setState(() {
-                            _isBiometricEnabled = value;
-                          });
-                          await _saveBiometricState(value);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  AppLocalizations.of(context)!
-                                      .biometricAuthenticationEnabled,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                        } else {
-                          setState(() {
-                            _isToggled = false;
-                          });
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  AppLocalizations.of(context)!
-                                      .biometricAuthenticationFailed,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      } else {
-                        await _saveBiometricState(false);
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                AppLocalizations.of(context)!
-                                    .biometricAuthenticationDisabled,
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    activeColor: Colors.white,
-                    activeTrackColor: NasColors.darkBlue,
-                    inactiveTrackColor: Colors.grey.shade300,
-                    inactiveThumbColor: Colors.white,
-                  ),
-                ),
                 _buildSettingTile(
                   icon: Icons.notifications_none_rounded,
                   title: AppLocalizations.of(context)!.notifications,

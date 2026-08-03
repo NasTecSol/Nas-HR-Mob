@@ -2332,13 +2332,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         alignment: Alignment.topLeft,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(18),
-                                          gradient: const LinearGradient(
+                                          gradient:  LinearGradient(
                                             colors: [
-                                              Color(0xFF444658),
-                                              Color(0xFF677587),
-                                              Color(0xFF78889D),
+                                              NasColors.darkBlue,
+                                              NasColors.darkBlue,
                                               Color(0xFF9DB2CE),
-                                              Color(0xFF8799B1),
+                                              NasColors.darkBlue,
                                             ],
                                             begin: Alignment.topRight,
                                             end: Alignment.bottomLeft,

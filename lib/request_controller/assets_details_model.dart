@@ -35,13 +35,26 @@ class Data {
 
   Data({this.id, this.templateType, this.objectDetails, this.randomId, this.v});
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-    id: json["_id"],
-    templateType: json["templateType"],
-    objectDetails: json["objectDetails"] == null ? null : ObjectDetails.fromJson(json["objectDetails"]),
-    randomId: json["randomId"],
-    v: json["__v"],
-  );
+  factory Data.fromJson(Map<String, dynamic> json) {
+    ObjectDetails? objDet;
+    if (json["objectDetails"] != null && json["objectDetails"] is Map<String, dynamic>) {
+      objDet = ObjectDetails.fromJson(Map<String, dynamic>.from(json["objectDetails"]));
+    } else {
+      objDet = ObjectDetails.fromJson(json);
+    }
+
+    return Data(
+      id: json["_id"]?.toString() ?? json["id"]?.toString(),
+      templateType: json["templateType"]?.toString() ?? json["type"]?.toString(),
+      objectDetails: objDet,
+      randomId: json["randomId"] is int
+          ? json["randomId"]
+          : int.tryParse(json["randomId"]?.toString() ?? ''),
+      v: json["__v"] is int
+          ? json["__v"]
+          : int.tryParse(json["__v"]?.toString() ?? ''),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "_id": id,
@@ -74,23 +87,49 @@ class ObjectDetails {
     String? imageString;
     if (json["img"] != null) {
       if (json["img"] is Map) {
-        // For example: {"base64": "data..."} or any key holding base64 string
         imageString = (json["img"] as Map).values.first.toString();
       } else if (json["img"] is String) {
         imageString = json["img"];
       }
+    } else if (json["image"] != null) {
+      imageString = json["image"].toString();
+    }
+
+    Map<String, dynamic>? params;
+    if (json["parameters"] != null && json["parameters"] is Map) {
+      params = Map<String, dynamic>.from(json["parameters"]);
+    } else if (json["details"] != null && json["details"] is Map) {
+      params = Map<String, dynamic>.from(json["details"]);
+    }
+
+    final objName = json["objectName"]?.toString() ??
+        json["assetName"]?.toString() ??
+        json["name"]?.toString() ??
+        json["title"]?.toString();
+
+    final childList = <ChildObject>[];
+    if (json["child_Objs"] != null && json["child_Objs"] is List) {
+      for (var item in json["child_Objs"]) {
+        if (item is Map) {
+          childList.add(ChildObject.fromJson(Map<String, dynamic>.from(item)));
+        }
+      }
+    } else if (json["childObjs"] != null && json["childObjs"] is List) {
+      for (var item in json["childObjs"]) {
+        if (item is Map) {
+          childList.add(ChildObject.fromJson(Map<String, dynamic>.from(item)));
+        }
+      }
     }
 
     return ObjectDetails(
-      objectName: json["objectName"],
-      objectIcon: json["objectIcon"],
+      objectName: objName,
+      objectIcon: json["objectIcon"]?.toString(),
       img: imageString,
-      childObjs: json["child_Objs"] != null
-          ? List<ChildObject>.from(json["child_Objs"].map((x) => ChildObject.fromJson(x)))
-          : [],
-      parameters: json["parameters"] != null ? Map<String, dynamic>.from(json["parameters"]) : null,
+      childObjs: childList,
+      parameters: params,
       additionalInfo: Map<String, dynamic>.from(json)
-        ..removeWhere((key, value) => ["objectName", "objectIcon", "child_Objs", "img", "parameters"].contains(key)),
+        ..removeWhere((key, value) => ["objectName", "objectIcon", "child_Objs", "childObjs", "img", "image", "parameters", "details"].contains(key)),
     );
   }
 

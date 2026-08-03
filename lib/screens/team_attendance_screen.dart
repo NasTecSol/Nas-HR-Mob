@@ -478,51 +478,115 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> with Single
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 18,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!.attendanceHistory,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
+                  GestureDetector(
+                    onTap: () => _pickDateRange(context),
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: const Icon(
+                        Icons.calendar_month_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(context)!.attendanceHistory,
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              const SizedBox(height: 14),
+              Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ),
-              GestureDetector(
-                onTap: () => _pickDateRange(context),
-                child: Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
-                  ),
-                  child: const Icon(
-                    Icons.calendar_month_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: NasColors.darkBlue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: (_) {
+                          setState(() {
+                            isSearching = searchController.text.isNotEmpty;
+                          });
+                        },
+                        cursorColor: NasColors.darkBlue,
+                        style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                        decoration: InputDecoration(
+                          hintText: '${AppLocalizations.of(context)!.search}...',
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                        ),
+                      ),
+                    ),
+                    if (searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          searchController.clear();
+                          setState(() {
+                            isSearching = false;
+                          });
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.grey.shade600,
+                          size: 18,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
@@ -532,27 +596,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> with Single
     );
   }
 
-  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 42,
-        width: 42,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.25),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: NasColors.darkBlue, size: 20),
-      ),
-    );
-  }
+
 
   /// ──────────────────────── Date Range Picker ───────────────────────
 
@@ -735,88 +779,43 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> with Single
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
-          // Search field (expanded when active)
-          if (isSearching) ...[
-            Expanded(child: _buildSearchField(l)),
-            const SizedBox(width: 4),
-          ] else ...[
-            if (!_isChecked && showDropdown) _buildBranchDropdown(context),
-            const Spacer(),
-            if (showTeamCheckbox && !_isChecked)
-              _buildLabeledCheckbox(
-                label: l.teams,
-                value: _isTeamChecked,
-                enabled: _singleton.branchID != null,
-                onChanged: _onTeamCheckboxChanged,
+          if (!_isChecked && showDropdown) _buildBranchDropdown(context),
+          const Spacer(),
+          if (showTeamCheckbox && !_isChecked)
+            _buildLabeledCheckbox(
+              label: l.teams,
+              value: _isTeamChecked,
+              enabled: _singleton.branchID != null,
+              onChanged: _onTeamCheckboxChanged,
+            ),
+          if (showOnlyMeCheckbox)
+            _isOnlyMeLoading
+                ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: SizedBox(
+                height: 22,
+                width: 22,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: NasColors.darkBlue),
               ),
-            if (showOnlyMeCheckbox)
-              _isOnlyMeLoading
-                  ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: SizedBox(
-                  height: 22,
-                  width: 22,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: NasColors.darkBlue),
-                ),
-              )
-                  : _buildLabeledCheckbox(
-                label: l.onlyMe,
-                value: _isChecked,
-                onChanged: (v) {
-                  setState(() {
-                    _isChecked = v ?? false;
-                    _isOnlyMeLoading = true;
-                  });
-                  _handleOnlyMeChange(v ?? false);
-                },
-              ),
-          ],
-          // Search toggle
-          _circleButton(
-            icon: isSearching ? Icons.close_rounded : Icons.search_rounded,
-            onTap: () {
-              setState(() {
-                isSearching = !isSearching;
-                if (!isSearching) searchController.clear();
-              });
-            },
-          ),
+            )
+                : _buildLabeledCheckbox(
+              label: l.onlyMe,
+              value: _isChecked,
+              onChanged: (v) {
+                setState(() {
+                  _isChecked = v ?? false;
+                  _isOnlyMeLoading = true;
+                });
+                _handleOnlyMeChange(v ?? false);
+              },
+            ),
         ],
       ),
     );
   }
 
-  ///Search Bar
-  Widget _buildSearchField(AppLocalizations l) {
-    return TextField(
-      controller: searchController,
-      autofocus: true,
-      cursorColor: Colors.grey,
-      onChanged: (_) => setState(() {}),
-      style: GoogleFonts.inter(fontSize: 14),
-      decoration: InputDecoration(
-        hintText: l.search,
-        hintStyle: GoogleFonts.inter(color: Colors.grey.shade400),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-        prefixIcon: const Icon(Icons.search, size: 20),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildBranchDropdown(BuildContext context) {
     return Padding(

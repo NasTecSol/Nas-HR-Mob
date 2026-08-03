@@ -9,11 +9,13 @@ import 'package:url_launcher/url_launcher.dart';
 class DocumentListTab extends StatefulWidget {
   final List<dynamic> documentsInfo;
   final Future<void> Function() onRefresh;
+  final String searchQuery;
 
   const DocumentListTab({
     super.key,
     required this.documentsInfo,
     required this.onRefresh,
+    this.searchQuery = '',
   });
 
   @override
@@ -54,7 +56,8 @@ class _DocumentListTabState extends State<DocumentListTab> {
     final l = AppLocalizations.of(context)!;
     
     // Filter documents by search query if any
-    final query = _searchQuery.toLowerCase().trim();
+    final effectiveQuery = widget.searchQuery.isNotEmpty ? widget.searchQuery : _searchQuery;
+    final query = effectiveQuery.toLowerCase().trim();
     final visibleDocs = widget.documentsInfo.where((doc) {
       if (query.isEmpty) return true;
       final type = doc.type?.toString().toLowerCase() ?? '';
@@ -63,53 +66,6 @@ class _DocumentListTabState extends State<DocumentListTab> {
 
     return Column(
       children: [
-        // Search bar
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val;
-                      });
-                    },
-                    cursorColor: Colors.grey,
-                    decoration: InputDecoration(
-                      hintText: '${l.search}...',
-                      border: InputBorder.none,
-                      hintStyle: GoogleFonts.inter(color: Colors.grey.shade400),
-                    ),
-                    style: GoogleFonts.inter(fontSize: 14),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Icon(
-                  Icons.search,
-                  color: NasColors.darkBlue,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        
         // List View
         Expanded(
           child: RefreshIndicator(

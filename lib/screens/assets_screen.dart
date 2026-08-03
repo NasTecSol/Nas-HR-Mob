@@ -96,7 +96,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
           /// Curved Gradient Header (NO icon in title text)
           Container(
             padding:
-                const EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 24),
+                const EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -117,50 +117,97 @@ class _AssetsScreenState extends State<AssetsScreen> {
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white.withOpacity(0.18),
-                      border:
-                          Border.all(color: Colors.white.withOpacity(0.3)),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        local.assets,
-                        style: GoogleFonts.inter(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white.withOpacity(0.18),
+                          border:
+                              Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
                           color: Colors.white,
+                          size: 18,
                         ),
                       ),
-                      Text(
-                        local.assignedAssets,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            local.assets,
+                            style: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            local.assignedAssets,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+                if (allAssets.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (_) => setState(() {}),
+                      style: GoogleFonts.inter(
+                          fontSize: 14, color: NasColors.darkBlue),
+                      decoration: InputDecoration(
+                        hintText: "${local.search}...",
+                        hintStyle: GoogleFonts.inter(
+                            color: Colors.grey.shade400, fontSize: 14),
+                        prefixIcon: Icon(Icons.search_rounded,
+                            color: NasColors.darkBlue),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.cancel_rounded,
+                                    size: 18),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {});
+                                },
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 16),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -176,46 +223,6 @@ class _AssetsScreenState extends State<AssetsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// 3D Search Field
-                  if (allAssets.isNotEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        style: GoogleFonts.inter(
-                            fontSize: 14, color: NasColors.darkBlue),
-                        decoration: InputDecoration(
-                          hintText: "${local.search}...",
-                          hintStyle: GoogleFonts.inter(
-                              color: Colors.grey.shade400, fontSize: 14),
-                          prefixIcon: Icon(Icons.search_rounded,
-                              color: NasColors.darkBlue),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.cancel_rounded,
-                                      size: 18),
-                                  onPressed: () => _searchController.clear(),
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 14, horizontal: 16),
-                        ),
-                      ),
-                    ),
-
                   /// Section Header
                   if (isAllowedGrade) ...[
                     Row(

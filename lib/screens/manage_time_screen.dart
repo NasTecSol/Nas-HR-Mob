@@ -130,34 +130,94 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 18,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!.manageShifts,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(context)!.manageShifts,
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              const SizedBox(height: 14),
+              Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search_rounded,
+                      color: NasColors.darkBlue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: (value) => setState(() {
+                          isSearching = value.isNotEmpty;
+                        }),
+                        cursorColor: NasColors.darkBlue,
+                        style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                        decoration: InputDecoration(
+                          hintText: '${AppLocalizations.of(context)!.search}...',
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                        ),
+                      ),
+                    ),
+                    if (searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          isSearching = false;
+                          searchController.clear();
+                        }),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.grey.shade600,
+                          size: 18,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
@@ -376,65 +436,7 @@ class _ManageTimeScreenState extends State<ManageTimeScreen> {
                         ],
                       ),
                   ],
-                  // Search field
-                  if (isSearching == true) ...[
-                    Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: (value) => setState(() {}),
-                        style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context)!.search,
-                          hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
-                          filled: true,
-                          fillColor: Colors.white,
-                          prefixIcon: Icon(Icons.search_rounded, color: NasColors.darkBlue, size: 20),
-                          suffixIcon: IconButton(
-                            icon: Icon(Icons.close_rounded, color: Colors.grey.shade500, size: 20),
-                            onPressed: () => setState(() {
-                              isSearching = false;
-                              searchController.clear();
-                            }),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(22),
-                            borderSide: BorderSide(color: NasColors.darkBlue.withOpacity(0.15)),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(22),
-                            borderSide: BorderSide(color: NasColors.darkBlue.withOpacity(0.15)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(22),
-                            borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  // Search toggle icon
-                  if (isSearching == false)
-                    GestureDetector(
-                      onTap: () => setState(() => isSearching = true),
-                      child: Container(
-                        height: 44,
-                        width: 44,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: NasColors.darkBlue.withOpacity(0.12)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Icon(Icons.search_rounded, color: NasColors.darkBlue, size: 22),
-                      ),
-                    ),
+
                 ],
               ),
             ),

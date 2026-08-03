@@ -510,52 +510,118 @@ class _UserActivityScreenState extends State<UserActivityScreen>
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white.withOpacity(0.18),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.18),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
               ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: Colors.white,
-                size: 20,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.userActivity,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
+              GestureDetector(
+                onTap: () => _pickDateRange(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.18),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_month_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context)!.userActivity,
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              overflow: TextOverflow.ellipsis,
+          const SizedBox(height: 14),
+          Container(
+            height: 46,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-          ),
-          GestureDetector(
-            onTap: () => _pickDateRange(context),
-            child: Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white.withOpacity(0.18),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
-              ),
-              child: const Icon(
-                Icons.calendar_month_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.search,
+                  color: NasColors.darkBlue,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    onChanged: (val) {
+                      _applySearch(val);
+                      setState(() {
+                        _isSearching = val.isNotEmpty;
+                      });
+                    },
+                    cursorColor: NasColors.darkBlue,
+                    style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                    decoration: InputDecoration(
+                      hintText: '${AppLocalizations.of(context)!.search}...',
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                    ),
+                  ),
+                ),
+                if (_searchCtrl.text.isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      _searchCtrl.clear();
+                      _applySearch('');
+                      setState(() {
+                        _isSearching = false;
+                      });
+                    },
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.grey.shade600,
+                      size: 18,
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -563,27 +629,7 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     );
   }
 
-  Widget _iconButton({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 42,
-        width:  42,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13),
-          color:        Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color:      Colors.grey.withOpacity(0.25),
-              blurRadius: 8,
-              offset:     const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: NasColors.darkBlue, size: 20),
-      ),
-    );
-  }
+
 
   // ── Date Range Picker ─────────────────────────────────────────────────────
 
@@ -747,20 +793,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
 
             const SizedBox(width: 8),
           ],
-
-          // Search toggle — always last
-          _iconButton(
-            icon:  _isSearching ? Icons.close_rounded : Icons.search_rounded,
-            onTap: () {
-              setState(() {
-                _isSearching = !_isSearching;
-                if (!_isSearching) {
-                  _searchCtrl.clear();
-                  _filteredRows = List.from(_rows);
-                }
-              });
-            },
-          ),
         ],
       ),
     );

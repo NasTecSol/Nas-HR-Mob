@@ -393,13 +393,19 @@ class _TeamScreenState extends State<TeamScreen> {
                 height: 46,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.16),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withOpacity(0.28)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search_rounded, color: Colors.white, size: 20),
+                    Icon(Icons.search_rounded, color: NasColors.darkBlue, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
@@ -409,17 +415,17 @@ class _TeamScreenState extends State<TeamScreen> {
                             isSearching = value.isNotEmpty;
                           });
                         },
-                        style: GoogleFonts.inter(fontSize: 14, color: Colors.white),
-                        cursorColor: Colors.white,
+                        style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                        cursorColor: NasColors.darkBlue,
                         decoration: InputDecoration(
                           hintText: '${AppLocalizations.of(context)!.search}...',
                           hintStyle: GoogleFonts.inter(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.grey.shade400,
                           ),
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: EdgeInsets.zero,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),
                     ),
@@ -433,7 +439,7 @@ class _TeamScreenState extends State<TeamScreen> {
                         },
                         child: Icon(
                           Icons.close_rounded,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.grey.shade600,
                           size: 18,
                         ),
                       ),

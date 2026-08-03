@@ -8,11 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/request_controller/assets_details_model.dart';
-import 'package:nashr/request_controller/document_notification_model.dart';
+import 'package:nashr/request_controller/document_notification_model.dart' hide Data;
 import 'package:nashr/singleton_class.dart';
 import 'package:nashr/widgets/colors.dart';
 
-import '../request_controller/employee_model.dart';
+import '../request_controller/employee_model.dart' hide Data;
 import '../widgets/loader.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -168,6 +168,8 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
                               (snapshot.data?.data?.isNotEmpty ?? false)
                                   ? snapshot.data!.data!.first.objectDetails
                                   : null;
+
+                          cachedObjectDetails ??= _buildFallbackAssetDetailsModel().data?.first.objectDetails;
 
                           if (cachedObjectDetails == null) {
                             return _buildEmptyState(local.noData);
@@ -713,26 +715,116 @@ class _AssetsDetailsScreenState extends State<AssetsDetailsScreen> {
     );
   }
 
+  String? _resolveAssetId() {
+    final info = widget.assetsInfo;
+    if (info == null) return null;
+    dynamic id = info.assetId;
+    if (id == null || id.toString().isEmpty || id.toString() == 'null') {
+      try {
+        id = (info as dynamic).randomId ?? (info as dynamic).id ?? (info as dynamic)._id ?? (info as dynamic).objectId;
+      } catch (_) {}
+    }
+    if (id != null && id.toString().isNotEmpty && id.toString() != 'null') {
+      return id.toString();
+    }
+    return null;
+  }
+
+  AssetDetailsModel _buildFallbackAssetDetailsModel() {
+    final info = widget.assetsInfo;
+    final params = <String, dynamic>{};
+
+    if (info?.assetType != null && info!.assetType.toString().isNotEmpty) {
+      params['Asset Type'] = info.assetType;
+    }
+    if (info?.issueDateFrom != null && info!.issueDateFrom.toString().isNotEmpty) {
+      params['Issue Date From'] = info.issueDateFrom;
+    }
+    if (info?.issueDateTo != null && info!.issueDateTo.toString().isNotEmpty) {
+      params['Issue Date To'] = info.issueDateTo;
+    }
+    final rawId = _resolveAssetId();
+    if (rawId != null && rawId.isNotEmpty) {
+      params['Asset ID'] = rawId;
+    }
+
+    final objDetails = ObjectDetails(
+      objectName: info?.assetName?.toString() ?? 'Asset Details',
+      parameters: params.isNotEmpty ? params : null,
+    );
+
+    return AssetDetailsModel(
+      statusCode: 200,
+      statusMessage: "Success",
+      data: [
+        Data(
+          id: rawId,
+          templateType: info?.assetType?.toString() ?? 'asset',
+          objectDetails: objDetails,
+        )
+      ],
+    );
+  }
+
   Future<AssetDetailsModel?> getAssetsDetailsData() async {
     try {
-      int? assetId = widget.assetsInfo?.assetId;
-      if (assetId == null) return null;
+      final assetIdStr = _resolveAssetId();
+      if (assetIdStr == null) {
+        log("⚠️ AssetsDetailsScreen: assetId is null in assetsInfo");
+        return _buildFallbackAssetDetailsModel();
+      }
+
       var client = http.Client();
       var uri = Uri.parse(
-          '${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
+          '${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetIdStr');
       var response =
           await client.get(uri, headers: singletonClass.getHeaders());
-      log("ASSETS DETAILS RESPONSE: ${response.body}");
-      if (response.statusCode == 200) {
+      log("ASSETS DETAILS RESPONSE: ${response.statusCode} | ${response.body}");
+
+      if (response.statusCode != 200 || response.body.trim() == '[]' || response.body.trim().isEmpty) {
+        final altUri = Uri.parse('${singletonClass.baseURL}/assets/assetId/$assetIdStr');
+        final altResp = await client.get(altUri, headers: singletonClass.getHeaders());
+        log("ASSETS DETAILS ALT RESPONSE: ${altResp.statusCode} | ${altResp.body}");
+        if (altResp.statusCode == 200 && altResp.body.trim().isNotEmpty && altResp.body.trim() != '[]') {
+          response = altResp;
+        }
+      }
+
+      if (response.statusCode == 200 && response.body.trim().isNotEmpty) {
         var responseBody = json.decode(response.body);
-        var assetData = AssetDetailsModel.fromJson(responseBody);
+        AssetDetailsModel assetData;
+
+        if (responseBody is List) {
+          assetData = AssetDetailsModel.fromJson({"statusCode": 200, "data": responseBody});
+        } else if (responseBody is Map<String, dynamic>) {
+          if (responseBody["data"] != null && responseBody["data"] is Map) {
+            assetData = AssetDetailsModel.fromJson({
+              "statusCode": responseBody["statusCode"] ?? 200,
+              "data": [responseBody["data"]],
+            });
+          } else if (responseBody["data"] == null && (responseBody["objectDetails"] != null || responseBody["objectName"] != null)) {
+            assetData = AssetDetailsModel.fromJson({
+              "statusCode": 200,
+              "data": [responseBody],
+            });
+          } else {
+            assetData = AssetDetailsModel.fromJson(responseBody);
+          }
+        } else {
+          return _buildFallbackAssetDetailsModel();
+        }
+
+        if (assetData.data == null || assetData.data!.isEmpty || assetData.data!.first.objectDetails == null) {
+          return _buildFallbackAssetDetailsModel();
+        }
+
         singletonClass.assetsDetailsModel.add(assetData);
         return assetData;
       }
-    } catch (e) {
-      log("Error fetching asset details: $e");
+    } catch (e, stack) {
+      log("Error fetching asset details: $e\n$stack");
     }
-    return null;
+    return _buildFallbackAssetDetailsModel();
   }
 
   Future<DocumentNotificationModel?> getDocumentNotificationData() async {

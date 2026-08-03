@@ -28,12 +28,14 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
 
   late SingletonClass singletonClass;
   bool isBotTyping = false;
   List<String> _suggestedMessages = [];
+  String _searchQuery = '';
 
   // Audio + speech
   late FlutterSoundRecorder _recorder;
@@ -85,6 +87,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     _recorder.closeRecorder();
     _player.closePlayer();
     super.dispose();
@@ -201,17 +204,85 @@ class _ChatScreenState extends State<ChatScreen> {
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            Container(
+              height: 46,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.search,
+                    color: NasColors.darkBlue,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val;
+                        });
+                      },
+                      cursorColor: NasColors.darkBlue,
+                      style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                      decoration: InputDecoration(
+                        hintText: '${AppLocalizations.of(context)!.search}...',
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                  if (_searchController.text.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                      child: Icon(
+                        Icons.close,
+                        color: Colors.grey.shade600,
+                        size: 18,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
             Expanded(
               child: Column(
                 children: [
                   Expanded(
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      controller: _scrollController,
-                      itemCount: singletonClass.chatMessages.length + (isBotTyping ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (isBotTyping && index ==  singletonClass.chatMessages.length) {
+                    child: Builder(
+                      builder: (context) {
+                        final query = _searchQuery.toLowerCase().trim();
+                        final filteredMessages = singletonClass.chatMessages.where((m) {
+                          if (query.isEmpty) return true;
+                          final text = (m['text'] ?? '').toString().toLowerCase();
+                          return text.contains(query);
+                        }).toList();
+
+                        return ListView.builder(
+                          padding: EdgeInsets.zero,
+                          controller: _scrollController,
+                          itemCount: filteredMessages.length + (isBotTyping ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (isBotTyping && index == filteredMessages.length) {
                           return Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
@@ -381,8 +452,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         );
                       },
-                    ),
-                  ),
+                    );
+                  }),
+                ),
                   if (_suggestedMessages.isNotEmpty)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
