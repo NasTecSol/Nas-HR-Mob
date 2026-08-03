@@ -136,50 +136,98 @@ class _CalendarScreenState extends State<CalendarScreen> {
     await _fetchAndLoadData();
   }
 
+  Widget _buildHeader(BuildContext context) {
+    final canCreate = singletonClass.getJWTModel()?.grade == 'L0' ||
+        singletonClass.getJWTModel()?.grade == 'L1';
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.calendar,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              if (canCreate)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateEventScreen(
+                          selectedIndex: _selectedOptionIndex,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 10.0),
-        child: RefreshIndicator(
-          color: NasColors.darkBlue,
-          backgroundColor: Colors.white,
-          onRefresh: fetchLatestEventData ,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              Row(children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0, top: 15.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.calendar,
-                    style: GoogleFonts.inter(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: NasColors.darkBlue,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                  if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                      singletonClass.getJWTModel()?.grade == 'L1') ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.add,
-                          color: NasColors.darkBlue,
-                          size: 30,
-                        ),
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateEventScreen(selectedIndex: _selectedOptionIndex,)));
-                        },
-                      ),
-                    ),
-                ],
-              ]),
-              const SizedBox(height: 20),
+      body: Column(
+        children: [
+          _buildHeader(context),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: RefreshIndicator(
+                color: NasColors.darkBlue,
+                backgroundColor: Colors.white,
+                onRefresh: fetchLatestEventData,
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    const SizedBox(height: 8),
               SizedBox(
                 height: 54,
                 child: ListView(
@@ -895,12 +943,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                 ),
               ],
-
             ],
           ),
         ),
       ),
-    );
+    ),
+  ],
+),
+);
   }
 
   ///API CALL

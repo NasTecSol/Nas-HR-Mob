@@ -557,6 +557,84 @@ class _RequestScreenState extends State<RequestScreen> {
     _overlayEntry = null;
   }
 
+  Widget _buildHeader(BuildContext context, bool showRequest) {
+    final title = singletonClass.getJWTModel()?.grade == 'L4'
+        ? AppLocalizations.of(context)!.requests
+        : AppLocalizations.of(context)!.requestAndApproval;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              if (showRequest == true)
+                GestureDetector(
+                  onTap: () {
+                    _overlayEntry = _createOverlayEntry();
+                    Overlay.of(context).insert(_overlayEntry!);
+                  },
+                  child: Container(
+                    height: 36,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add, color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          AppLocalizations.of(context)!.requests,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final showRequest = singletonClass.roleAndAccessModelDataList.first.data
@@ -579,75 +657,27 @@ class _RequestScreenState extends State<RequestScreen> {
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 65.0, left: 16.0, right: 16.0),
-        child: RefreshIndicator(
-          color: NasColors.darkBlue,
-          backgroundColor: Colors.white,
-          onRefresh: fetchLatestRequestData,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    singletonClass.getJWTModel()?.grade == 'L4'
-                        ? AppLocalizations.of(context)!.requests
-                        : AppLocalizations.of(context)!.requestAndApproval,
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: NasColors.darkBlue,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (showRequest == true)
-                    GestureDetector(
-                      onTap: () {
-                        _overlayEntry = _createOverlayEntry();
-                        Overlay.of(context).insert(_overlayEntry!);
-                      },
-                      child: Container(
-                        height: 30,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: NasColors.darkBlue,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: NasColors.darkBlue.withOpacity(0.15),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.add, color: Colors.white, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              AppLocalizations.of(context)!.requests,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                  singletonClass.getJWTModel()?.grade == 'L1' ||
-                  singletonClass.getJWTModel()?.grade == 'L2' ||
-                  singletonClass.getJWTModel()?.grade == 'L3') ...[
-                _buildSegmentedControl(),
-              ],
+      body: Column(
+        children: [
+          _buildHeader(context, showRequest),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: RefreshIndicator(
+                color: NasColors.darkBlue,
+                backgroundColor: Colors.white,
+                onRefresh: fetchLatestRequestData,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                        singletonClass.getJWTModel()?.grade == 'L1' ||
+                        singletonClass.getJWTModel()?.grade == 'L2' ||
+                        singletonClass.getJWTModel()?.grade == 'L3') ...[
+                      _buildSegmentedControl(),
+                    ],
               const SizedBox(height: 10),
               if (singletonClass.getJWTModel()?.grade == 'L4') ...[
                 Container(
@@ -1197,7 +1227,7 @@ class _RequestScreenState extends State<RequestScreen> {
           ),
         ),
       ),
-    );
+          )]));
   }
 
   Widget _buildSegmentedControl() {

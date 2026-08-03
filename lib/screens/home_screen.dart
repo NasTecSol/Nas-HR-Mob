@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:locale_plus/locale_plus.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nashr/l10n/app_localizations.dart';
 import 'package:nashr/screens/assets_screen.dart';
 import 'package:nashr/screens/company_notifications.dart';
 import 'package:nashr/screens/document_screen.dart';
@@ -16,6 +20,7 @@ import 'package:nashr/screens/manage_time_screen.dart';
 import 'package:nashr/screens/my_clocking_screen.dart';
 import 'package:nashr/screens/notifications_screen.dart';
 import 'package:nashr/screens/onboarding_screen.dart';
+import 'package:nashr/screens/onsite_checkin.dart';
 import 'package:nashr/screens/penalty_and_fine_screen.dart';
 import 'package:nashr/screens/setting_screen.dart';
 import 'package:nashr/screens/slack_screen.dart';
@@ -27,19 +32,16 @@ import 'package:nashr/screens/team_clocking.dart';
 import 'package:nashr/screens/team_screen.dart';
 import 'package:nashr/screens/user_activity_screen.dart';
 import 'package:nashr/singleton_class.dart';
+import 'package:nashr/widgets/colors.dart';
+import 'package:nashr/widgets/loader.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:reorderables/reorderables.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../UTILS/auth_services.dart';
 import '../request_controller/attendance_model.dart' hide Data;
 import '../request_controller/role_and_access_model.dart';
-import '../widgets/colors.dart';
-import 'package:nashr/l10n/app_localizations.dart';
-import 'package:http/http.dart' as http;
-import '../widgets/loader.dart';
-import 'onsite_checkin.dart';
-import 'dart:io';
-import 'package:reorderables/reorderables.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -71,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Timer? _timer;
   String _displayWorkedHours = '00:00:00';
 
-
   @override
   void initState() {
     super.initState();
@@ -83,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     singletonClass.getClockingData();
     singletonClass.getPolicyData();
     singletonClass.getHRLetter();
-    // singletonClass.fetchCompanyHeaderFooter("${singletonClass.getJWTModel()?.companyId}");
     calculateTodayWorkedTime();
     WidgetsBinding.instance.addObserver(this);
     trackOpenLocation();
@@ -116,11 +116,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  ///Drop down selection
-  void autoSelectCompanyAndBranch(){
-    final uiModules = singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!;
+  /// Drop down selection
+  void autoSelectCompanyAndBranch() {
+    final uiModules = singletonClass.roleAndAccessModelDataList.first.data!
+        .uiSettings!.uiModules!;
     final dashboardModule = uiModules.firstWhere(
-          (e) => (e.title == "Dashboard" || e.name == "Dashboard") && e.hidden == false,
+      (e) =>
+          (e.title == "Dashboard" || e.name == "Dashboard") &&
+          e.hidden == false,
     );
 
     final companies = dashboardModule.accessLevel?.companies ?? [];
@@ -129,7 +132,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final defaultCompanyId = singletonClass.getJWTModel()?.companyId;
       final defaultBranchId = singletonClass.getJWTModel()?.branchId;
 
-      // Find company matching defaultCompanyId or fallback to first company
       dynamic selectedComp;
       for (var c in companies) {
         if (c.companyId == defaultCompanyId) {
@@ -143,11 +145,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       singletonClass.selectedCompanyId = selectedCompanyId;
       singletonClass.companyName = company.companyName ?? '';
 
-      // Populate branches of this company
       singletonClass.availableBranches = company.branches ?? [];
 
-      if (singletonClass.availableBranches.isNotEmpty && selectedBranchId == null) {
-        // Find branch matching defaultBranchId or fallback to first branch
+      if (singletonClass.availableBranches.isNotEmpty &&
+          selectedBranchId == null) {
         dynamic selectedBr;
         for (var b in singletonClass.availableBranches) {
           if (b.branchId == defaultBranchId) {
@@ -161,7 +162,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         singletonClass.branchID = selectedBranchId;
         singletonClass.branchName = branch.branchName ?? '';
 
-        // Call your API
         singletonClass.getTeamBranchData();
         singletonClass.getBranchesData();
       }
@@ -169,6 +169,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() {});
     }
   }
+
   void _calculateUnreadCount() {
     try {
       if (singletonClass.slackDataList.isEmpty ||
@@ -182,27 +183,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final userId = singletonClass.getJWTModel()?.employeeId;
 
       final unreadChats = allChats.where((chat) {
-        // Only consider direct rooms
         if (chat.roomType != "direct") return false;
-
-        // Ensure chat has messages
         final messages = chat.chatHistory ?? [];
-
-        // Only count if there is at least one unread message not sent by the user
         return messages.any((m) => m.isRead == false && m.senderId != userId);
       }).toList();
 
       singletonClass.unreadCount = unreadChats.length;
-
       debugPrint("✅ Direct chats with unread messages: ${unreadChats.length}");
     } catch (e) {
       debugPrint("⚠️ Error counting unread chats: $e");
       setState(() => singletonClass.unreadCount = 0);
     }
   }
+
   void _parseCompanyLocation() {
     final list = singletonClass.remoteAttendanceModelList;
-
     if (list.isEmpty) return;
 
     final dataList = list.first.data;
@@ -218,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _companyLongitude = double.tryParse(parts[1].trim()) ?? 0.0;
   }
 
-  ///Timer
+  /// Timer
   void startWorkTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -275,11 +270,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
 
       final todayData = todayEntries.last;
-
       final checkInTime = todayData.clockInTime;
       final checkOutTime = todayData.clockOutTime;
 
-      // Helper flags (clean and reusable)
       final hasCheckIn = checkInTime != null &&
           checkInTime.isNotEmpty &&
           checkInTime != 'null';
@@ -288,21 +281,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           checkOutTime.isNotEmpty &&
           checkOutTime != 'null';
 
-      // 🔹 Case 1: دونوں null/empty → show 00:00:00
       if (!hasCheckIn && !hasCheckOut) {
         stopWorkTimer();
         _displayWorkedHours = "00:00:00";
         return;
       }
 
-      // 🔹 Case 2: Only check-in → start timer
       if (hasCheckIn && !hasCheckOut) {
         _currentCheckIn = DateTime.tryParse(checkInTime);
         startWorkTimer();
         return;
       }
 
-      // 🔹 Case 3: Both available → stop timer & show total time
       if (hasCheckIn && hasCheckOut) {
         final checkIn = DateTime.tryParse(checkInTime);
         final checkOut = DateTime.tryParse(checkOutTime);
@@ -318,10 +308,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         return;
       }
 
-      // fallback
       stopWorkTimer();
       _displayWorkedHours = "00:00:00";
-
     } catch (e) {
       _displayWorkedHours = "00:00:00";
       stopWorkTimer();
@@ -330,13 +318,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   String _formatDuration(Duration d) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-
     final hours = twoDigits(d.inHours);
     final minutes = twoDigits(d.inMinutes.remainder(60));
     final seconds = twoDigits(d.inSeconds.remainder(60));
-
     return "$hours:$minutes:$seconds";
   }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -362,136 +349,176 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     updateRemoteLocation();
   }
 
-  final DraggableScrollableController _draggableScrollableController = DraggableScrollableController();
+  final DraggableScrollableController _draggableScrollableController =
+      DraggableScrollableController();
 
-  ///Slider
+  /// 1st Overlay (Slider Overlay - Redesigned Outside Container, Same Inside)
   OverlayEntry? _overlayEntry;
 
   OverlayEntry _createOverlayEntry() {
+    final local = AppLocalizations.of(context)!;
     return OverlayEntry(
-      builder: (context) => Positioned(
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
+      builder: (context) => Positioned.fill(
         child: GestureDetector(
-          onTap: () {
-            _removeOverlay();
-          },
+          onTap: _removeOverlay,
           child: Material(
-            color: Colors.grey.withValues(alpha: 0.8), // Set the opacity
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.clockInType,
-                    textAlign: TextAlign.left,
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+            color: Colors.black.withOpacity(0.65),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 24,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  if ( singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e){
-                    final title = (e.title ?? '').toLowerCase();
-                    if (title == 'dashboard' && e.hidden == false) {
-                      return e.onSiteCheckIn == true;
-                    }
-                    return false;
-                  })) ...[
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const OnsiteCheckin()));
-                        _removeOverlay();
-                      },
-                      child: Container(
-                        height: 90,
-                        width: 90,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        local.clockInType,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Image.asset("images/site.png"),
-                        ),
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      AppLocalizations.of(context)!.location,
-                      textAlign: TextAlign.left,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  if(singletonClass.roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!.any((e){
-                    final title = (e.title ?? '').toLowerCase();
-                    if (title == 'dashboard' && e.hidden == false) {
-                      return e.biometricCheckIn == true;
-                    }
-                    return false;
-                  }))...[
-                    GestureDetector(
-                      onTap: () async {
-                        if (!(await _authService.checkBiometricAvailability())) {
-                          _removeOverlay();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(
-                                  AppLocalizations.of(context)!.pleaseSetupBiometric,
-                                  style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white),
-                                )),
-                          );
-                          return;
-                        }
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          if (singletonClass.roleAndAccessModelDataList.first.data!
+                              .uiSettings!.uiModules!
+                              .any((e) {
+                            final title = (e.title ?? '').toLowerCase();
+                            if (title == 'dashboard' && e.hidden == false) {
+                              return e.onSiteCheckIn == true;
+                            }
+                            return false;
+                          })) ...[
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const OnsiteCheckin(),
+                                  ),
+                                );
+                                _removeOverlay();
+                              },
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 85,
+                                    width: 85,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white.withOpacity(0.5),
+                                      border: Border.all(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Image.asset("images/site.png"),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    local.location,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          if (singletonClass.roleAndAccessModelDataList.first.data!
+                              .uiSettings!.uiModules!
+                              .any((e) {
+                            final title = (e.title ?? '').toLowerCase();
+                            if (title == 'dashboard' && e.hidden == false) {
+                              return e.biometricCheckIn == true;
+                            }
+                            return false;
+                          })) ...[
+                            GestureDetector(
+                              onTap: () async {
+                                if (!(await _authService
+                                    .checkBiometricAvailability())) {
+                                  _removeOverlay();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        local.pleaseSetupBiometric,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
 
-                        bool isAuthenticated = await _authService
-                            .authenticateWithBiometrics(context);
-                        if (isAuthenticated) {
-                          _removeOverlay();
-                          await checkIn('biometric');
-                        } else {
-                          _removeOverlay();
-                        }
-                      },
-                      child: Container(
-                        height: 90,
-                        width: 90,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Image.asset("images/fingerprint.png"),
-                        ),
+                                bool isAuthenticated = await _authService
+                                    .authenticateWithBiometrics(context);
+                                if (isAuthenticated) {
+                                  _removeOverlay();
+                                  await checkIn('biometric');
+                                } else {
+                                  _removeOverlay();
+                                }
+                              },
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 85,
+                                    width: 85,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: NasColors.darkBlue.withOpacity(0.08),
+                                      border: Border.all(
+                                        color: NasColors.darkBlue.withOpacity(0.15),
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Image.asset("images/fingerprint.png"),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    local.biometricCheckIn,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      AppLocalizations.of(context)!.biometricCheckIn,
-                      textAlign: TextAlign.left,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ]
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -500,7 +527,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  ///2ND OverLay
+  /// 2nd Overlay ("View All" Quick Actions Sheet - GRADIENT + SIDE TAP DISMISS, NO CROSS BUTTON)
   OverlayEntry? _overlayEntry2;
 
   OverlayEntry _createViewAllOverlay() {
@@ -510,43 +537,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             [])
         : [];
 
-    /// Check for Documents module
     final hasDocuments = uiSettings.any((e) =>
         (e.title == "Document" || e.title == "Documents") && e.hidden == false);
-
-    /// Check for Stores
     final hasStores = uiSettings.any((e) =>
-    (e.title == "stores" || e.title == "Stores") && e.hidden == false);
-
-    /// Check for Teams module
+        (e.title == "stores" || e.title == "Stores") && e.hidden == false);
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
-
-    /// Check for Assets module
     final hasAssets = uiSettings.any((e) =>
         (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
         e.hidden == false);
 
-    /// Check for Penalties and Fines - in Approval submenu
     final hasPenaltiesAndFines = (uiSettings).any((e) {
       if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
-
         final subMenus = (e.subMenu is List)
             ? (e.subMenu as List).cast<SubMenu>()
             : <SubMenu>[];
         return subMenus.any((sub) {
           if ((sub.title?.toLowerCase() == "requests" ||
-              sub.title?.toLowerCase() == "request") &&
+                  sub.title?.toLowerCase() == "request") &&
               sub.hidden == false) {
-
             final innerMenus = (sub.subMenu is List)
                 ? (sub.subMenu as List).cast<SubMenu>()
                 : <SubMenu>[];
 
             return innerMenus.any((inner) =>
-            inner.title == "PenaltiesandFines" &&
-                inner.hidden == false
-            );
+                inner.title == "PenaltiesandFines" && inner.hidden == false);
           }
           return false;
         });
@@ -554,7 +569,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// Check for onboarding
     final hasOnboarding = uiSettings.any((e) {
       if (e.title == "Teams" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
@@ -565,7 +579,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// Check for Manage Shifts - in ManageTime submenu
     final hasManageShifts = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
@@ -577,7 +590,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// Check for Team Clocking (Attendance History) - in ManageTime submenu
     final hasAttendance = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
@@ -590,20 +602,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// check for user activity
     final hasUserActivity = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "User Activity" ||
-            sub.title == "userActivity") &&
-            sub.hidden == false) ??
+                (sub.title == "User Activity" || sub.title == "userActivity") &&
+                sub.hidden == false) ??
             false;
       }
       return false;
     });
 
-    /// Check for Biometric Checkins - in ManageTime submenu
     final hasBiometricCheckins = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
@@ -616,18 +625,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    ///Company notifications
     final hasCompanyNotifications = uiSettings.any((e) {
       if (e.title == "Document" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "Document Notification" || sub.title == "Document Notification") &&
-            sub.hidden == false) ??
+                (sub.title == "Document Notification" ||
+                    sub.title == "Document Notification") &&
+                sub.hidden == false) ??
             false;
       }
       return false;
     });
 
-     Future<List<Map<String, String>>> loadQuickActions() async {
+    Future<List<Map<String, String>>> loadQuickActions() async {
       final prefs = await SharedPreferences.getInstance();
       final userId = singletonClass.getJWTModel()?.employeeId ?? "default";
       List<Map<String, String>> defaultQuickActions = [
@@ -688,283 +697,274 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     return OverlayEntry(
-        builder: (context) => FutureBuilder<List<Map<String, String>>>(
-            future: loadQuickActions(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              List<Map<String, String>> quickActions = snapshot.data!;
-              return Positioned.fill(
-                child: GestureDetector(
-                  onTap: _removeOverlay,
-                  child: Material(
-                    color: NasColors.darkBlue.withValues(alpha: 0.8),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color(0xFF444658),
-                            Color(0xFF83869B),
-                            Color(0xFFBCC0E7),
-                            Color(0xFF727694),
-                            Color(0xFF444658),
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 40),
-                          child: ReorderableWrap(
-                            spacing: 40,
-                            runSpacing: 40,
-                            alignment: WrapAlignment.center,
-                            runAlignment: WrapAlignment.center,
-                            needsLongPressDraggable: true,
-                            onReorder: (oldIndex, newIndex) async {
-                              final item = quickActions.removeAt(oldIndex);
-                              quickActions.insert(newIndex, item);
-                              final prefs =
-                                  await SharedPreferences.getInstance();
-                              final userId =
-                                  singletonClass.getJWTModel()?.employeeId ??
-                                      "default";
-                              List<String> labelsOrder =
-                                  quickActions.map((e) => e["label"]!).toList();
-                              prefs.setStringList(
-                                  "quickActions_$userId", labelsOrder);
-                            },
-                            buildDraggableFeedback:
-                                (context, constraints, child) {
-                              return Material(
-                                color: Colors.transparent,
-                                child: child,
-                              );
-                            },
-                            children: quickActions.where((item) {
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!.documents &&
-                                  !hasDocuments) {
-                                return false;
-                              }
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!.assets &&
-                                  !hasAssets) {
-                                return false;
-                              }
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!.teams &&
-                                  !hasTeams) {
-                                return false;
-                              }
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!.penalties &&
-                                  !hasPenaltiesAndFines) {
-                                return false;
-                              }
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .biometricCheckIn &&
-                                  !hasBiometricCheckins) {
-                                return false;
-                              }
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .attendance &&
-                                  !hasAttendance) {
-                                return false;
-                              }
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .onBoarding &&
-                                  !hasOnboarding) {
-                                return false;
-                              }
-                              if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .manageShifts &&
-                                  !hasManageShifts) {
-                                return false;
-                              }
-                              if (item["label"] ==
+      builder: (context) => FutureBuilder<List<Map<String, String>>>(
+        future: loadQuickActions(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          List<Map<String, String>> quickActions = snapshot.data!;
+          return Positioned.fill(
+            child: GestureDetector(
+              onTap: _removeOverlay,
+              child: Material(
+                color: NasColors.darkBlue.withValues(alpha: 0.85),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF1E293B),
+                        Color(0xFF334155),
+                        Color(0xFF475569),
+                        Color(0xFF334155),
+                        Color(0xFF1E293B),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 40),
+                      child: ReorderableWrap(
+                        spacing: 40,
+                        runSpacing: 40,
+                        alignment: WrapAlignment.center,
+                        runAlignment: WrapAlignment.center,
+                        needsLongPressDraggable: true,
+                        onReorder: (oldIndex, newIndex) async {
+                          final item = quickActions.removeAt(oldIndex);
+                          quickActions.insert(newIndex, item);
+                          final prefs =
+                              await SharedPreferences.getInstance();
+                          final userId =
+                              singletonClass.getJWTModel()?.employeeId ??
+                                  "default";
+                          List<String> labelsOrder =
+                              quickActions.map((e) => e["label"]!).toList();
+                          prefs.setStringList(
+                              "quickActions_$userId", labelsOrder);
+                        },
+                        buildDraggableFeedback:
+                            (context, constraints, child) {
+                          return Material(
+                            color: Colors.transparent,
+                            child: child,
+                          );
+                        },
+                        children: quickActions.where((item) {
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.documents &&
+                              !hasDocuments) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.assets &&
+                              !hasAssets) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.teams &&
+                              !hasTeams) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.penalties &&
+                              !hasPenaltiesAndFines) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!
+                                      .biometricCheckIn &&
+                              !hasBiometricCheckins) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.attendance &&
+                              !hasAttendance) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.onBoarding &&
+                              !hasOnboarding) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.manageShifts &&
+                              !hasManageShifts) {
+                            return false;
+                          }
+                          if (item["label"] ==
                                   AppLocalizations.of(context)!
                                       .companyNotifications &&
-                                  !hasCompanyNotifications) {
-                                return false;
-                              }
+                              !hasCompanyNotifications) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.userActivity &&
+                              !hasUserActivity) {
+                            return false;
+                          }
+                          if (item["label"] ==
+                                  AppLocalizations.of(context)!.stores &&
+                              !hasStores) {
+                            return false;
+                          }
+                          return true;
+                        }).map((item) {
+                          return GestureDetector(
+                            onTap: () {
                               if (item["label"] ==
+                                  AppLocalizations.of(context)!.documents) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          DocumentScreen()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.assets) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => AssetsScreen()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.teams) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => TeamScreen()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.penalties) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          PenaltyAndFineScreen()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.onBoarding) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          OnboardingScreen()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.attendance) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          TeamAttendanceScreen()),
+                                );
+                              } else if (item["label"] ==
                                   AppLocalizations.of(context)!
-                                      .userActivity &&
-                                  !hasUserActivity) {
-                                return false;
-                              }
-                              if (item["label"] ==
+                                      .biometricCheckIn) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => TeamClocking()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.manageShifts) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          ManageTimeScreen()),
+                                );
+                              } else if (item["label"] ==
                                   AppLocalizations.of(context)!
-                                      .stores &&
-                                  !hasStores) {
-                                return false;
+                                      .companyNotifications) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CompanyNotifications()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.userActivity) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          UserActivityScreen()),
+                                );
+                              } else if (item["label"] ==
+                                  AppLocalizations.of(context)!.stores) {
+                                _removeOverlay();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => StoresScreen()),
+                                );
                               }
-                              return true;
-                            }).map((item) {
-                              return GestureDetector(
-                                onTap: () {
-                                  if (item["label"] ==
-                                      AppLocalizations.of(context)!.documents) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              DocumentScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!.assets) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => AssetsScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!.teams) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => TeamScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!.penalties) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              PenaltyAndFineScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .onBoarding) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              OnboardingScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .attendance) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              TeamAttendanceScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .biometricCheckIn) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => TeamClocking()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .manageShifts) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              ManageTimeScreen()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .companyNotifications) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              CompanyNotifications()),
-                                    );
-                                  } else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .userActivity) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              UserActivityScreen()),
-                                    );
-                                  }  else if (item["label"] ==
-                                      AppLocalizations.of(context)!
-                                          .stores) {
-                                    _removeOverlay();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              StoresScreen()),
-                                    );
-                                  }
-                                },
-                                child: Column(
-                                  key: ValueKey(item["label"]),
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      height: 75,
-                                      width: 75,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.15),
-                                            spreadRadius: 1,
-                                            blurRadius: 3,
-                                          ),
-                                        ],
+                            },
+                            child: Column(
+                              key: ValueKey(item["label"]),
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  height: 75,
+                                  width: 75,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withOpacity(0.15),
+                                        spreadRadius: 1,
+                                        blurRadius: 3,
                                       ),
-                                      child: Center(
-                                        child: Image.asset(
-                                          item["icon"]!,
-                                          width: 35,
-                                          height: 35,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Image.asset(
+                                      item["icon"]!,
+                                      width: 35,
+                                      height: 35,
+                                      fit: BoxFit.contain,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      item["label"]!,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  item["label"]!,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
                 ),
-              );
-            }));
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _removeOverlay() {
@@ -1006,18 +1006,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             [])
         : [];
 
-    /// Check for Documents module
     final hasDocuments = uiSettings.any((e) =>
         (e.title == "Document" || e.title == "Documents") && e.hidden == false);
 
-    /// Check for stores
     final hasStores = uiSettings.any((e) =>
-    (e.title == "Stores" || e.title == "stores") && e.hidden == true);
-    /// Check for Teams module
+        (e.title == "Stores" || e.title == "stores") && e.hidden == true);
+
     final hasTeams = uiSettings.any(
         (e) => (e.title == "teams" || e.title == "Teams") && e.hidden == false);
 
-    /// Check for Assets module
     final hasAssets = uiSettings.any((e) =>
         (e.title == "assets" || e.title == "Asset" || e.title == "Assets") &&
         e.hidden == false);
@@ -1025,33 +1022,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final hasCompanyNotifications = uiSettings.any((e) {
       if (e.title == "Document" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "Document Notification" || sub.title == "Document Notification") &&
-            sub.hidden == false) ??
+                (sub.title == "Document Notification" ||
+                    sub.title == "Document Notification") &&
+                sub.hidden == false) ??
             false;
       }
       return false;
     });
 
-    /// Check for Penalties and Fines - in Approval submenu
     final hasPenaltiesAndFines = (uiSettings).any((e) {
       if (e.title?.toLowerCase() == "approval" && e.hidden == false) {
-
         final subMenus = (e.subMenu is List)
             ? (e.subMenu as List).cast<SubMenu>()
             : <SubMenu>[];
         return subMenus.any((sub) {
           if ((sub.title?.toLowerCase() == "requests" ||
-              sub.title?.toLowerCase() == "request") &&
+                  sub.title?.toLowerCase() == "request") &&
               sub.hidden == false) {
-
             final innerMenus = (sub.subMenu is List)
                 ? (sub.subMenu as List).cast<SubMenu>()
                 : <SubMenu>[];
 
             return innerMenus.any((inner) =>
-            inner.title == "PenaltiesandFines" &&
-                inner.hidden == false
-            );
+                inner.title == "PenaltiesandFines" && inner.hidden == false);
           }
           return false;
         });
@@ -1059,7 +1052,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// Check for Manage Shifts - in ManageTime submenu
     final hasManageShifts = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
@@ -1071,7 +1063,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// Check for Team Clocking (Attendance History) - in ManageTime submenu
     final hasAttendance = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
@@ -1084,19 +1075,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// check for user activity
     final hasUserActivity = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
         return e.subMenu?.any((sub) =>
-        (sub.title == "User Activity" ||
-            sub.title == "userActivity") &&
-            sub.hidden == false) ??
+                (sub.title == "User Activity" || sub.title == "userActivity") &&
+                sub.hidden == false) ??
             false;
       }
       return false;
     });
-    /// Check for Biometric Checkins - in ManageTime submenu
+
     final hasBiometricCheckins = uiSettings.any((e) {
       if ((e.title == "ManageTime" || e.title == "manageTime") &&
           e.hidden == false) {
@@ -1109,13 +1098,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    ///Chats
     final hasChats = uiSettings.any((e) {
       final title = (e.title ?? e.name ?? '').toLowerCase();
       return title == 'chat' && e.hidden == false;
     });
 
-    /// ✅ Socket Notifications
     final hasSocketNotification = uiSettings.any((e) {
       final title = (e.title ?? '').toLowerCase();
       if (title == 'dashboard' && e.hidden == false) {
@@ -1125,7 +1112,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    /// Check for onboarding
     final hasOnboarding = uiSettings.any((e) {
       if (e.title == "Teams" && e.hidden == false) {
         return e.subMenu?.any((sub) =>
@@ -1136,16 +1122,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return false;
     });
 
-    ///Slider
-    final hasSlider = singletonClass.roleAndAccessModelDataList
-        .first.data!
+    final hasSlider = singletonClass.roleAndAccessModelDataList.first.data!
         .uiSettings!.uiModules!
         .any((e) {
       final title = (e.title ?? '').toLowerCase();
       final showSlider = (e.biometricCheckIn == true || e.onSiteCheckIn == true);
       return title == 'dashboard' && e.hidden == false && showSlider;
     });
-    ///Dashboard module checks
+
     final dashboardModule = singletonClass
         .roleAndAccessModelDataList.first.data!.uiSettings!.uiModules!
         .firstWhere(
@@ -1159,70 +1143,70 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final teamEnabled = access.team == true;
 
     if (hasCompanies && hasBranches && teamEnabled) {
-      // ✅ Case 1: Companies + Branches + Team → Dropdown + Team + Only Me
       showDropdown = true;
     } else if (hasCompanies && hasBranches && !teamEnabled) {
-      // ✅ Case 2: Companies + Branches + No Team → Dropdown + Only Me
       showDropdown = true;
     } else if (!hasCompanies && !hasBranches && teamEnabled) {
-      // ✅ Case 3: No companies + No branches + Team → Team + Only Me
       showDropdown = false;
     } else if (!hasCompanies && !hasBranches && !teamEnabled) {
-      // ✅ Case 4: No companies + No branches + No Team → Only Me
       showDropdown = false;
     }
 
-    final bool shouldShowDropdown =
-        showDropdown &&
-            companies.isNotEmpty &&
-            companies.any(
-                  (company) =>
-                  (company.branches ?? []).any(
-                        (branch) =>
-                    (branch.branchId != null &&
-                        branch.branchId!.trim().isNotEmpty) ||
-                        (branch.branchName != null &&
-                            branch.branchName!.trim().isNotEmpty),
-                  ),
-            );
+    final bool shouldShowDropdown = showDropdown &&
+        companies.isNotEmpty &&
+        companies.any(
+          (company) => (company.branches ?? []).any(
+            (branch) =>
+                (branch.branchId != null &&
+                    branch.branchId!.trim().isNotEmpty) ||
+                (branch.branchName != null &&
+                    branch.branchName!.trim().isNotEmpty),
+          ),
+        );
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
+          /// Background Image + Blur (PRESERVED FUNCTIONALITY)
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             decoration: const BoxDecoration(),
             child: Stack(
               fit: StackFit.expand,
               children: [
-            (dashBoardData?.first.profilePic != null &&
-            dashBoardData!.first.profilePic!.isNotEmpty &&
-            dashBoardData.first.profilePic != "https://www.profilePic.com")
-                ? Image.network(
-              dashBoardData.first.profilePic!,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  'images/DP.png',
-                  fit: BoxFit.cover,
-                );
-              },
-            )
-                : Image.asset(
-              'images/DP.png',
-              fit: BoxFit.cover,
-            ),
-      BackdropFilter(
+                (dashBoardData?.first.profilePic != null &&
+                        dashBoardData!.first.profilePic!.isNotEmpty &&
+                        dashBoardData.first.profilePic !=
+                            "https://www.profilePic.com")
+                    ? Image.network(
+                        dashBoardData.first.profilePic!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'images/DP.png',
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        'images/DP.png',
+                        fit: BoxFit.cover,
+                      ),
+                BackdropFilter(
                   filter: ImageFilter.blur(
                     sigmaX: blurAmount,
                     sigmaY: blurAmount,
                   ),
                   child: Container(
-                      color: Colors.black
-                          .withValues(alpha: (opacityAmount * 0.1 * 2))),
+                    color: Colors.black.withValues(
+                        alpha: (opacityAmount * 0.1 * 2)),
+                  ),
                 ),
               ],
             ),
           ),
+
+          /// Expanded Top Section (Profile + Actions - NO EXTRA HEADER ADDED)
           if (isExpanded)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1230,51 +1214,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 12, top: 50, left: 15),
+                    padding:
+                        const EdgeInsets.only(right: 12, top: 50, left: 15),
                     child: AnimatedOpacity(
                       opacity: showHeaderContent ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 300),
                       child: GestureDetector(
                         onTap: toggleSheet,
                         child: (singletonClass.employeeDataList.isEmpty) ||
-                            (singletonClass.employeeDataList.first.data.first.profilePic == null) ||
-                            (singletonClass.employeeDataList.first.data.first.profilePic?.isEmpty == true) ||
-                            (singletonClass.employeeDataList.first.data.first.profilePic == "https://www.profilePic.com") ? ClipOval(
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            radius: 40,
-                            child: ClipOval(
-                                child: Image.asset(
-                                  'images/DP.png',
-                                  fit: BoxFit.cover,
-                                  width: 100,
-                                  height: 100,
-                                )
-                            ),
-                          ),
-                        ) : ClipOval(
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            radius: 40,
-                            child: ClipOval(
-                              child: Image.network(
-                                dashBoardData?.first.profilePic!,
-                                fit: BoxFit.cover,
-                                width: 100,
-                                height: 100,
-                                errorBuilder: (BuildContext context,
-                                    Object exception, StackTrace? stackTrace) {
-                                  return Image.asset(
-                                    'images/DP.png',
-                                    fit: BoxFit.cover,
-                                    width: 100,
-                                    height: 100,
-                                  );
-                                },
+                                (singletonClass.employeeDataList.first.data.first
+                                        .profilePic ==
+                                    null) ||
+                                (singletonClass.employeeDataList.first.data.first
+                                        .profilePic?.isEmpty ==
+                                    true) ||
+                                (singletonClass.employeeDataList.first.data.first
+                                        .profilePic ==
+                                    "https://www.profilePic.com")
+                            ? ClipOval(
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  radius: 40,
+                                  child: ClipOval(
+                                    child: Image.asset(
+                                      'images/DP.png',
+                                      fit: BoxFit.cover,
+                                      width: 100,
+                                      height: 100,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : ClipOval(
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  radius: 40,
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      dashBoardData?.first.profilePic!,
+                                      fit: BoxFit.cover,
+                                      width: 100,
+                                      height: 100,
+                                      errorBuilder: (BuildContext context,
+                                          Object exception,
+                                          StackTrace? stackTrace) {
+                                        return Image.asset(
+                                          'images/DP.png',
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        )
                       ),
                     ),
                   ),
@@ -1338,10 +1332,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         IconButton(
                           onPressed: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        NotificationsScreen()));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NotificationsScreen(),
+                              ),
+                            );
                           },
                           icon: Container(
                             height: 45,
@@ -1359,7 +1354,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(9.0),
-                              // optional padding
                               child: Image.asset(
                                 'images/notification.png',
                                 fit: BoxFit.contain,
@@ -1370,10 +1364,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         IconButton(
                           onPressed: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const MyClockingScreen()));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MyClockingScreen(),
+                              ),
+                            );
                           },
                           icon: Container(
                             height: 45,
@@ -1402,10 +1397,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             ? IconButton(
                                 onPressed: () {
                                   Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const SocketNotificationScreen()));
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SocketNotificationScreen(),
+                                    ),
+                                  );
                                 },
                                 icon: Container(
                                   height: 45,
@@ -1415,8 +1412,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.6),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.6),
                                         spreadRadius: 5,
                                         blurRadius: 10,
                                       ),
@@ -1434,10 +1431,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             : IconButton(
                                 onPressed: () {
                                   Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const SettingScreen()));
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SettingScreen(),
+                                    ),
+                                  );
                                 },
                                 icon: Container(
                                   height: 45,
@@ -1447,8 +1446,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.6),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.6),
                                         spreadRadius: 5,
                                         blurRadius: 10,
                                       ),
@@ -1474,23 +1473,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            spreadRadius: 5,
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                          onPressed: toggleSheet,
-                          icon: const Icon(Icons.close))),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          spreadRadius: 5,
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      onPressed: toggleSheet,
+                      icon: const Icon(Icons.close),
+                    ),
+                  ),
                 ],
               ),
             ),
+
+          /// Bottom Sheet Content
           Listener(
             onPointerMove: (PointerMoveEvent event) {},
             child: DraggableScrollableSheet(
@@ -1499,8 +1502,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               minChildSize: 0.2,
               maxChildSize: 0.7,
               expand: true,
-              builder:
-                  (BuildContext context, ScrollController scrollController) {
+              builder: (BuildContext context,
+                  ScrollController scrollController) {
                 return Container(
                   decoration: BoxDecoration(
                     color: NasColors.backGround,
@@ -1527,34 +1530,53 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     itemBuilder: (BuildContext context, int index) {
                       return Column(
                         children: [
+                          /// 3D Drag Handle Bar
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                height: 10,
-                                width: 80,
+                                height: 6,
+                                width: 48,
+                                margin: const EdgeInsets.only(top: 8, bottom: 4),
                                 decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(15)),
-                                  color: NasColors.darkBlue,
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.grey.shade300,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                               )
                             ],
                           ),
+
+                          /// Company & Branch Dropdowns (3D Style)
                           if (showDropdown && shouldShowDropdown)
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 8),
                               child: Row(
                                 children: [
-                                  /// Company Dropdown
+                                  /// Company Dropdown (3D Card)
                                   Expanded(
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12),
                                       decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.grey),
-                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.white,
+                                        border: Border.all(
+                                            color: Colors.grey.shade200),
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.04),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
                                       ),
                                       child: DropdownButtonHideUnderline(
                                         child: DropdownButton<String>(
@@ -1563,8 +1585,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           value: selectedCompanyId,
                                           hint: Row(
                                             children: [
-                                              Image.asset('images/site.png',
-                                                  width: 15, height: 15),
+                                              Icon(
+                                                Icons.business_rounded,
+                                                size: 18,
+                                                color: NasColors.darkBlue,
+                                              ),
                                               const SizedBox(width: 8),
                                               Flexible(
                                                 child: Text(
@@ -1579,7 +1604,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: GoogleFonts.inter(
-                                                      fontSize: 15),
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500),
                                                 ),
                                               ),
                                             ],
@@ -1606,21 +1633,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     (company) {
                                               return DropdownMenuItem<String>(
                                                 value: company.companyId,
-                                                child: Text(
-                                                    company.companyName ??
-                                                        "---"),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.business_rounded,
+                                                      size: 16,
+                                                      color: NasColors.darkBlue,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        company.companyName ??
+                                                            "---",
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                        style: GoogleFonts.inter(
+                                                            fontSize: 14),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               );
                                             }).toList();
                                           })(),
                                           onChanged: (value) {
                                             if (value == null) return;
                                             setState(() {
-                                              // select company
                                               selectedCompanyId = value;
-                                              singletonClass.selectedCompanyId =
+                                              singletonClass
+                                                      .selectedCompanyId =
                                                   value;
 
-                                              // find selected company and update company name
                                               final uiModules = singletonClass
                                                   .roleAndAccessModelDataList
                                                   .first
@@ -1647,7 +1690,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                   selectedCompany.companyName ??
                                                       '';
 
-                                              // populate branches for this company and clear selected branch
                                               singletonClass.availableBranches =
                                                   selectedCompany.branches ??
                                                       [];
@@ -1665,660 +1707,826 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                   const SizedBox(width: 12),
 
-                                  /// Branch Dropdown
+                                  /// Branch Dropdown (3D Card)
                                   Expanded(
-                                      child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        dropdownColor: Colors.white,
-                                        isExpanded: true,
-                                        value: selectedBranchId,
-                                        hint: Text(
-                                          isLoadingBranches
-                                              ? AppLocalizations.of(context)!
-                                                  .loading
-                                              : (singletonClass.branchName ==
-                                                          null ||
-                                                      singletonClass
-                                                          .branchName!.isEmpty)
-                                                  ? AppLocalizations.of(
-                                                          context)!
-                                                      .selectBranch
-                                                  : singletonClass.branchName!,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border.all(
+                                            color: Colors.grey.shade200),
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.04),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          dropdownColor: Colors.white,
+                                          isExpanded: true,
+                                          value: selectedBranchId,
+                                          hint: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.storefront_rounded,
+                                                size: 18,
+                                                color: NasColors.darkBlue,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Flexible(
+                                                child: Text(
+                                                  isLoadingBranches
+                                                      ? AppLocalizations.of(context)!
+                                                          .loading
+                                                      : (singletonClass.branchName ==
+                                                                  null ||
+                                                              singletonClass
+                                                                  .branchName!.isEmpty)
+                                                          ? AppLocalizations.of(
+                                                                  context)!
+                                                              .selectBranch
+                                                          : singletonClass.branchName!,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          items: singletonClass
+                                                  .availableBranches.isNotEmpty
+                                              ? singletonClass.availableBranches
+                                                  .map<DropdownMenuItem<String>>(
+                                                      (branch) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: branch.branchId,
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.storefront_rounded,
+                                                          size: 16,
+                                                          color: NasColors.darkBlue,
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        Expanded(
+                                                          child: Text(
+                                                            branch.branchName ??
+                                                                "---",
+                                                            overflow:
+                                                                TextOverflow.ellipsis,
+                                                            style: GoogleFonts.inter(
+                                                                fontSize: 14),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }).toList()
+                                              : [],
+                                          onChanged: (value) {
+                                            setState(() {
+                                              selectedBranchId = value;
+                                              singletonClass.branchID =
+                                                  selectedBranchId;
+                                              singletonClass.getTeamBranchData();
+                                              final selectedBranch =
+                                                  singletonClass.availableBranches
+                                                      .firstWhere((branch) =>
+                                                          branch.branchId
+                                                              .toString() ==
+                                                          value);
+                                              singletonClass.branchName =
+                                                  selectedBranch.branchName ?? '';
+                                            });
+                                          },
                                         ),
-                                        items: singletonClass
-                                                .availableBranches.isNotEmpty
-                                            ? singletonClass.availableBranches
-                                                .map<DropdownMenuItem<String>>(
-                                                    (branch) {
-                                                return DropdownMenuItem<String>(
-                                                  value: branch.branchId,
-                                                  child: Text(
-                                                      branch.branchName ??
-                                                          "---"),
-                                                );
-                                              }).toList()
-                                            : [],
-                                        onChanged: (value) {
-                                          setState(() {
-                                            selectedBranchId = value;
-                                            singletonClass.branchID =
-                                                selectedBranchId;
-                                            singletonClass.getTeamBranchData();
-                                            debugPrint(singletonClass.branchID);
-                                            final selectedBranch =
-                                                singletonClass.availableBranches
-                                                    .firstWhere((branch) =>
-                                                        branch.branchId
-                                                            .toString() ==
-                                                        value);
-                                            singletonClass.branchName =
-                                                selectedBranch.branchName ?? '';
-                                          });
-                                        },
                                       ),
                                     ),
-                                  ))
+                                  )
                                 ],
                               ),
                             ),
+
+                          /// Attendance Info Cards (3D Depth Cards, EQUAL HEIGHT)
                           Padding(
                             padding: const EdgeInsets.all(10.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey
-                                              .withValues(alpha: 0.5),
-                                          spreadRadius: 2,
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        if (singletonClass
-                                                .clockingDataList.isNotEmpty &&
-                                            singletonClass
-                                                    .clockingDataList.first.data !=
-                                                null &&
-                                            singletonClass.clockingDataList
-                                                .first.data!.isNotEmpty &&
-                                            singletonClass
-                                                    .clockingDataList
-                                                    .first
-                                                    .data!
-                                                    .first
-                                                    .checkInTime !=
-                                                null &&
-                                            singletonClass
-                                                .clockingDataList
-                                                .first
-                                                .data!
-                                                .first
-                                                .checkInTime!
-                                                .isNotEmpty) ...[
-                                          Container(
-                                              height: 30,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    const BorderRadius.only(
-                                                  topLeft: Radius.circular(15),
-                                                  topRight: Radius.circular(15),
-                                                ),
-                                                color: getTodayStatusColor(),
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  if (singletonClass
-                                                          .attendanceDataList
-                                                          .isNotEmpty &&
-                                                      singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data !=
-                                                          null &&
-                                                      singletonClass
-                                                          .attendanceDataList
-                                                          .first
-                                                          .data!
-                                                          .data!
-                                                          .isNotEmpty)
-                                                    Builder(builder: (context) {
-                                                      final today =
-                                                          DateTime.now();
-                                                      final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!
-                                                              .data!;
-                                                      Data1? entry;
-                                                      final filteredList =
-                                                          dataList.where((e) {
-                                                        final createdAt =
-                                                            DateTime.tryParse(
-                                                                e.createdAt ??
-                                                                    '');
-                                                        return createdAt !=
-                                                                null &&
-                                                            createdAt.year ==
-                                                                today.year &&
-                                                            createdAt.month ==
-                                                                today.month &&
-                                                            createdAt.day ==
-                                                                today.day;
-                                                      }).toList();
-                                                      if (filteredList
-                                                          .isNotEmpty) {
-                                                        entry =
-                                                            filteredList.first;
-                                                      }
-                                                      if (entry == null) {
-                                                        return SizedBox();
-                                                      }
-                                                      if (entry
-                                                              .secondaryStatus ==
-                                                          "Late") {
-                                                        return Text(
-                                                          "${AppLocalizations.of(context)!.late} ${entry.lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${entry.lateMinutes! % 60}${AppLocalizations.of(context)!.m}",
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.white,
-                                                          ),
-                                                        );
-                                                      } else if (entry
-                                                              .secondaryStatus ==
-                                                          "Early-Out") {
-                                                        return Text(
-                                                          "${AppLocalizations.of(context)!.earlyCheckOut} ${entry.earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${entry.earlyCheckOut! % 60}${AppLocalizations.of(context)!.m}",
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.white,
-                                                          ),
-                                                        );
-                                                      } else {
-                                                        return Text(
-                                                          _translateSecondaryStatus(
-                                                              entry
-                                                                  .secondaryStatus,
-                                                              context),
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.white,
-                                                          ),
-                                                        );
-                                                      }
-                                                    })
-                                                  else
-                                                    Text(
-                                                      "--:--",
-                                                      style: GoogleFonts.inter(
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          color: Colors.white),
-                                                    ),
-                                                ],
-                                              )),
-                                        ] else ...[
-                                          Container(
-                                            height: 30,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  const BorderRadius.only(
-                                                topLeft: Radius.circular(15),
-                                                topRight: Radius.circular(15),
-                                              ),
-                                              color: getTodayStatusColor(),
-                                            ),
+                            child: IntrinsicHeight(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  /// Left Card: Status & Timings (3D Depth Container)
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(18),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.08),
+                                            blurRadius: 16,
+                                            spreadRadius: 1,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(0.8),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, -2),
                                           ),
                                         ],
-
-                                        /// 🔹 Check-In Row
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8.0,
-                                              left: 15,
-                                              right: 8,
-                                              bottom: 8),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              SizedBox(
-                                                height: 25,
-                                                width: 25,
-                                                child: Image.asset(
-                                                    "images/checkIn.png"),
-                                              ),
-                                              const SizedBox(width: 40),
-                                              Expanded(
-                                                child: Text(
-                                                  () {
-                                                    try {
-                                                      final today =
-                                                          DateTime.now();
-                                                      final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!.data;
-                                                      if (dataList == null ||
-                                                          dataList.isEmpty) {
-                                                        return '--:--';
-                                                      }
-
-                                                      final todayEntries =
-                                                          dataList
-                                                              .where((entry) {
-                                                        final createdAt =
-                                                            DateTime.tryParse(
-                                                                entry.createdAt ??
-                                                                    '');
-                                                        return createdAt !=
-                                                                null &&
-                                                            createdAt.year ==
-                                                                today.year &&
-                                                            createdAt.month ==
-                                                                today.month &&
-                                                            createdAt.day ==
-                                                                today.day;
-                                                      }).toList();
-
-                                                      if (todayEntries
-                                                          .isEmpty) {
-                                                        return '--:--';
-                                                      }
-
-                                                      final lastEntry =
-                                                          todayEntries.last;
-                                                      return (lastEntry
-                                                                  .clockInTime
-                                                                  ?.isNotEmpty ??
-                                                              false)
-                                                          ? singletonClass
-                                                              .formatCheckInTime(
-                                                                  lastEntry
-                                                                      .clockInTime!,
-                                                                  context)
-                                                          : '--:--';
-                                                    } catch (_) {
-                                                      return '--:--';
-                                                    }
-                                                  }(),
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.normal,
+                                        border: Border.all(
+                                            color: Colors.grey.shade100),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          if (singletonClass
+                                                  .clockingDataList.isNotEmpty &&
+                                              singletonClass
+                                                      .clockingDataList.first.data !=
+                                                  null &&
+                                              singletonClass.clockingDataList
+                                                  .first.data!.isNotEmpty &&
+                                              singletonClass
+                                                      .clockingDataList
+                                                      .first
+                                                      .data!
+                                                      .first
+                                                      .checkInTime !=
+                                                  null &&
+                                              singletonClass
+                                                  .clockingDataList
+                                                  .first
+                                                  .data!
+                                                  .first
+                                                  .checkInTime!
+                                                  .isNotEmpty) ...[
+                                            Container(
+                                                height: 32,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      const BorderRadius.only(
+                                                    topLeft: Radius.circular(18),
+                                                    topRight: Radius.circular(18),
                                                   ),
+                                                  color: getTodayStatusColor(),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        /// 🔹 Check-Out Row
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 5.0, left: 15, right: 8),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              SizedBox(
-                                                height: 25,
-                                                width: 25,
-                                                child: Image.asset(
-                                                    "images/checkOut.png"),
-                                              ),
-                                              const SizedBox(width: 40),
-                                              Expanded(
-                                                child: Text(
-                                                      () {
-                                                    try {
-                                                      final today =
-                                                      DateTime.now();
-                                                      final dataList =
-                                                          singletonClass
-                                                              .attendanceDataList
-                                                              .first
-                                                              .data!.data;
-                                                      if (dataList == null ||
-                                                          dataList.isEmpty) {
-                                                        return '--:--';
-                                                      }
-
-                                                      final todayEntries =
-                                                      dataList
-                                                          .where((entry) {
-                                                        final createdAt =
-                                                        DateTime.tryParse(
-                                                            entry.createdAt ??
-                                                                '');
-                                                        return createdAt !=
-                                                            null &&
-                                                            createdAt.year ==
-                                                                today.year &&
-                                                            createdAt.month ==
-                                                                today.month &&
-                                                            createdAt.day ==
-                                                                today.day;
-                                                      }).toList();
-
-                                                      if (todayEntries
-                                                          .isEmpty) {
-                                                        return '--:--';
-                                                      }
-
-                                                      final lastEntry =
-                                                          todayEntries.last;
-                                                      return (lastEntry
-                                                          .clockOutTime
-                                                          ?.isNotEmpty ??
-                                                          false)
-                                                          ? singletonClass
-                                                          .formatCheckInTime(
-                                                          lastEntry
-                                                              .clockOutTime!,
-                                                          context)
-                                                          : '--:--';
-                                                    } catch (_) {
-                                                      return '--:--';
-                                                    }
-                                                  }(),
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                    FontWeight.normal,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8.0,
-                                              left: 15,
-                                              right: 8,
-                                              bottom: 5),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              SizedBox(
-                                                height: 25,
-                                                width: 25,
-                                                child: Image.asset(
-                                                  "images/break.png",
-                                                ),
-                                              ),
-                                              const SizedBox(width: 40),
-                                              Text(
-                                                singletonClass
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    if (singletonClass
                                                             .attendanceDataList
                                                             .isNotEmpty &&
+                                                        singletonClass
+                                                                .attendanceDataList
+                                                                .first
+                                                                .data!
+                                                                .data !=
+                                                            null &&
                                                         singletonClass
                                                             .attendanceDataList
                                                             .first
                                                             .data!
                                                             .data!
-                                                            .isNotEmpty
-                                                    ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
-                                                    : '--:--',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.normal,
+                                                            .isNotEmpty)
+                                                      Builder(builder: (context) {
+                                                        final today =
+                                                            DateTime.now();
+                                                        final dataList =
+                                                            singletonClass
+                                                                .attendanceDataList
+                                                                .first
+                                                                .data!
+                                                                .data!;
+                                                        Data1? entry;
+                                                        final filteredList =
+                                                            dataList.where((e) {
+                                                          final createdAt =
+                                                              DateTime.tryParse(
+                                                                  e.createdAt ??
+                                                                      '');
+                                                          return createdAt !=
+                                                                  null &&
+                                                              createdAt.year ==
+                                                                  today.year &&
+                                                              createdAt.month ==
+                                                                  today.month &&
+                                                              createdAt.day ==
+                                                                  today.day;
+                                                        }).toList();
+                                                        if (filteredList
+                                                            .isNotEmpty) {
+                                                          entry =
+                                                              filteredList.first;
+                                                        }
+                                                        if (entry == null) {
+                                                          return const SizedBox();
+                                                        }
+                                                        if (entry
+                                                                .secondaryStatus ==
+                                                            "Late") {
+                                                          return Text(
+                                                            "${AppLocalizations.of(context)!.late} ${entry.lateMinutes! ~/ 60}${AppLocalizations.of(context)!.h} ${entry.lateMinutes! % 60}${AppLocalizations.of(context)!.m}",
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight.bold,
+                                                              color: Colors.white,
+                                                            ),
+                                                          );
+                                                        } else if (entry
+                                                                .secondaryStatus ==
+                                                            "Early-Out") {
+                                                          return Text(
+                                                            "${AppLocalizations.of(context)!.earlyCheckOut} ${entry.earlyCheckOut! ~/ 60}${AppLocalizations.of(context)!.h} ${entry.earlyCheckOut! % 60}${AppLocalizations.of(context)!.m}",
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight.bold,
+                                                              color: Colors.white,
+                                                            ),
+                                                          );
+                                                        } else {
+                                                          return Text(
+                                                            _translateSecondaryStatus(
+                                                                entry
+                                                                    .secondaryStatus,
+                                                                context),
+                                                            style:
+                                                                GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight.bold,
+                                                              color: Colors.white,
+                                                            ),
+                                                          );
+                                                        }
+                                                      })
+                                                    else
+                                                      Text(
+                                                        "--:--",
+                                                        style: GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.normal,
+                                                            color: Colors.white),
+                                                      ),
+                                                  ],
+                                                )),
+                                          ] else ...[
+                                            Container(
+                                              height: 32,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    const BorderRadius.only(
+                                                  topLeft: Radius.circular(18),
+                                                  topRight: Radius.circular(18),
                                                 ),
+                                                color: getTodayStatusColor(),
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                    child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(15)),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.grey.withValues(alpha: 0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(15),
-                                            topRight: Radius.circular(15),
-                                          ),
-                                          color: NasColors.darkBlue,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              AppLocalizations.of(context)!
-                                                  .totalHours,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white),
                                             ),
                                           ],
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            height: 100,
-                                            width: 120,
-                                            child: Align(
-                                              alignment: Alignment.center,
-                                              child: Text(
-                                                _displayWorkedHours,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          _timer != null && _timer!.isActive
-                                              ? SizedBox(
-                                            height: 50,
-                                            width: 50,
-                                            child: Lottie.asset('images/working.json'),
-                                          )
-                                              : SizedBox(
-                                            height: 50,
-                                            width: 50,
-                                            child: Lottie.asset('images/totalWork.json'),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      )
-                                    ],
-                                  ),
-                                ))
-                              ],
-                            ),
-                          ),
-                          ///SLider
-                          if(hasSlider)...[
-                            Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Directionality(
-                                  textDirection: TextDirection.ltr,
-                                  child: GestureDetector(
-                                    onHorizontalDragUpdate: (details) {
-                                      setState(() {
-                                        _dragPosition += details.primaryDelta!;
-                                        if (_dragPosition.abs() > MediaQuery.of(context).size.width * 0.7) {
-                                          _isSliderCompleted = true;
-                                        }
-                                      });
-                                    },
-                                    onHorizontalDragEnd: (details) {
-                                      setState(() {
-                                        if (_isSliderCompleted) {
-                                          _overlayEntry = _createOverlayEntry();
-                                          Overlay.of(context).insert(_overlayEntry!);
-                                        }
-                                        _dragPosition = 0;
-                                        _isSliderCompleted = false;
-                                      });
-                                    },
-                                    child: Container(
-                                      alignment: Alignment.topLeft,
-                                      decoration: const BoxDecoration(
-                                        borderRadius: BorderRadius.all(Radius.circular(15)),
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Color(0xFF444658),
-                                            Color(0xFF677587),
-                                            Color(0xFF78889D),
-                                            Color(0xFF9DB2CE),
-                                            Color(0xFF8799B1),
-                                          ],
-                                          begin: Alignment.topRight,
-                                          end: Alignment.bottomLeft,
-                                        ),
-                                      ),
-                                      height: 60,
-                                      child: (() {
-                                        String displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                        if ( _timer != null && _timer!.isActive) {
-                                          displayText = AppLocalizations.of(context)!.swipeToCheckOut;
-                                        } else {
-                                          displayText = AppLocalizations.of(context)!.swipeToCheckIn;
-                                        }
-                                        // Always show swipe UI
-                                        return Transform.translate(
-                                          offset: Offset(_dragPosition, -1),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
+
+                                          /// Check-In Row
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 8.0,
+                                                left: 15,
+                                                right: 8,
+                                                bottom: 8),
                                             child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
                                               children: [
-                                                _timer != null && _timer!.isActive ?
-                                                Container(
-                                                  width: 60,
-                                                  height: 50,
-                                                  decoration: const BoxDecoration(
-                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                    color: Colors.white,
-                                                  ),
-                                                  child: Lottie.asset('images/working.json'),
-                                                ) : Container(
-                                                  width: 60,
-                                                  height: 50,
-                                                  decoration: const BoxDecoration(
-                                                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                                                    color: Colors.white,
-                                                  ),
-                                                  child: Lottie.asset('images/swiper.json'),
+                                                SizedBox(
+                                                  height: 25,
+                                                  width: 25,
+                                                  child: Image.asset(
+                                                      "images/checkIn.png"),
                                                 ),
-                                                const SizedBox(width: 50),
-                                                Align(
-                                                  alignment: Alignment.center,
+                                                const SizedBox(width: 40),
+                                                Expanded(
                                                   child: Text(
-                                                    displayText,
+                                                    () {
+                                                      try {
+                                                        final today =
+                                                            DateTime.now();
+                                                        final dataList =
+                                                            singletonClass
+                                                                .attendanceDataList
+                                                                .first
+                                                                .data!.data;
+                                                        if (dataList == null ||
+                                                            dataList.isEmpty) {
+                                                          return '--:--';
+                                                        }
+
+                                                        final todayEntries =
+                                                            dataList
+                                                                .where((entry) {
+                                                          final createdAt =
+                                                              DateTime.tryParse(
+                                                                  entry.createdAt ??
+                                                                      '');
+                                                          return createdAt !=
+                                                                  null &&
+                                                              createdAt.year ==
+                                                                  today.year &&
+                                                              createdAt.month ==
+                                                                  today.month &&
+                                                              createdAt.day ==
+                                                                  today.day;
+                                                        }).toList();
+
+                                                        if (todayEntries
+                                                            .isEmpty) {
+                                                          return '--:--';
+                                                        }
+
+                                                        final lastEntry =
+                                                            todayEntries.last;
+                                                        return (lastEntry
+                                                                    .clockInTime
+                                                                    ?.isNotEmpty ??
+                                                                false)
+                                                            ? singletonClass
+                                                                .formatCheckInTime(
+                                                                    lastEntry
+                                                                        .clockInTime!,
+                                                                    context)
+                                                            : '--:--';
+                                                      } catch (_) {
+                                                        return '--:--';
+                                                      }
+                                                    }(),
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.normal,
                                                     ),
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                        );
-                                      })(),
+
+                                          /// Check-Out Row
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 5.0, left: 15, right: 8),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                SizedBox(
+                                                  height: 25,
+                                                  width: 25,
+                                                  child: Image.asset(
+                                                      "images/checkOut.png"),
+                                                ),
+                                                const SizedBox(width: 40),
+                                                Expanded(
+                                                  child: Text(
+                                                    () {
+                                                      try {
+                                                        final today =
+                                                            DateTime.now();
+                                                        final dataList =
+                                                            singletonClass
+                                                                .attendanceDataList
+                                                                .first
+                                                                .data!.data;
+                                                        if (dataList == null ||
+                                                            dataList.isEmpty) {
+                                                          return '--:--';
+                                                        }
+
+                                                        final todayEntries =
+                                                            dataList
+                                                                .where((entry) {
+                                                          final createdAt =
+                                                              DateTime.tryParse(
+                                                                  entry.createdAt ??
+                                                                      '');
+                                                          return createdAt !=
+                                                                  null &&
+                                                              createdAt.year ==
+                                                                  today.year &&
+                                                              createdAt.month ==
+                                                                  today.month &&
+                                                              createdAt.day ==
+                                                                  today.day;
+                                                        }).toList();
+
+                                                        if (todayEntries
+                                                            .isEmpty) {
+                                                          return '--:--';
+                                                        }
+
+                                                        final lastEntry =
+                                                            todayEntries.last;
+                                                        return (lastEntry
+                                                                    .clockOutTime
+                                                                    ?.isNotEmpty ??
+                                                                false)
+                                                            ? singletonClass
+                                                                .formatCheckInTime(
+                                                                    lastEntry
+                                                                        .clockOutTime!,
+                                                                    context)
+                                                            : '--:--';
+                                                      } catch (_) {
+                                                        return '--:--';
+                                                      }
+                                                    }(),
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 8.0,
+                                                left: 15,
+                                                right: 8,
+                                                bottom: 5),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                SizedBox(
+                                                  height: 25,
+                                                  width: 25,
+                                                  child: Image.asset(
+                                                    "images/break.png",
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 40),
+                                                Text(
+                                                  singletonClass
+                                                              .attendanceDataList
+                                                              .isNotEmpty &&
+                                                          singletonClass
+                                                              .attendanceDataList
+                                                              .first
+                                                              .data!
+                                                              .data!
+                                                              .isNotEmpty
+                                                      ? "${formatMinutes(singletonClass.attendanceDataList.first.data!.data!.first.breakTime)} ${AppLocalizations.of(context)!.minutes}"
+                                                      : '--:--',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                )
+                                  const SizedBox(width: 12),
+
+                                  /// Right Card: Total Work Hours (3D Depth Container)
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(18),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.08),
+                                            blurRadius: 16,
+                                            spreadRadius: 1,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(0.8),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, -2),
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                            color: Colors.grey.shade100),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                topLeft: Radius.circular(18),
+                                                topRight: Radius.circular(18),
+                                              ),
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  NasColors.darkBlue,
+                                                  NasColors.lightBlue,
+                                                ],
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  AppLocalizations.of(context)!
+                                                      .totalHours,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  _displayWorkedHours,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                _timer != null &&
+                                                        _timer!.isActive
+                                                    ? SizedBox(
+                                                        height: 45,
+                                                        width: 45,
+                                                        child: Lottie.asset(
+                                                            'images/working.json'),
+                                                      )
+                                                    : SizedBox(
+                                                        height: 45,
+                                                        width: 45,
+                                                        child: Lottie.asset(
+                                                            'images/totalWork.json'),
+                                                      ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          /// Swipe Check-In Slider (3D Depth Bar)
+                          if (hasSlider) ...[
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Directionality(
+                                textDirection: TextDirection.ltr,
+                                child: GestureDetector(
+                                  onHorizontalDragUpdate: (details) {
+                                    setState(() {
+                                      _dragPosition += details.primaryDelta!;
+                                      if (_dragPosition.abs() >
+                                          MediaQuery.of(context).size.width *
+                                              0.7) {
+                                        _isSliderCompleted = true;
+                                      }
+                                    });
+                                  },
+                                  onHorizontalDragEnd: (details) {
+                                    setState(() {
+                                      if (_isSliderCompleted) {
+                                        _overlayEntry = _createOverlayEntry();
+                                        Overlay.of(context)
+                                            .insert(_overlayEntry!);
+                                      }
+                                      _dragPosition = 0;
+                                      _isSliderCompleted = false;
+                                    });
+                                  },
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        alignment: Alignment.topLeft,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(18),
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFF444658),
+                                              Color(0xFF677587),
+                                              Color(0xFF78889D),
+                                              Color(0xFF9DB2CE),
+                                              Color(0xFF8799B1),
+                                            ],
+                                            begin: Alignment.topRight,
+                                            end: Alignment.bottomLeft,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.18),
+                                              blurRadius: 14,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
+                                        ),
+                                        height: 60,
+                                        child: (() {
+                                          String displayText =
+                                              AppLocalizations.of(context)!
+                                                  .swipeToCheckIn;
+                                          if (_timer != null &&
+                                              _timer!.isActive) {
+                                            displayText =
+                                                AppLocalizations.of(context)!
+                                                    .swipeToCheckOut;
+                                          }
+
+                                          return Transform.translate(
+                                            offset: Offset(_dragPosition, -1),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Row(
+                                                children: [
+                                                  _timer != null &&
+                                                          _timer!.isActive
+                                                      ? Container(
+                                                          width: 60,
+                                                          height: 48,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(14),
+                                                            color: Colors.white,
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: Colors.black
+                                                                    .withOpacity(
+                                                                        0.15),
+                                                                blurRadius: 8,
+                                                                offset:
+                                                                    const Offset(
+                                                                        0, 3),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          child: Lottie.asset(
+                                                              'images/working.json'),
+                                                        )
+                                                      : Container(
+                                                          width: 60,
+                                                          height: 48,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(14),
+                                                            color: Colors.white,
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: Colors.black
+                                                                    .withOpacity(
+                                                                        0.15),
+                                                                blurRadius: 8,
+                                                                offset:
+                                                                    const Offset(
+                                                                        0, 3),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          child: Lottie.asset(
+                                                              'images/swiper.json'),
+                                                        ),
+                                                  const SizedBox(width: 40),
+                                                  Align(
+                                                    alignment: Alignment.center,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          displayText,
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 6),
+                                                        Icon(
+                                                          Icons
+                                                              .keyboard_double_arrow_right_rounded,
+                                                          size: 18,
+                                                          color: Colors.white
+                                                              .withOpacity(0.85),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        })(),
+                                      ),
+
+                                      /// Transparent location icon on slider
+                                      Positioned(
+                                        right: 15,
+                                        top: 0,
+                                        bottom: 0,
+                                        child: Center(
+                                          child: Opacity(
+                                            opacity: 0.35,
+                                            child: Image.asset(
+                                              'images/site.png',
+                                              height: 30,
+                                              width: 30,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
+
+                          /// View All Link
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              TextButton(
-                                  onPressed: () {
-                                    _overlayEntry2 = _createViewAllOverlay();
-                                    Overlay.of(context).insert(_overlayEntry2!);
-                                  },
-                                  child: Text(
-                                    AppLocalizations.of(context)!.viewAll,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ))
+                              TextButton.icon(
+                                onPressed: () {
+                                  _overlayEntry2 = _createViewAllOverlay();
+                                  Overlay.of(context)
+                                      .insert(_overlayEntry2!);
+                                },
+                                icon: Icon(
+                                  Icons.grid_view_rounded,
+                                  size: 16,
+                                  color: NasColors.darkBlue,
+                                ),
+                                label: Text(
+                                  AppLocalizations.of(context)!.viewAll,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
+
+                          /// Quick Actions Horizontal Scroll List
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
-                                  if (hasChats)...[
-                                    Stack(
-                                      children:[ Column(
+                                  if (hasChats) ...[
+                                    Stack(children: [
+                                      Column(
                                         children: [
                                           GestureDetector(
                                             onTap: () async {
                                               await Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => const SlackScreen()),
+                                                    builder: (context) =>
+                                                        const SlackScreen()),
                                               );
                                               _calculateUnreadCount();
                                             },
@@ -2328,12 +2536,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 color: Colors.white,
+                                                border: Border.all(
+                                                    color: Colors.grey.shade100,
+                                                    width: 1.5),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.grey.withOpacity(0.5),
-                                                    spreadRadius: 1,
-                                                    blurRadius: 0.5,
-                                                    offset: const Offset(0, 0),
+                                                    color: Colors.black
+                                                        .withOpacity(0.08),
+                                                    blurRadius: 10,
+                                                    offset: const Offset(0, 4),
+                                                  ),
+                                                  BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.9),
+                                                    blurRadius: 2,
+                                                    offset: const Offset(0, -1),
                                                   ),
                                                 ],
                                               ),
@@ -2349,8 +2566,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           ),
                                           const SizedBox(height: 5),
                                           Text(
-                                            AppLocalizations.of(context)!
-                                                .chat,
+                                            AppLocalizations.of(context)!.chat,
                                             style: GoogleFonts.inter(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
@@ -2359,38 +2575,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           ),
                                         ],
                                       ),
-                                        if (singletonClass.unreadCount > 0)
-                                          Positioned(
-                                            right: 2,
-                                            top: -3,
-                                            child: Container(
-                                              padding: const EdgeInsets.all(5),
-                                              decoration: const BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              constraints:
-                                              const BoxConstraints(
-                                                minWidth: 18,
-                                                minHeight: 18,
-                                              ),
-                                              child: Text(
-                                                singletonClass.unreadCount > 99
-                                                    ? '99+'
-                                                    : singletonClass.unreadCount
-                                                    .toString(),
-                                                style: GoogleFonts.inter(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                ),
+                                      if (singletonClass.unreadCount > 0)
+                                        Positioned(
+                                          right: 2,
+                                          top: -3,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(5),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            constraints: const BoxConstraints(
+                                              minWidth: 18,
+                                              minHeight: 18,
+                                            ),
+                                            child: Text(
+                                              singletonClass.unreadCount > 99
+                                                  ? '99+'
+                                                  : singletonClass.unreadCount
+                                                      .toString(),
+                                              style: GoogleFonts.inter(
+                                                color: Colors.white,
+                                                fontSize: 12,
                                               ),
                                             ),
                                           ),
-                                      ]
-                                    ),
+                                        ),
+                                    ]),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasAttendance)...[
+                                  if (hasAttendance) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2441,7 +2655,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasDocuments)...[
+                                  if (hasDocuments) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2459,13 +2673,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 color: Colors.white,
+                                                border: Border.all(
+                                                    color: Colors.grey.shade100,
+                                                    width: 1.5),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.grey
-                                                        .withOpacity(0.5),
-                                                    spreadRadius: 1,
-                                                    blurRadius: 0.5,
-                                                    offset: const Offset(0, 0),
+                                                    color: Colors.black
+                                                        .withOpacity(0.08),
+                                                    blurRadius: 10,
+                                                    offset: const Offset(0, 4),
+                                                  ),
+                                                  BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.9),
+                                                    blurRadius: 2,
+                                                    offset: const Offset(0, -1),
                                                   ),
                                                 ],
                                               ),
@@ -2483,13 +2705,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 singletonClass
                                                         .employeeDataList
                                                         .first
-                                                        .data.first
+                                                        .data
+                                                        .first
                                                         .documentsInfo !=
                                                     null &&
                                                 singletonClass
                                                     .employeeDataList
                                                     .first
-                                                    .data.first
+                                                    .data
+                                                    .first
                                                     .documentsInfo!
                                                     .isNotEmpty)
                                               Positioned(
@@ -2498,7 +2722,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 child: Container(
                                                   padding:
                                                       const EdgeInsets.all(2),
-                                                  decoration: BoxDecoration(
+                                                  decoration:
+                                                      const BoxDecoration(
                                                     color: Colors.red,
                                                     shape: BoxShape.circle,
                                                   ),
@@ -2513,7 +2738,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                       color: Colors.white,
                                                       fontSize: 12,
                                                     ),
-                                                    textAlign: TextAlign.center,
+                                                    textAlign:
+                                                        TextAlign.center,
                                                   ),
                                                 ),
                                               )
@@ -2533,7 +2759,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasAssets)...[
+                                  if (hasAssets) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2544,20 +2770,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                     builder: (context) =>
                                                         const AssetsScreen()));
                                           },
-                                          child: Stack(
-                                            children:[ Container(
+                                          child: Stack(children: [
+                                            Container(
                                               height: 65,
                                               width: 65,
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 color: Colors.white,
+                                                border: Border.all(
+                                                    color: Colors.grey.shade100,
+                                                    width: 1.5),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.grey
-                                                        .withOpacity(0.5),
-                                                    spreadRadius: 1,
-                                                    blurRadius: 0.5,
-                                                    offset: const Offset(0, 0),
+                                                    color: Colors.black
+                                                        .withOpacity(0.08),
+                                                    blurRadius: 10,
+                                                    offset: const Offset(0, 4),
+                                                  ),
+                                                  BoxShadow(
+                                                    color: Colors.white
+                                                        .withOpacity(0.9),
+                                                    blurRadius: 2,
+                                                    offset: const Offset(0, -1),
                                                   ),
                                                 ],
                                               ),
@@ -2570,36 +2804,50 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 ),
                                               ),
                                             ),
-                                              if (singletonClass.employeeDataList.isNotEmpty &&
-                                                  singletonClass.employeeDataList.first.data.first.assetsInfo != null &&
-                                                  singletonClass.employeeDataList.first.data.first.assetsInfo!.isNotEmpty)
-                                                Positioned(
-                                                  right: 0,
-                                                  top: 0,
-                                                  child: Container(
-                                                    padding:
-                                                    const EdgeInsets.all(2),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    constraints:
-                                                    const BoxConstraints(
-                                                      minWidth: 18,
-                                                      minHeight: 18,
-                                                    ),
-                                                    child: Text(
-                                                      '${singletonClass.employeeDataList.first.data.first.assetsInfo!.length}',
-                                                      style: GoogleFonts.inter(
-                                                        color: Colors.white,
-                                                        fontSize: 12,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
+                                            if (singletonClass.employeeDataList
+                                                    .isNotEmpty &&
+                                                singletonClass
+                                                        .employeeDataList
+                                                        .first
+                                                        .data
+                                                        .first
+                                                        .assetsInfo !=
+                                                    null &&
+                                                singletonClass
+                                                    .employeeDataList
+                                                    .first
+                                                    .data
+                                                    .first
+                                                    .assetsInfo!
+                                                    .isNotEmpty)
+                                              Positioned(
+                                                right: 0,
+                                                top: 0,
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.all(2),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    color: Colors.red,
+                                                    shape: BoxShape.circle,
                                                   ),
-                                                )
-                      ]
-                                          ),
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                    minWidth: 18,
+                                                    minHeight: 18,
+                                                  ),
+                                                  child: Text(
+                                                    '${singletonClass.employeeDataList.first.data.first.assetsInfo!.length}',
+                                                    style: GoogleFonts.inter(
+                                                      color: Colors.white,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign:
+                                                        TextAlign.center,
+                                                  ),
+                                                ),
+                                              )
+                                          ]),
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
@@ -2614,7 +2862,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasTeams)...[
+                                  if (hasTeams) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2664,7 +2912,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasPenaltiesAndFines)...[
+                                  if (hasPenaltiesAndFines) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2715,7 +2963,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasManageShifts)...[
+                                  if (hasManageShifts) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2766,7 +3014,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasBiometricCheckins)...[
+                                  if (hasBiometricCheckins) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2817,7 +3065,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasOnboarding)...[
+                                  if (hasOnboarding) ...[
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -2868,187 +3116,218 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasCompanyNotifications)...[
+                                  if (hasCompanyNotifications) ...[
                                     Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                  const CompanyNotifications()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0),
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const CompanyNotifications()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 0.5,
+                                                  offset: const Offset(0, 0),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/pc.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
                                               ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              'images/pc.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        AppLocalizations.of(context)!.documentNotification,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .documentNotification,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasUserActivity)...[
+                                  if (hasUserActivity) ...[
                                     Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                  const UserActivityScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0),
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const UserActivityScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              border: Border.all(
+                                                  color: Colors.grey.shade100,
+                                                  width: 1.5),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withOpacity(0.08),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white
+                                                      .withOpacity(0.9),
+                                                  blurRadius: 2,
+                                                  offset: const Offset(0, -1),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/Group.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
                                               ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              'images/Group.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        AppLocalizations.of(context)!.userActivity,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!
+                                              .userActivity,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                     const SizedBox(width: 20),
                                   ],
-                                  if (hasStores)...[
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                  const StoresScreen()));
-                                        },
-                                        child: Container(
-                                          height: 65,
-                                          width: 65,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                spreadRadius: 1,
-                                                blurRadius: 0.5,
-                                                offset: const Offset(0, 0),
+                                  if (hasStores) ...[
+                                    Column(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const StoresScreen()));
+                                          },
+                                          child: Container(
+                                            height: 65,
+                                            width: 65,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              border: Border.all(
+                                                  color: Colors.grey.shade100,
+                                                  width: 1.5),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withOpacity(0.08),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                                BoxShadow(
+                                                  color: Colors.white
+                                                      .withOpacity(0.9),
+                                                  blurRadius: 2,
+                                                  offset: const Offset(0, -1),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Image.asset(
+                                                'images/thisMonth.png',
+                                                fit: BoxFit.contain,
+                                                width: 30,
+                                                height: 30,
                                               ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Image.asset(
-                                              'images/thisMonth.png',
-                                              fit: BoxFit.contain,
-                                              width: 30,
-                                              height: 30,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .stores,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          AppLocalizations.of(context)!.stores,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
                                     const SizedBox(width: 20),
                                   ],
-
                                 ],
                               ),
                             ),
                           ),
+
+                          /// Employee Leave Balance Card
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Container(
                               decoration: BoxDecoration(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(15)),
+                                borderRadius: BorderRadius.circular(20),
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withValues(alpha: 0.5),
-                                    spreadRadius: 2,
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
+                                    color: Colors.black.withOpacity(0.07),
+                                    blurRadius: 16,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.8),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, -2),
                                   ),
                                 ],
+                                border: Border.all(color: Colors.grey.shade100),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Column(
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
+                                        Icon(
+                                          Icons.event_available_rounded,
+                                          size: 18,
+                                          color: NasColors.darkBlue,
+                                        ),
+                                        const SizedBox(width: 6),
                                         Text(
-                                          AppLocalizations.of(context)!.empLeaveBalance,
+                                          AppLocalizations.of(context)!
+                                              .empLeaveBalance,
                                           style: GoogleFonts.inter(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
@@ -3061,107 +3340,177 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       height: 150,
                                       child: StatefulBuilder(
                                         builder: (context, setState) {
-                                          final PageController controller = PageController();
+                                          final PageController controller =
+                                              PageController();
                                           int currentPage = 0;
                                           Timer? timer;
 
                                           double parseNum(dynamic value) {
                                             if (value == null) return 0;
-                                            if (value is num) return value.toDouble();
-                                            return double.tryParse(value.toString()) ?? 0;
+                                            if (value is num)
+                                              return value.toDouble();
+                                            return double.tryParse(
+                                                    value.toString()) ??
+                                                0;
                                           }
 
                                           Future.delayed(Duration.zero, () {
-                                            timer ??= Timer.periodic(const Duration(seconds: 4), (t) {
+                                            timer ??= Timer.periodic(
+                                                const Duration(seconds: 4),
+                                                (t) {
                                               if (controller.hasClients) {
                                                 currentPage++;
-                                                if (currentPage > 1) currentPage = 0;
+                                                if (currentPage > 1)
+                                                  currentPage = 0;
 
                                                 controller.animateToPage(
                                                   currentPage,
-                                                  duration: const Duration(milliseconds: 500),
+                                                  duration: const Duration(
+                                                      milliseconds: 500),
                                                   curve: Curves.easeIn,
                                                 );
                                               }
                                             });
                                           });
 
-                                          // Safe accessor for employee data
-                                          final employeeData = singletonClass.employeeDataList.isNotEmpty
-                                              ? singletonClass.employeeDataList.first.data.isNotEmpty
-                                              ? singletonClass.employeeDataList.first.data.first
-                                              : null
+                                          final employeeData = singletonClass
+                                                  .employeeDataList.isNotEmpty
+                                              ? singletonClass.employeeDataList
+                                                      .first.data.isNotEmpty
+                                                  ? singletonClass
+                                                      .employeeDataList
+                                                      .first
+                                                      .data
+                                                      .first
+                                                  : null
                                               : null;
 
-                                          final leaveBalance = employeeData?.leaveBalance;
+                                          final leaveBalance =
+                                              employeeData?.leaveBalance;
 
                                           return PageView(
                                             controller: controller,
                                             children: [
-
-                                              /// 🔹 PAGE 1
+                                              /// PAGE 1
                                               Padding(
-                                                padding: const EdgeInsets.only(top: 12, bottom: 12),
+                                                padding: const EdgeInsets.only(
+                                                    top: 12, bottom: 12),
                                                 child: Column(
                                                   children: [
-
-                                                    /// Annual + Casual
                                                     Row(
                                                       children: [
                                                         Expanded(
-                                                          child: leaveBalance?.annualLeave != null
+                                                          child: leaveBalance
+                                                                      ?.annualLeave !=
+                                                                  null
                                                               ? buildLeaveBar(
-                                                            context,
-                                                            title: AppLocalizations.of(context)!.annualLeave,
-                                                            used: parseNum(leaveBalance!.annualLeave!.used),
-                                                            total: parseNum(leaveBalance.annualLeave!.entitlement),
-                                                            gradient: [Colors.blue, Colors.lightBlueAccent],
-                                                          )
-                                                              : const SizedBox.shrink(),
+                                                                  context,
+                                                                  title: AppLocalizations.of(
+                                                                          context)!
+                                                                      .annualLeave,
+                                                                  icon: Icons
+                                                                      .flight_takeoff_rounded,
+                                                                  used: parseNum(leaveBalance!
+                                                                      .annualLeave!
+                                                                      .used),
+                                                                  total: parseNum(leaveBalance
+                                                                      .annualLeave!
+                                                                      .entitlement),
+                                                                  gradient: [
+                                                                    Colors.blue,
+                                                                    Colors
+                                                                        .lightBlueAccent
+                                                                  ],
+                                                                )
+                                                              : const SizedBox
+                                                                  .shrink(),
                                                         ),
                                                         const SizedBox(width: 12),
                                                         Expanded(
-                                                          child: leaveBalance?.casualLeave != null
+                                                          child: leaveBalance
+                                                                      ?.casualLeave !=
+                                                                  null
                                                               ? buildLeaveBar(
-                                                            context,
-                                                            title: AppLocalizations.of(context)!.casualLeave,
-                                                            used: parseNum(leaveBalance!.casualLeave!.used),
-                                                            total: parseNum(leaveBalance.casualLeave!.entitlement),
-                                                            gradient: [Colors.green, Colors.lightGreenAccent],
-                                                          )
-                                                              : const SizedBox.shrink(),
+                                                                  context,
+                                                                  title: AppLocalizations.of(
+                                                                          context)!
+                                                                      .casualLeave,
+                                                                  icon: Icons
+                                                                      .weekend_rounded,
+                                                                  used: parseNum(leaveBalance!
+                                                                      .casualLeave!
+                                                                      .used),
+                                                                  total: parseNum(leaveBalance
+                                                                      .casualLeave!
+                                                                      .entitlement),
+                                                                  gradient: [
+                                                                    Colors
+                                                                        .green,
+                                                                    Colors
+                                                                        .lightGreenAccent
+                                                                  ],
+                                                                )
+                                                              : const SizedBox
+                                                                  .shrink(),
                                                         ),
                                                       ],
                                                     ),
-
                                                     const SizedBox(height: 25),
-
-                                                    /// Short + Sick
                                                     Row(
                                                       children: [
                                                         Expanded(
-                                                          child: leaveBalance?.shortLeavesMonthlyBal != null
+                                                          child: leaveBalance
+                                                                      ?.shortLeavesMonthlyBal !=
+                                                                  null
                                                               ? buildLeaveBar(
-                                                            context,
-                                                            title: AppLocalizations.of(context)!.shortLeaves,
-                                                            used: parseNum(leaveBalance!.shortLeavesMonthlyBal!.shortLeavesMinutes),
-                                                            total: 480,
-                                                            isMinutes: true,
-                                                            gradient: [Colors.orange, Colors.deepOrangeAccent],
-                                                          )
-                                                              : const SizedBox.shrink(),
+                                                                  context,
+                                                                  title: AppLocalizations.of(
+                                                                          context)!
+                                                                      .shortLeaves,
+                                                                  icon: Icons
+                                                                      .timer_rounded,
+                                                                  used: parseNum(leaveBalance!
+                                                                      .shortLeavesMonthlyBal!
+                                                                      .shortLeavesMinutes),
+                                                                  total: 480,
+                                                                  isMinutes:
+                                                                      true,
+                                                                  gradient: [
+                                                                    Colors
+                                                                        .orange,
+                                                                    Colors
+                                                                        .deepOrangeAccent
+                                                                  ],
+                                                                )
+                                                              : const SizedBox
+                                                                  .shrink(),
                                                         ),
                                                         const SizedBox(width: 12),
                                                         Expanded(
-                                                          child: leaveBalance?.sickLeave != null
+                                                          child: leaveBalance
+                                                                      ?.sickLeave !=
+                                                                  null
                                                               ? buildLeaveBar(
-                                                            context,
-                                                            title: AppLocalizations.of(context)!.sickLeave,
-                                                            used: parseNum(leaveBalance!.sickLeave!.used),
-                                                            total: parseNum(leaveBalance.sickLeave!.entitlement),
-                                                            gradient: [Colors.red, Colors.redAccent],
-                                                          )
-                                                              : const SizedBox.shrink(),
+                                                                  context,
+                                                                  title: AppLocalizations.of(
+                                                                          context)!
+                                                                      .sickLeave,
+                                                                  icon: Icons
+                                                                      .medical_services_rounded,
+                                                                  used: parseNum(leaveBalance!
+                                                                      .sickLeave!
+                                                                      .used),
+                                                                  total: parseNum(leaveBalance
+                                                                      .sickLeave!
+                                                                      .entitlement),
+                                                                  gradient: [
+                                                                    Colors.red,
+                                                                    Colors
+                                                                        .redAccent
+                                                                  ],
+                                                                )
+                                                              : const SizedBox
+                                                                  .shrink(),
                                                         ),
                                                       ],
                                                     ),
@@ -3169,60 +3518,115 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                                 ),
                                               ),
 
-                                              /// 🔹 PAGE 2 (Special Leaves)
-                                              leaveBalance?.specialLeave != null && leaveBalance!.specialLeave!.isNotEmpty
+                                              /// PAGE 2 (Special Leaves)
+                                              leaveBalance?.specialLeave !=
+                                                          null &&
+                                                      leaveBalance!
+                                                          .specialLeave!
+                                                          .isNotEmpty
                                                   ? SingleChildScrollView(
-                                                controller: specialScrollController,
-                                                child: Column(
-                                                  children: List.generate(
-                                                    (leaveBalance.specialLeave!.length / 2).ceil(),
-                                                        (index) {
-                                                      final leaves = leaveBalance.specialLeave!;
-                                                      final first = leaves[index * 2];
-                                                      final second = (index * 2 + 1 < leaves.length)
-                                                          ? leaves[index * 2 + 1]
-                                                          : null;
+                                                      controller:
+                                                          specialScrollController,
+                                                      child: Column(
+                                                        children: List.generate(
+                                                          (leaveBalance
+                                                                      .specialLeave!
+                                                                      .length /
+                                                                  2)
+                                                              .ceil(),
+                                                          (index) {
+                                                            final leaves =
+                                                                leaveBalance
+                                                                    .specialLeave!;
+                                                            final first = leaves[
+                                                                index * 2];
+                                                            final second =
+                                                                (index * 2 + 1 <
+                                                                        leaves
+                                                                            .length)
+                                                                    ? leaves[
+                                                                        index *
+                                                                                2 +
+                                                                            1]
+                                                                    : null;
 
-                                                      // Safe name resolver — never crashes on null leaveName
-                                                      final firstName = (first.leaveName != null && first.leaveName!.isNotEmpty)
-                                                          ? _translateRequestSubtype2(first.leaveName, context)
-                                                          : '';
-                                                      final secondName = (second?.leaveName != null && second!.leaveName!.isNotEmpty)
-                                                          ? _translateRequestSubtype2(second.leaveName, context)
-                                                          : '';
+                                                            final firstName = (first
+                                                                        .leaveName !=
+                                                                    null &&
+                                                                first.leaveName!
+                                                                    .isNotEmpty)
+                                                                ? _translateRequestSubtype2(
+                                                                    first
+                                                                        .leaveName,
+                                                                    context)
+                                                                : '';
+                                                            final secondName =
+                                                                (second?.leaveName !=
+                                                                            null &&
+                                                                        second!
+                                                                            .leaveName!
+                                                                            .isNotEmpty)
+                                                                    ? _translateRequestSubtype2(
+                                                                        second
+                                                                            .leaveName,
+                                                                        context)
+                                                                    : '';
 
-                                                      return Padding(
-                                                        padding: const EdgeInsets.only(top: 12, bottom: 12),
-                                                        child: Row(
-                                                          children: [
-                                                            Expanded(
-                                                              child: buildLeaveBar(
-                                                                context,
-                                                                title: firstName,
-                                                                used: parseNum(first.used),
-                                                                total: parseNum(first.entitlement),
-                                                                gradient: [NasColors.amber, NasColors.yellow],
+                                                            return Padding(
+                                                              padding: const EdgeInsets
+                                                                  .only(
+                                                                  top: 12,
+                                                                  bottom: 12),
+                                                              child: Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child: buildLeaveBar(
+                                                                      context,
+                                                                      title:
+                                                                          firstName,
+                                                                      icon: Icons
+                                                                          .star_rounded,
+                                                                      used: parseNum(
+                                                                          first
+                                                                              .used),
+                                                                      total: parseNum(
+                                                                          first
+                                                                              .entitlement),
+                                                                      gradient: [
+                                                                        NasColors
+                                                                            .amber,
+                                                                        NasColors
+                                                                            .yellow
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      width: 12),
+                                                                  Expanded(
+                                                                    child: second ==
+                                                                            null
+                                                                        ? const SizedBox
+                                                                            .shrink()
+                                                                        : buildLeaveBar(
+                                                                            context,
+                                                                            title:
+                                                                                secondName,
+                                                                            icon: Icons.star_rounded,
+                                                                            used: parseNum(second.used),
+                                                                            total: parseNum(second.entitlement),
+                                                                            gradient: [
+                                                                              NasColors.onTime,
+                                                                              NasColors.completed
+                                                                            ],
+                                                                          ),
+                                                                  ),
+                                                                ],
                                                               ),
-                                                            ),
-                                                            const SizedBox(width: 12),
-                                                            Expanded(
-                                                              child: second == null
-                                                                  ? const SizedBox.shrink()
-                                                                  : buildLeaveBar(
-                                                                context,
-                                                                title: secondName,
-                                                                used: parseNum(second.used),
-                                                                total: parseNum(second.entitlement),
-                                                                gradient: [NasColors.onTime, NasColors.completed],
-                                                              ),
-                                                            ),
-                                                          ],
+                                                            );
+                                                          },
                                                         ),
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                              )
+                                                      ),
+                                                    )
                                                   : const SizedBox.shrink(),
                                             ],
                                           );
@@ -3242,20 +3646,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               },
             ),
           ),
-          if (isLoading) Loader()
+          if (isLoading) const Loader()
         ],
       ),
     );
   }
 
   Widget buildLeaveBar(
-      BuildContext context, {
-        required String title,
-        required double used,
-        required double total,
-        required List<Color> gradient,
-        bool isMinutes = false,
-      }) {
+    BuildContext context, {
+    required String title,
+    required double used,
+    required double total,
+    required List<Color> gradient,
+    bool isMinutes = false,
+    IconData? icon,
+  }) {
     final safeTotal = total == 0 ? 1 : total;
     final progress = (used / safeTotal).clamp(0.0, 1.0);
 
@@ -3263,8 +3668,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       children: [
         Row(
           children: [
-            Text(title, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-            const Spacer(),
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: gradient.first),
+              const SizedBox(width: 4),
+            ],
+            Expanded(
+              child: Text(
+                title,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                    fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(width: 4),
             Text(
               isMinutes
                   ? formatMinutesToHoursAndMinutes(context, used.toInt())
@@ -3278,7 +3694,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              Container(height: 8, width: double.infinity, color: Colors.grey.shade300),
+              Container(
+                  height: 8, width: double.infinity, color: Colors.grey.shade300),
               FractionallySizedBox(
                 widthFactor: progress,
                 child: Container(
@@ -3309,9 +3726,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     final statuses = status.toLowerCase();
     switch (statuses) {
-      case 'Absent':
+      case 'absent':
         return localizations.absent;
-      case 'Present':
+      case 'present':
         return localizations.present;
       case 'late':
         return localizations.late;
@@ -3319,61 +3736,59 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         return localizations.leave;
       case 'holiday':
         return localizations.holiday;
-      case 'dayOFF':
+      case 'dayoff':
         return localizations.dayOff;
       case 'training':
         return localizations.training;
       case 'absent with approval':
         return localizations.absentWithApproval;
-      case 'Missing CheckIn/Out':
+      case 'missing checkin/out':
         return localizations.missingCheckInOut;
-      case 'Late':
-        return localizations.late;
-      case 'Pending':
+      case 'pending':
         return localizations.pending;
-      case 'No-CheckIn':
+      case 'no-checkin':
         return localizations.noCheckIn;
-      case 'Late-Penality':
+      case 'late-penality':
         return localizations.latePenality;
-      case 'Short-Hours':
+      case 'short-hours':
         return localizations.shortHours;
-      case 'Missing-CheckIn':
+      case 'missing-checkin':
         return localizations.missingCheckIn;
-      case 'Missing-CheckOut':
+      case 'missing-checkout':
         return localizations.missingCheckOut;
-      case 'Check-In':
+      case 'check-in':
         return localizations.checkIn;
-      case 'Check-Out':
+      case 'check-out':
         return localizations.checkOut;
-      case 'OOS-In':
+      case 'oos-in':
         return localizations.oosIn;
-      case 'OOS-Out':
+      case 'oos-out':
         return localizations.oosOut;
-      case 'Early-In':
+      case 'early-in':
         return localizations.earlyIn;
-      case 'Early-Left':
+      case 'early-left':
         return localizations.earlyLeft;
-      case 'OnTime-In':
+      case 'ontime-in':
         return localizations.onTimeIn;
-      case 'OnTime-Out':
+      case 'ontime-out':
         return localizations.onTimeOut;
-      case 'Late-In':
+      case 'late-in':
         return localizations.lateIn;
-      case 'Late-Out':
+      case 'late-out':
         return localizations.lateOut;
-      case 'SM-In':
+      case 'sm-in':
         return localizations.smIn;
-      case 'SM-Out':
+      case 'sm-out':
         return localizations.smOut;
-      case 'Break-In':
+      case 'break-in':
         return localizations.breakIn;
-      case 'Break-Out':
+      case 'break-out':
         return localizations.breakOut;
       case 'slot':
         return localizations.slot;
-      case 'Out-Off-Shift':
+      case 'out-off-shift':
         return localizations.outOffShift;
-      case 'Full-Day':
+      case 'full-day':
         return localizations.fullDay;
       default:
         return status;
@@ -3383,7 +3798,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Color getTodayStatusColor() {
     try {
       final today = DateTime.now();
-      final dataList = singletonClass.attendanceDataList.first.data?.data ?? [];
+      final dataList =
+          singletonClass.attendanceDataList.first.data?.data ?? [];
 
       if (dataList.isEmpty) return NasColors.darkBlue;
 
@@ -3474,7 +3890,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Minutes hours method
   String formatMinutesToHoursAndMinutes(
       BuildContext context, int totalMinutes) {
     final int hours = totalMinutes ~/ 60;
@@ -3490,10 +3905,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final timeZoneIdentifier = await LocalePlus().getTimeZoneIdentifier();
     String? empId = singletonClass.getJWTModel()?.empId;
     String sn = empId?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    String currentTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    String currentTime =
+        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     String deviceIp = await _getLocalIpAddress();
     String? timeZoneName = timeZoneIdentifier;
-    debugPrint(currentTime);
 
     Map<String, dynamic> data = {
       "deviceUserId": "$empId",
@@ -3529,7 +3944,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         await singletonClass.getClockingData();
         await singletonClass.getEmployeeAttendanceData();
-        debugPrint("<><><>${response.body}");
         await QuickAlert.show(
           context: context,
           type: QuickAlertType.success,
@@ -3544,7 +3958,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           singletonClass.getEmployeeAttendanceData();
         });
       } else if (response.statusCode == 400) {
-        // Show error alert for status code 400
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
@@ -3555,7 +3968,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           showConfirmBtn: false,
         );
       } else {
-        debugPrint('Error: ${response.statusCode}');
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
@@ -3570,9 +3982,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       setState(() {
         isLoading = false;
       });
-      debugPrint('Error: $e');
-
-      // Show error alert for exceptions
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
@@ -3584,7 +3993,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
   }
-  ///get time zone
+
   Future<String> _getLocalIpAddress() async {
     for (var interface in await NetworkInterface.list()) {
       for (var addr in interface.addresses) {
@@ -3598,14 +4007,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return 'Unknown';
   }
 
-  ///Update CALL
   void updateRemoteLocation() async {
     String? employeeID = singletonClass.getJWTModel()?.employeeId;
-    String url = '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
+    String url =
+        '${singletonClass.baseURL}/employee/updateEMPLocation/$employeeID';
     String finalLocation = _openLocation ?? "0.0,0.0";
     Map<String, dynamic> data = {"lastLocation": finalLocation};
     String jsonData = jsonEncode(data);
-    log("remote Location Json$jsonData");
     try {
       final response = await http.patch(
         Uri.parse(url),
@@ -3615,9 +4023,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (kDebugMode) {
         print("send remote loc:${response.body}");
       }
-      final decodedResponse = json.decode(response.body);
-      if (response.statusCode == 200 && decodedResponse['statusCode'] == 200) {
-      } else {}
     } catch (error) {
       if (kDebugMode) {
         print('Failed to send data. Error: $error');
@@ -3625,7 +4030,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Current Location
   Future<String> getCurrentLatLong() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -3659,13 +4063,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final today = DateTime.now();
     final todayEntries = dataList.where((entry) {
       final createdAt = DateTime.tryParse(entry.createdAt ?? '');
-      return createdAt != null && createdAt.year == today.year && createdAt.month == today.month && createdAt.day == today.day;
+      return createdAt != null &&
+          createdAt.year == today.year &&
+          createdAt.month == today.month &&
+          createdAt.day == today.day;
     }).toList();
     final todayData = todayEntries.isNotEmpty ? todayEntries.last : null;
     String? checkInTime = todayData?.clockInTime;
     String? checkOutTime = todayData?.clockOutTime;
-    if(singletonClass.remoteAttendanceModelList.first.data!.first.isRemoteAttendance == true && (checkInTime != null || checkInTime!.isNotEmpty) &&
-        (checkOutTime == null || checkOutTime.isEmpty)){
+    if (singletonClass.remoteAttendanceModelList.first.data!.first
+                .isRemoteAttendance ==
+            true &&
+        (checkInTime != null || checkInTime!.isNotEmpty) &&
+        (checkOutTime == null || checkOutTime.isEmpty)) {
       if (distance > allowedRadius) {
         checkIn("biometric");
       }
@@ -3673,7 +4083,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return '${position.latitude}|${position.longitude}';
   }
 
-  ///test case
   Future<String?> getAddressFromLatLng(double lat, double lng) async {
     const accessToken =
         "pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA";
@@ -3683,7 +4092,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      log("address response :${response.body}");
       if (data["features"] != null && data["features"].isNotEmpty) {
         return data["features"][0]["place_name"];
       }

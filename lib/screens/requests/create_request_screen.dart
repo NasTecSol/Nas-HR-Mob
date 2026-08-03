@@ -170,7 +170,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                     remainingBalance <= 0) {
                                   // Show warning if the selected leave balance is insufficient
                                   _showWarningDialog(context,
-                                      '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
+                                      '${AppLocalizations.of(context)!.insufficient}  ${_translateRequestSubtype(newValue.requestName, context)} ${AppLocalizations.of(context)!.balance}');
                                 } else {
                                   setState(() {
                                     _selectedSubType = newValue;
@@ -1862,7 +1862,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                                 if (remainingBalance == null ||
                                     remainingBalance <= 0) {
                                   _showWarningDialog(context,
-                                      '${AppLocalizations.of(context)!.insufficientBalance} ${_translateRequestSubtype(newValue.requestName, context)}');
+                                      '${AppLocalizations.of(context)!.insufficient}  ${_translateRequestSubtype(newValue.requestName, context)} ${AppLocalizations.of(context)!.balance}');
                                 } else {
                                   setState(() {
                                     _selectedSubType = newValue;
@@ -2762,7 +2762,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            AppLocalizations.of(context)!.insufficientBalance,
+            "${AppLocalizations.of(context)!.insufficient} ${AppLocalizations.of(context)!.leave} ${AppLocalizations.of(context)!.balance}",
             style: GoogleFonts.inter(color: Colors.black),
           ),
           content: Text(

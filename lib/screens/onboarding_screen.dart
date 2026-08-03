@@ -1,22 +1,22 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'package:nashr/screens/register_biometric_device_screen.dart';
-import 'package:nashr/singleton_class.dart';
-import 'package:nashr/widgets/colors.dart';
-import 'package:nashr/l10n/app_localizations.dart';
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 
+import '../l10n/app_localizations.dart';
+import '../screens/register_biometric_device_screen.dart';
+import '../singleton_class.dart';
+import '../widgets/colors.dart';
 import '../widgets/loader.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -97,9 +97,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   List<Map<String, String>> departments = [];
   List<Map<String, String>> supervisors = [];
   List<Map<String, String>> shifts = [];
-  bool salaryExpanded = false ;
-  bool allowanceExpanded = false ;
-  bool deductionExpanded = false ;
+  bool salaryExpanded = false;
+  bool allowanceExpanded = false;
+  bool deductionExpanded = false;
   List<AllowanceFormModel> allowances = [AllowanceFormModel()];
   List<DeductionFormModel> deductions = [DeductionFormModel()];
 
@@ -188,7 +188,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ?.firstWhere((b) => b.branchName == val);
 
       if (branch != null) {
-        // ✅ Parse departments correctly
         departments = branch.departments
                 ?.map<Map<String, String>>((d) => {
                       'id': d.departmentId ?? '',
@@ -197,7 +196,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 .toList() ??
             [];
 
-        // ✅ Parse shifts with all required info
         shifts = branch.shifts
                 ?.map<Map<String, String>>((s) => {
                       'id': s.shiftId ?? '',
@@ -325,7 +323,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
         return;
       }
-      if (password.text.length < 6){
+      if (password.text.length < 6) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.passwordMustBeSixDigit),
@@ -333,29 +331,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
         return;
       }
-      if (phoneController.text.length < 10){
+      if (phoneController.text.length < 10) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.phoneNumberMustBeAtLeastTenDigits),
+            content: Text(AppLocalizations.of(context)!
+                .phoneNumberMustBeAtLeastTenDigits),
           ),
         );
         return;
       }
-      if (iqamaController.text.isNotEmpty){
-        if(iqamaController.text.length < 10){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.iqamaNumberMustBeAtLeastTenDigits),
-          ),
-        );
-        return;
-        }
-      }
-      if (nationalIdController.text.isNotEmpty){
-        if(nationalIdController.text.length < 10){
+      if (iqamaController.text.isNotEmpty) {
+        if (iqamaController.text.length < 10) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.nationalIDNumberMustBeAtLeastTenDigits),
+              content: Text(AppLocalizations.of(context)!
+                  .iqamaNumberMustBeAtLeastTenDigits),
+            ),
+          );
+          return;
+        }
+      }
+      if (nationalIdController.text.isNotEmpty) {
+        if (nationalIdController.text.length < 10) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .nationalIDNumberMustBeAtLeastTenDigits),
             ),
           );
           return;
@@ -416,2604 +417,1507 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final local = AppLocalizations.of(context)!;
 
     return Scaffold(
-        backgroundColor: NasColors.backGround,
-        body: Padding(
-            padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 15),
-            child: Stack(children: [
-              Column(children: [
-                /// Header
-                Row(
+      backgroundColor: NasColors.backGround,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              _buildHeader(context, local),
+              _buildStepIndicator(),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (i) => setState(() => _currentPage = i),
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        if (_currentPage == 0) {
-                          Navigator.pop(context);
-                        } else {
-                          _previousPage();
-                        }
-                      },
-                      icon: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
-                              spreadRadius: 3,
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+                    _buildPage1(context, local),
+                    _buildPage2(context, local),
+                    _buildPage3(context, local),
+                    _buildPage4(context, local),
+                  ],
+                ),
+              ),
+              _buildBottomNavigation(context, local),
+            ],
+          ),
+          if (isLoading) const Loader(),
+        ],
+      ),
+    );
+  }
+
+  // ── Header (Gradient with title & action buttons, NO decorative logo icon) ──
+  Widget _buildHeader(BuildContext context, AppLocalizations local) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 8,
+        left: 16,
+        right: 16,
+        bottom: 20,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (_currentPage == 0) {
+                Navigator.pop(context);
+              } else {
+                _previousPage();
+              }
+            },
+            child: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withOpacity(0.18),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: Icon(
+                _currentPage == 0
+                    ? Icons.close_rounded
+                    : Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              local.employeeOnboarding,
+              style: GoogleFonts.inter(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+
+        ],
+      ),
+    );
+  }
+
+  // ── Modern Stepper Indicator ──────────────────────────────────────────
+  Widget _buildStepIndicator() {
+    final stepIcons = [
+      Icons.business_rounded,
+      Icons.person_rounded,
+      Icons.work_rounded,
+      Icons.payments_rounded,
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: List.generate(4, (index) {
+          final isActive = _currentPage == index;
+          final isCompleted = _currentPage > index;
+
+          return Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (index < _currentPage) {
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          height: 36,
+                          width: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isActive
+                                ? NasColors.darkBlue
+                                : (isCompleted
+                                    ? NasColors.darkBlue.withOpacity(0.15)
+                                    : Colors.grey.shade100),
+                            boxShadow: isActive
+                                ? [
+                                    BoxShadow(
+                                      color: NasColors.darkBlue.withOpacity(0.35),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    )
+                                  ]
+                                : [],
+                          ),
+                          child: Icon(
+                            isCompleted ? Icons.check_rounded : stepIcons[index],
+                            size: 18,
+                            color: isActive
+                                ? Colors.white
+                                : (isCompleted
+                                    ? NasColors.darkBlue
+                                    : Colors.grey.shade400),
+                          ),
                         ),
-                        child: Icon(
-                          _currentPage == 0
-                              ? Icons.close
-                              : Icons.arrow_back_ios_new_outlined,
-                          color: Colors.black,
+                        const SizedBox(height: 4),
+                        Text(
+                          "Step ${index + 1}",
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight:
+                                isActive ? FontWeight.bold : FontWeight.w500,
+                            color: isActive
+                                ? NasColors.darkBlue
+                                : Colors.grey.shade500,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    Text(
-                      local.employeeOnboarding,
+                  ),
+                ),
+                if (index < 3)
+                  Container(
+                    width: 16,
+                    height: 2,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    color: isCompleted
+                        ? NasColors.darkBlue
+                        : Colors.grey.shade200,
+                  ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // ── Field Label with Friendly Icon ─────────────────────────────────────
+  Widget _buildFieldLabel(String labelText, {bool isRequired = true, IconData? icon}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0, top: 4.0),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: NasColors.darkBlue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: NasColors.darkBlue),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: labelText,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  if (isRequired)
+                    TextSpan(
+                      text: " *",
                       style: GoogleFonts.inter(
-                        fontSize: 22,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Colors.red,
                       ),
                     ),
-                    Spacer(),
-                    IconButton(
-                      onPressed: () {
-                        if (_currentPage == 0 ||
-                            _currentPage == 1 ||
-                            _currentPage == 2) {
-                          _nextPage();
-                        } else {
-                          createEmployee();
-                        }
-                      },
-                      icon: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
-                              spreadRadius: 3,
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Input Decoration Helper ───────────────────────────────────────────
+  InputDecoration _buildInputDecoration({
+    required String hintText,
+    Widget? suffixIcon,
+    Widget? prefixIcon,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade400),
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+    );
+  }
+
+  // ── Section Card Container Helper ──────────────────────────────────────
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: NasColors.darkBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: NasColors.darkBlue, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  // ── PAGE 1: Company Information ────────────────────────────────────────
+  Widget _buildPage1(BuildContext context, AppLocalizations local) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: _buildSectionCard(
+        title: local.companyInfo,
+        icon: Icons.business_rounded,
+        children: [
+          /// Company Dropdown
+          _buildFieldLabel(local.selectCompany, icon: Icons.domain_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: local.selectCompany,
+            ),
+            value: selectedCompany,
+            hint: Text(local.selectCompany),
+            items: companies
+                .map((e) => DropdownMenuItem(
+                    value: e['name'], child: Text(e['name']!)))
+                .toList(),
+            onChanged: _onCompanySelected,
+          ),
+          const SizedBox(height: 16),
+
+          /// Branch Dropdown
+          _buildFieldLabel(local.selectBranch, icon: Icons.location_city_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: local.selectBranch,
+            ),
+            value: selectedBranch,
+            hint: Text(local.selectBranch),
+            items: branches
+                .map((e) => DropdownMenuItem(
+                    value: e['name'], child: Text(e['name']!)))
+                .toList(),
+            onChanged: _onBranchSelected,
+          ),
+          const SizedBox(height: 16),
+
+          /// Department Dropdown
+          _buildFieldLabel(local.selectDepartment, icon: Icons.account_tree_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: local.selectDepartment,
+            ),
+            value: selectedDepartment,
+            hint: Text(local.selectDepartment),
+            items: departments
+                .map((e) => DropdownMenuItem(
+                    value: e['name'], child: Text(e['name']!)))
+                .toList(),
+            onChanged: _onDepartmentSelected,
+          ),
+          const SizedBox(height: 16),
+
+          /// Supervisor Dropdown
+          _buildFieldLabel(local.selectSupervisor, icon: Icons.supervisor_account_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: supervisors.isEmpty
+                  ? local.noSupervisorFound
+                  : local.selectSupervisor,
+            ),
+            value: supervisors.isEmpty ? null : selectedSupervisor,
+            hint: Text(
+              supervisors.isEmpty
+                  ? local.noSupervisorFound
+                  : local.selectSupervisor,
+            ),
+            items: supervisors.isEmpty
+                ? [
+                    DropdownMenuItem(
+                      value: null,
+                      enabled: false,
+                      child: Text(
+                        local.noSupervisorFound,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  ]
+                : supervisors
+                    .map((e) => DropdownMenuItem(
+                          value: e['name'],
+                          child: Text(e['name']!),
+                        ))
+                    .toList(),
+            onChanged: supervisors.isEmpty
+                ? null
+                : (value) => _onSupervisorSelected(value),
+          ),
+          const SizedBox(height: 16),
+
+          /// Shift Dropdown
+          _buildFieldLabel(local.selectShift, icon: Icons.access_time_filled_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            isExpanded: true,
+            decoration: _buildInputDecoration(
+              hintText: local.selectShift,
+            ),
+            value: selectedShift,
+            hint: Text(local.selectShift),
+            items: shifts
+                .map((shift) => DropdownMenuItem<String>(
+                      value: shift['name'],
+                      child: Text(shift['name'] ?? ''),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedShift = value;
+                final selected = shifts.firstWhere((s) => s['name'] == value);
+                selectedShiftId = selected['id'];
+                selectedShiftType = selected['type'];
+                selectedShiftFrom = selected['timeFrom'];
+                selectedShiftTo = selected['timeTo'];
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── PAGE 2: Personal & Educational Information ─────────────────────────
+  Widget _buildPage2(BuildContext context, AppLocalizations local) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: _buildSectionCard(
+        title: local.personalAndEducationalInfo,
+        icon: Icons.person_rounded,
+        children: [
+          /// First Name
+          _buildFieldLabel(local.firstName, icon: Icons.badge_rounded),
+          TextField(
+            controller: firstNameController,
+            decoration: _buildInputDecoration(
+              hintText: local.enterFirstName,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Last Name
+          _buildFieldLabel(local.lastName, icon: Icons.badge_outlined),
+          TextField(
+            controller: lastNameController,
+            decoration: _buildInputDecoration(
+              hintText: local.enterLastName,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Nationality
+          _buildFieldLabel(local.nationality, icon: Icons.flag_rounded),
+          Container(
+            height: 54,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: CountryCodePicker(
+                    onChanged: (country) {
+                      setState(() {
+                        nationality = country.name;
+                        selectedCountryName = country.name;
+                      });
+                    },
+                    initialSelection: 'SA',
+                    showCountryOnly: true,
+                    showOnlyCountryWhenClosed: true,
+                    alignLeft: true,
+                    showFlag: true,
+                    showFlagDialog: true,
+                    padding: EdgeInsets.zero,
+                    textStyle: GoogleFonts.inter(
+                        fontSize: 15, color: Colors.black87),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Gender
+          _buildFieldLabel(local.gender, icon: Icons.people_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: "-- ${local.gender} --",
+            ),
+            value: gender,
+            hint: Text("-- ${local.gender} --"),
+            items: [local.male, local.female, local.other]
+                .map((val) => DropdownMenuItem(value: val, child: Text(val)))
+                .toList(),
+            onChanged: (val) {
+              setState(() => gender = val);
+            },
+          ),
+          const SizedBox(height: 14),
+
+          /// National ID (Saudi Arabia)
+          if (nationality == "العربية السعودية") ...[
+            _buildFieldLabel(local.nationalId, isRequired: false, icon: Icons.credit_card_rounded),
+            TextFormField(
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              controller: nationalIdController,
+              decoration: _buildInputDecoration(
+                hintText: local.enterNationalId,
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          /// Iqama Number (Other nationalities)
+          if (nationality != "العربية السعودية") ...[
+            _buildFieldLabel(local.iqamaNumber, isRequired: false, icon: Icons.card_membership_rounded),
+            TextFormField(
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              controller: iqamaController,
+              decoration: _buildInputDecoration(
+                hintText: local.enterIqamaNumber,
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          /// Phone Number
+          _buildFieldLabel(local.phone, icon: Icons.phone_rounded),
+          TextField(
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            controller: phoneController,
+            decoration: _buildInputDecoration(
+              hintText: local.enterPhoneNumber,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Email Address
+          _buildFieldLabel(local.enterEmail, icon: Icons.email_rounded),
+          TextFormField(
+            controller: emailController,
+            decoration: _buildInputDecoration(
+              hintText: local.enterEmail,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Address
+          _buildFieldLabel(local.address, isRequired: false, icon: Icons.home_rounded),
+          TextField(
+            controller: addressController,
+            decoration: _buildInputDecoration(
+              hintText: local.enterAddress,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Date of Birth
+          _buildFieldLabel(local.dateOfBirth, icon: Icons.cake_rounded),
+          GestureDetector(
+            onTap: () async {
+              DateTime? picked = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                firstDate: DateTime(1950),
+                lastDate: DateTime.now(),
+                builder: (BuildContext context, Widget? child) {
+                  return Theme(
+                    data: ThemeData.light().copyWith(
+                      colorScheme: ColorScheme.light(
+                        primary: NasColors.darkBlue,
+                        onPrimary: Colors.white,
+                        onSurface: Colors.black,
+                      ),
+                      dialogBackgroundColor: Colors.white,
+                      textButtonTheme: TextButtonThemeData(
+                        style: TextButton.styleFrom(
+                          foregroundColor: NasColors.darkBlue,
                         ),
-                        child: Icon(
-                          _currentPage == 3
-                              ? Icons.done
-                              : Icons.arrow_forward_ios_outlined,
-                          color: Colors.black,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (picked != null) {
+                final now = DateTime.now();
+                if (picked.isAfter(now)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Date of birth cannot be in the future")),
+                  );
+                  return;
+                }
+                final minAdultDate = DateTime(
+                  now.year - 18,
+                  now.month,
+                  now.day,
+                );
+
+                if (picked.isAfter(minAdultDate)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(local.ageMustBeAtLeastEighteenYearsOld)),
+                  );
+                  selectedDate = null;
+                  return;
+                }
+                setState(() => selectedDate = picked);
+              }
+            },
+            child: AbsorbPointer(
+              child: TextField(
+                decoration: _buildInputDecoration(
+                  hintText: selectedDate != null
+                      ? "${selectedDate!.year}/${selectedDate!.month}/${selectedDate!.day}"
+                      : "yyyy/mm/dd",
+                  suffixIcon: Icon(Icons.calendar_today_rounded, color: NasColors.darkBlue),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Religion
+          _buildFieldLabel(local.religion, icon: Icons.auto_awesome_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: "-- ${local.selectReligion} --",
+            ),
+            value: religion,
+            hint: Text("-- ${local.selectReligion} --"),
+            items: [local.islam, local.christianity, local.hinduism, local.other]
+                .map((val) => DropdownMenuItem(value: val, child: Text(val)))
+                .toList(),
+            onChanged: (val) {
+              setState(() => religion = val);
+            },
+          ),
+          const SizedBox(height: 14),
+
+          /// Marital Status
+          _buildFieldLabel(local.martialStatus, icon: Icons.family_restroom_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: "-- ${local.selectStatus} --",
+            ),
+            value: maritalStatus,
+            hint: Text("-- ${local.selectStatus} --"),
+            items: [local.single, local.married, local.divorced, local.widowed]
+                .map((val) => DropdownMenuItem(value: val, child: Text(val)))
+                .toList(),
+            onChanged: (val) {
+              setState(() => maritalStatus = val);
+            },
+          ),
+          const SizedBox(height: 14),
+
+          /// Username (Auto generated from first + last name)
+          _buildFieldLabel(local.username, icon: Icons.alternate_email_rounded),
+          TextField(
+            controller: userName,
+            readOnly: true,
+            decoration: _buildInputDecoration(
+              hintText: local.enterUsername,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Password
+          _buildFieldLabel(local.password, icon: Icons.lock_rounded),
+          TextField(
+            controller: password,
+            obscureText: _obscurePassword,
+            decoration: _buildInputDecoration(
+              hintText: local.password,
+              suffixIcon: IconButton(
+                onPressed: () {
+                  setState(() => _obscurePassword = !_obscurePassword);
+                },
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: NasColors.icons,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Degree Name
+          _buildFieldLabel(local.degreeName, isRequired: false, icon: Icons.school_rounded),
+          TextField(
+            controller: degreeName,
+            decoration: _buildInputDecoration(
+              hintText: local.enterDegreeName,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Degree Type
+          _buildFieldLabel(local.degreeType, isRequired: false, icon: Icons.workspace_premium_rounded),
+          TextField(
+            controller: degreeType,
+            decoration: _buildInputDecoration(
+              hintText: local.enterDegreeType,
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          /// Profile Picture Upload
+          _buildFieldLabel(local.profilePicture, isRequired: false, icon: Icons.add_a_photo_rounded),
+          Row(
+            children: [
+              if (profilePicUrl == null || profilePicUrl!.isEmpty)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NasColors.darkBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  ),
+                  icon: const Icon(Icons.cloud_upload_rounded, size: 18),
+                  onPressed: () async {
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles(
+                      type: FileType.image,
+                    );
+
+                    if (result != null && result.files.single.path != null) {
+                      PlatformFile file = result.files.single;
+                      setState(() {
+                        selectedFile = file;
+                      });
+
+                      await uploadProfileToS3(file);
+                      setState(() {});
+                    }
+                  },
+                  label: Text(local.chooseFile),
+                )
+              else
+                Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        profilePicUrl!,
+                        width: 76,
+                        height: 76,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.broken_image, color: Colors.grey),
+                      ),
+                    ),
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            profilePicUrl = '';
+                            selectedFile = null;
+                          });
+                        },
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: const Icon(Icons.close_rounded,
+                              color: Colors.white, size: 14),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 25),
-                /// Steps
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: List.generate(4, (index) {
-                      final titles = ["🏢", "🙎🏻‍♂️", "💻", "💰"];
-                      final isActive = _currentPage == index;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor:
-                                  isActive ? Colors.teal : Colors.grey[300],
-                              child: Text(
-                                "${index + 1}",
-                                style: TextStyle(
-                                    color:
-                                        isActive ? Colors.white : Colors.black),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 20.0, right: 20),
-                              child: Text(
-                                titles[index],
-                                style: GoogleFonts.inter(
-                                  color: isActive ? Colors.black : Colors.grey,
-                                  fontWeight: isActive
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  fontSize: 30,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                /// PageView
+              const SizedBox(width: 12),
+              if (profilePicUrl == null || profilePicUrl!.isEmpty)
                 Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (i) => setState(() => _currentPage = i),
-                    children: [
-                      /// Page 1
-                      SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!.companyInfo,
-                              style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            const SizedBox(height: 20),
-
-                            /// Company Dropdown
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: AppLocalizations.of(context)!
-                                        .selectCompany,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: " *",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              dropdownColor: Colors.white,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      const BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: Colors.black, width: 1.5),
-                                ),
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 14),
-                              ),
-                              value: selectedCompany,
-                              hint: Text(
-                                  AppLocalizations.of(context)!.selectCompany),
-                              items: companies
-                                  .map((e) => DropdownMenuItem(
-                                      value: e['name'],
-                                      child: Text(e['name']!)))
-                                  .toList(),
-                              onChanged: _onCompanySelected,
-                            ),
-                            const SizedBox(height: 16),
-                            /// Branch Dropdown
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: AppLocalizations.of(context)!
-                                        .selectBranch,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black),
-                                  ),
-                                  TextSpan(
-                                    text: " *",
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              dropdownColor: Colors.white,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      const BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: Colors.black, width: 1.5),
-                                ),
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 14),
-                              ),
-                              value: selectedBranch,
-                              hint: Text(
-                                  AppLocalizations.of(context)!.selectBranch),
-                              items: branches
-                                  .map((e) => DropdownMenuItem(
-                                      value: e['name'],
-                                      child: Text(e['name']!)))
-                                  .toList(),
-                              onChanged: _onBranchSelected,
-                            ),
-                            const SizedBox(height: 16),
-                            /// Department Dropdown
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: AppLocalizations.of(context)!
-                                        .selectDepartment,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black),
-                                  ),
-                                  TextSpan(
-                                    text: " *",
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              dropdownColor: Colors.white,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      const BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: Colors.black, width: 1.5),
-                                ),
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 14),
-                              ),
-                              value: selectedDepartment,
-                              hint: Text(AppLocalizations.of(context)!
-                                  .selectDepartment),
-                              items: departments
-                                  .map((e) => DropdownMenuItem(
-                                      value: e['name'],
-                                      child: Text(e['name']!)))
-                                  .toList(),
-                              onChanged: _onDepartmentSelected,
-                            ),
-                            const SizedBox(height: 16),
-                            /// Supervisor Dropdown
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: AppLocalizations.of(context)!
-                                        .selectSupervisor,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black),
-                                  ),
-                                  TextSpan(
-                                    text: " *",
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              dropdownColor: Colors.white,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      const BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: Colors.black, width: 1.5),
-                                ),
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 14),
-                              ),
-                              value: supervisors.isEmpty
-                                  ? null
-                                  : selectedSupervisor,
-                              hint: Text(
-                                supervisors.isEmpty
-                                    ? AppLocalizations.of(context)!.noSupervisorFound
-                                    : AppLocalizations.of(context)!
-                                        .selectSupervisor,
-                              ),
-                              items: supervisors.isEmpty
-                                  ? [
-                                       DropdownMenuItem(
-                                        value: null,
-                                        enabled: false,
-                                        child: Text(
-                                          AppLocalizations.of(context)!.noSupervisorFound,
-                                          style: TextStyle(color: Colors.grey),
-                                        ),
-                                      )
-                                    ]
-                                  : supervisors
-                                      .map((e) => DropdownMenuItem(
-                                            value: e['name'],
-                                            child: Text(e['name']!),
-                                          ))
-                                      .toList(),
-                              onChanged: supervisors.isEmpty
-                                  ? null
-                                  : (value) => _onSupervisorSelected(value),
-                            ),
-                            const SizedBox(height: 16),
-                            /// Shift Dropdown
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: AppLocalizations.of(context)!
-                                        .selectShift,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black),
-                                  ),
-                                  TextSpan(
-                                    text: " *",
-                                    style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              dropdownColor: Colors.white,
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      const BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                      color: Colors.black, width: 1.5),
-                                ),
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 14),
-                              ),
-                              value: selectedShift,
-                              hint: Text(
-                                  AppLocalizations.of(context)!.selectShift),
-                              items: shifts
-                                  .map((shift) => DropdownMenuItem<String>(
-                                        value: shift['name'],
-                                        child: Text(shift['name'] ?? ''),
-                                      ))
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedShift = value;
-
-                                  final selected = shifts
-                                      .firstWhere((s) => s['name'] == value);
-                                  selectedShiftId = selected['id'];
-                                  selectedShiftType = selected['type'];
-                                  selectedShiftFrom = selected['timeFrom'];
-                                  selectedShiftTo = selected['timeTo'];
-                                });
-                              },
-                            )
-                          ],
-                        ),
-                      ),
-                      ///Page 2
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!
-                                    .personalAndEducationalInfo,
-                                style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              const SizedBox(height: 20),
-
-                              /// ===== FIRST NAME =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!.firstName,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: firstNameController,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterFirstName,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-                              const SizedBox(height: 12),
-
-                              /// ===== LAST NAME =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .lastName,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: lastNameController,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterLastName,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-
-                              const SizedBox(height: 12),
-
-                              /// ===== NATIONALITY =====
-                              RichText(
-                                text:  TextSpan(
-                                  text: "${AppLocalizations.of(context)!.nationality} ",
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: "*",
-                                      style: TextStyle(
-                                          color: Colors.red, fontSize: 14),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Container(
-                                height: 55,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.grey),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: CountryCodePicker(
-                                        onChanged: (country) {
-                                          setState(() {
-                                            nationality = country.name;
-                                            selectedCountryName = country.name;
-                                          });
-                                        },
-                                        initialSelection: 'SA',
-                                        showCountryOnly: true,
-                                        showOnlyCountryWhenClosed: true,
-                                        alignLeft: true,
-                                        showFlag: true,
-                                        showFlagDialog: true,
-                                        padding: EdgeInsets.zero,
-                                        textStyle: const TextStyle(
-                                            fontSize: 16, color: Colors.black),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              /// ====Gender ====
-                              const SizedBox(height: 12),
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .gender,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                                hint: Text(
-                                    "-- ${AppLocalizations.of(context)!.gender} --"),
-                                value: gender,
-                                items: [
-                                  AppLocalizations.of(context)!.male,
-                                  AppLocalizations.of(context)!.female,
-                                  (AppLocalizations.of(context)!.other),
-                                ]
-                                    .map((val) => DropdownMenuItem(
-                                        value: val, child: Text(val)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => gender = val);
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              /// ===== NATIONAL ID =====
-                              if(nationality == "العربية السعودية")...[
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                          text: AppLocalizations.of(context)!
-                                              .nationalId,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black)),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                    controller: nationalIdController,
-                                    decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!
-                                          .enterNationalId,
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.black, width: 1.5),
-                                      ),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8)),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 14),
-                                    )),
-                              ],
-                              const SizedBox(height: 12),
-                              /// ===== IQAMA NUMBER =====
-                              if(nationality != "العربية السعودية")...[
-                                RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .iqamaNumber,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                  ],
-                                ),
-                              ),
-                                const SizedBox(height: 8),
-                                TextFormField(
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                    controller: iqamaController,
-                                    decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!
-                                          .enterIqamaNumber,
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.black, width: 1.5),
-                                      ),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8)),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 14),
-                                    ),
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                              /// ===== PHONE =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text:
-                                            AppLocalizations.of(context)!.phone,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  controller: phoneController,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterPhoneNumber,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-
-                              const SizedBox(height: 12),
-
-                              /// ===== EMAIL =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .enterEmail,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                  controller: emailController,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterEmail,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Phone number is required';
-                                  } else if (value.length < 10) {
-                                    return 'Phone number must be at least 10 digits';
-                                  }
-                                  return null;
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // ===== ADDRESS =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .address,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: addressController,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterAddress,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-
-                              const SizedBox(height: 12),
-
-                              /// ===== DATE OF BIRTH =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .dateOfBirth,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              GestureDetector(
-                                onTap: () async {
-                                  DateTime? picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-                                    firstDate: DateTime(1950),
-                                    lastDate: DateTime.now(),
-                                    builder: (BuildContext context, Widget? child) {
-                                      return Theme(
-                                        data: ThemeData.light().copyWith(
-                                          colorScheme: ColorScheme.light(
-                                            primary: NasColors.darkBlue,
-                                            onPrimary: Colors.white,
-                                            onSurface: Colors.black,
-                                          ),
-                                          dialogBackgroundColor: Colors.white,
-                                          textButtonTheme: TextButtonThemeData(
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: NasColors.darkBlue,
-                                            ),
-                                          ),
-                                        ),
-                                        child: child!,
-                                      );
-                                    },
-                                  );
-                                  if (picked != null) {
-                                    final now = DateTime.now();
-                                    if (picked.isAfter(now)) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text("Date of birth cannot be in the future")),
-                                      );
-                                      return;
-                                    }
-                                    final minAdultDate = DateTime(
-                                      now.year - 18,
-                                      now.month,
-                                      now.day,
-                                    );
-
-                                    if (picked.isAfter(minAdultDate)) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                         SnackBar(content: Text(AppLocalizations.of(context)!.ageMustBeAtLeastEighteenYearsOld)),
-                                      );
-                                      selectedDate = null;
-                                      return;
-                                    }
-                                    setState(() => selectedDate = picked);
-                                  }
-                                },
-                                child: AbsorbPointer(
-                                  child: TextField(
-                                    decoration: InputDecoration(
-                                      hintText: selectedDate != null
-                                          ? "${selectedDate!.year}/${selectedDate!.month}/${selectedDate!.day}"
-                                          : "yyyy/mm/dd",
-                                      suffixIcon: Icon(Icons.calendar_today),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.black, width: 1.5),
-                                      ),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 14),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // ===== RELIGION =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .religion,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                                hint: Text(
-                                    "-- ${AppLocalizations.of(context)!.selectReligion} --"),
-                                value: religion,
-                                items: [
-                                  (AppLocalizations.of(context)!.islam),
-                                  (AppLocalizations.of(context)!.christianity),
-                                  (AppLocalizations.of(context)!.hinduism),
-                                  (AppLocalizations.of(context)!.other)
-                                ]
-                                    .map((val) => DropdownMenuItem(
-                                        value: val, child: Text(val)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => religion = val);
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // ===== MARITAL STATUS =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .martialStatus,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                                hint: Text(
-                                    "-- ${AppLocalizations.of(context)!.selectStatus} --"),
-                                value: maritalStatus,
-                                items: [
-                                  (AppLocalizations.of(context)!.single),
-                                  (AppLocalizations.of(context)!.married),
-                                  (AppLocalizations.of(context)!.divorced),
-                                  (AppLocalizations.of(context)!.widowed)
-                                ]
-                                    .map((val) => DropdownMenuItem(
-                                        value: val, child: Text(val)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => maritalStatus = val);
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // ===== USERNAME =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .username,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: userName,
-                                readOnly: true,
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!
-                                      .enterUsername,
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              // ===== PASSWORD =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .password,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: password,
-                                obscureText: _obscurePassword,
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!.enterPassword,
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                      color: NasColors.icons,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                              ),
-
-                              const SizedBox(height: 12),
-                              // Degree Name
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: AppLocalizations.of(context)!
-                                          .degreeName,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: degreeName,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterDegreeName,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-
-                              SizedBox(height: 12),
-
-                              // Degree Type
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: AppLocalizations.of(context)!
-                                          .degreeType,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: degreeType,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterDegreeType,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-                              const SizedBox(height: 20),
-                              // ===== PROFILE PICTURE =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .profilePicture,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  // 🔹 Show button only when no profile image uploaded
-                                  if (profilePicUrl == null ||
-                                      profilePicUrl!.isEmpty)
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: NasColors.darkBlue,
-                                        // 🔹 Button color
-                                        foregroundColor: Colors.white,
-                                        // 🔹 Text color
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 12),
-                                      ),
-                                      onPressed: () async {
-                                        FilePickerResult? result =
-                                            await FilePicker.platform.pickFiles(
-                                          type: FileType.image,
-                                        );
-
-                                        if (result != null &&
-                                            result.files.single.path != null) {
-                                          PlatformFile file =
-                                              result.files.single;
-                                          setState(() {
-                                            selectedFile = file;
-                                          });
-
-                                          await uploadProfileToS3(file);
-                                          setState(
-                                              () {
-
-                                              });
-                                        } else {
-                                        }
-                                      },
-                                      child: Text(AppLocalizations.of(context)!
-                                          .chooseFile),
-                                    )
-                                  else
-                                    Stack(
-                                      alignment: Alignment.topRight,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          child: Image.network(
-                                            profilePicUrl!,
-                                            width: 70,
-                                            height: 70,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error,
-                                                    stackTrace) =>
-                                                const Icon(Icons.broken_image,
-                                                    color: Colors.grey),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          right: -6,
-                                          top: -6,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                profilePicUrl = '';
-                                                selectedFile = null;
-                                              });
-                                            },
-                                            child: Container(
-                                              decoration: const BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              padding: const EdgeInsets.all(4),
-                                              child: const Icon(Icons.close,
-                                                  color: Colors.white,
-                                                  size: 14),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                  const SizedBox(width: 10),
-
-                                  // 🔹 Show text only when no file chosen
-                                  if (profilePicUrl == null ||
-                                      profilePicUrl!.isEmpty)
-                                    Text(
-                                      AppLocalizations.of(context)!
-                                          .noFileChosen,
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                      ///Page 3
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!
-                                    .professionalInformation,
-                                style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              const SizedBox(height: 20),
-
-                              // ===== HIERARCHY GROUP =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .hierarchyGroup,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                                hint: Text(AppLocalizations.of(context)!
-                                    .selectHierarchyGroup),
-                                value: hierarchyGroup,
-                                items: ["Admin", "Manager", "Supervisor", "Employee"]
-                                    .map((val) => DropdownMenuItem(
-                                        value: val, child: Text(val)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => hierarchyGroup = val);
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // ===== DESIGNATION =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .designation,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: designation,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterDesignation,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-
-                              const SizedBox(height: 12),
-
-                              // ===== ROLE =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text:
-                                            AppLocalizations.of(context)!.role,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                                hint: Text(
-                                    AppLocalizations.of(context)!.selectRole),
-                                value: role,
-                                items: [
-                                  (AppLocalizations.of(context)!.junior),
-                                  (AppLocalizations.of(context)!.mid),
-                                  (AppLocalizations.of(context)!.senior)
-                                ]
-                                    .map((val) => DropdownMenuItem(
-                                        value: val, child: Text(val)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => role = val);
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // ===== CONTRACT TYPE =====
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                        text: AppLocalizations.of(context)!
-                                            .contractType,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black)),
-                                    TextSpan(
-                                        text: " *",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Radio(
-                                      value: "Permanent",
-                                      activeColor: NasColors.darkBlue,
-                                      groupValue: contractType,
-                                      onChanged: (val) {
-                                        setState(() => contractType = val);
-                                      }),
-                                  Text(AppLocalizations.of(context)!.permanent),
-                                  const SizedBox(width: 20),
-                                  Radio(
-                                      value: "Temporary",
-                                      activeColor: NasColors.darkBlue,
-                                      groupValue: contractType,
-                                      onChanged: (val) {
-                                        setState(() => contractType = val);
-                                      }),
-                                  Text(AppLocalizations.of(context)!.temporary),
-                                ],
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              // ===== END OF CONTRACT =====
-                              if (contractType == "Temporary") ...[
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                          text: AppLocalizations.of(context)!
-                                              .endOfContract,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black)),
-                                      TextSpan(
-                                          text: " *",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.red)),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                GestureDetector(
-                                  onTap: () async {
-                                    DateTime? picked = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2100),
-                                      builder: (BuildContext context,
-                                          Widget? child) {
-                                        return Theme(
-                                          data: ThemeData.light().copyWith(
-                                            colorScheme: ColorScheme.light(
-                                              primary: NasColors.darkBlue,
-                                              onPrimary: Colors.white,
-                                              onSurface: Colors.black,
-                                            ),
-                                            dialogBackgroundColor: Colors.white,
-                                            textButtonTheme:
-                                                TextButtonThemeData(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor:
-                                                    NasColors.darkBlue,
-                                              ),
-                                            ),
-                                          ),
-                                          child: child!,
-                                        );
-                                      },
-                                    );
-                                    if (picked != null) {
-                                      setState(() => contractEndDate = picked);
-                                    }
-                                  },
-                                  child: AbsorbPointer(
-                                    child: TextField(
-                                      decoration: InputDecoration(
-                                        hintText: contractEndDate != null
-                                            ? "${contractEndDate!.day}/${contractEndDate!.month}/${contractEndDate!.year}"
-                                            : "dd/mm/yyyy",
-                                        suffixIcon: Icon(Icons.calendar_today),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          borderSide: const BorderSide(
-                                              color: Colors.black, width: 1.5),
-                                        ),
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8)),
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 14),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-
-                              const SizedBox(height: 20),
-                            ],
-                          ),
-                        ),
-                      ),
-                      ///page 4
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                             Text(
-                                    AppLocalizations.of(context)!.salaryInformation,
-                                    style: GoogleFonts.inter(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black),
-                             ),
-                              SizedBox(height: 20),
-                              ///Basic Salary
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: AppLocalizations.of(context)!
-                                          .basicSalary,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    TextSpan(
-                                      text: " *",
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  controller: basicSalary,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterBasicSalary,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-                              SizedBox(height: 12),
-                              /// Currency
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: AppLocalizations.of(context)!
-                                          .currency,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    TextSpan(
-                                      text: " *",
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                value: currency,
-                                items: ["USD", "PKR", "SAR", "EUR"]
-                                    .map((e) => DropdownMenuItem(
-                                        value: e, child: Text(e)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => currency = val);
-                                },
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!
-                                      .selectCategory,
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                              ),
-                              SizedBox(height: 12),
-                              /// Salary Period
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: AppLocalizations.of(context)!
-                                          .salaryPeriod,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    TextSpan(
-                                      text: " *",
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                dropdownColor: Colors.white,
-                                value: salaryPeriod,
-                                items: ["Daily", "Weekly", "Monthly", "Hourly"]
-                                    .map((e) => DropdownMenuItem(
-                                        value: e, child: Text(e)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  setState(() => salaryPeriod = val);
-                                },
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!
-                                      .selectSalaryPeriod,
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide:
-                                        const BorderSide(color: Colors.grey),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 14),
-                                ),
-                              ),
-                              SizedBox(height: 12),
-                              /// Bank Name
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: AppLocalizations.of(context)!
-                                          .bankName,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    TextSpan(
-                                      text: " *",
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: bankName,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterBankName,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-                              SizedBox(height: 12),
-                              /// Account No
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: AppLocalizations.of(context)!
-                                          .accountNo,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    TextSpan(
-                                      text: " *",
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                  keyboardType: TextInputType.text,
-                                  controller: accountNo,
-                                  decoration: InputDecoration(
-                                    hintText: AppLocalizations.of(context)!
-                                        .enterAccountNo,
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          const BorderSide(color: Colors.grey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
-                                          color: Colors.black, width: 1.5),
-                                    ),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 14),
-                                  )),
-                              const SizedBox(height: 12),
-                              GestureDetector(
-                                onTap: (){
-                                  setState(() {
-                                    allowanceExpanded = !allowanceExpanded;
-                                  });
-                                },
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.allowance,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Spacer(),
-                                    IconButton(
-                                      icon: Icon(
-                                        allowanceExpanded
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          allowanceExpanded = !allowanceExpanded;
-                                        });
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.add),
-                                      onPressed: () {
-                                        setState(() {
-                                          allowances.add(AllowanceFormModel());
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if(allowanceExpanded == true)...[
-                                ///Listview
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: allowances.length,
-                                  padding: EdgeInsets.zero,
-                                  itemBuilder: (context, index) {
-                                    final item = allowances[index];
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "${index + 1}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                  color: Colors.grey
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            if (allowances.length > 1)
-                                              IconButton(
-                                                icon: const Icon(Icons.remove_circle, color: Colors.red),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    allowances.removeAt(index);
-                                                  });
-                                                },
-                                              ),
-                                          ],
-                                        ),
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.name}",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black),
-                                              ),
-                                              TextSpan(
-                                                text: " *",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        TextFormField(
-                                            keyboardType: TextInputType.text,
-                                            controller: item.title,
-                                            decoration: InputDecoration(
-                                              hintText: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.name}",
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide:
-                                                const BorderSide(color: Colors.grey),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide: const BorderSide(
-                                                    color: Colors.black, width: 1.5),
-                                              ),
-                                              border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8)),
-                                              contentPadding: const EdgeInsets.symmetric(
-                                                  horizontal: 12, vertical: 14),
-                                            )),
-                                        const SizedBox(height: 10),
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: "${AppLocalizations.of(context)!.allowance} ${AppLocalizations.of(context)!.type}",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black),
-                                              ),
-                                              TextSpan(
-                                                text: " *",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        DropdownButtonFormField<String>(
-                                          dropdownColor: Colors.white,
-                                          value: item.type,
-                                          items: ["Fixed", "Variable"]
-                                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                                              .toList(),
-                                          onChanged: (val) {
-                                            setState(() => item.type = val);
-                                          },
-                                          decoration: InputDecoration(
-                                            hintText: AppLocalizations.of(context)!.selectAllowanceType,
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide:
-                                              const BorderSide(color: Colors.grey),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                  color: Colors.black, width: 1.5),
-                                            ),
-                                            border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8)),
-                                            contentPadding: const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 14),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        if(item.type == "Variable")...[
-                                          RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: AppLocalizations.of(context)!.basedOn,
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black),
-                                                ),
-                                                TextSpan(
-                                                  text: " *",
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          DropdownButtonFormField<String>(
-                                            dropdownColor: Colors.white,
-                                            value: item.basedOn,
-                                            items: ["Salary"]
-                                                .map((e) => DropdownMenuItem(
-                                                value: e, child: Text(e)))
-                                                .toList(),
-                                            onChanged: (val) {
-                                              setState(() => item.basedOn = val);
-                                            },
-                                            decoration: InputDecoration(
-                                              hintText: AppLocalizations.of(context)!.selectOption,
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide:
-                                                const BorderSide(color: Colors.grey),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide: const BorderSide(
-                                                    color: Colors.black, width: 1.5),
-                                              ),
-                                              border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8)),
-                                              contentPadding: const EdgeInsets.symmetric(
-                                                  horizontal: 12, vertical: 14),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 12),
-                                          RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: AppLocalizations.of(context)!.allowancePercentage,
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black),
-                                                ),
-                                                TextSpan(
-                                                  text: " *",
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          TextFormField(
-                                              keyboardType: TextInputType.text,
-                                              controller: item.percentage,
-                                              decoration: InputDecoration(
-                                                hintText: AppLocalizations.of(context)!.enterPercentage,
-                                                enabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide:
-                                                  const BorderSide(color: Colors.grey),
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: const BorderSide(
-                                                      color: Colors.black, width: 1.5),
-                                                ),
-                                                border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(8)),
-                                                contentPadding: const EdgeInsets.symmetric(
-                                                    horizontal: 12, vertical: 14),
-                                              )),
-                                        ],
-                                        if (item.type == "Fixed")...[
-                                          RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: AppLocalizations.of(context)!.allowanceAmount,
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black),
-                                                ),
-                                                TextSpan(
-                                                  text: " *",
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          TextFormField(
-                                              keyboardType: TextInputType.text,
-                                              controller: item.amount,
-                                              decoration: InputDecoration(
-                                                hintText: AppLocalizations.of(context)!.enterAmount,
-                                                enabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide:
-                                                  const BorderSide(color: Colors.grey),
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: const BorderSide(
-                                                      color: Colors.black, width: 1.5),
-                                                ),
-                                                border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(8)),
-                                                contentPadding: const EdgeInsets.symmetric(
-                                                    horizontal: 12, vertical: 14),
-                                              )),
-                                        ],
-                                        const Divider(height: 32),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ],
-                              const SizedBox(height: 12),
-                              GestureDetector(
-                                onTap: (){
-                                  setState(() {
-                                    deductionExpanded = !deductionExpanded;
-                                  });
-                                },
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.deductions,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black),
-                                    ),
-                                    Spacer(),
-                                    IconButton(
-                                      icon: Icon(
-                                        deductionExpanded
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          deductionExpanded = !deductionExpanded;
-                                        });
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.add),
-                                      onPressed: () {
-                                        setState(() {
-                                          deductions.add(DeductionFormModel());
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              if(deductionExpanded == true)...[
-                                ///List view
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.zero,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: deductions.length,
-                                  itemBuilder: (context, index) {
-                                    final item = deductions[index];
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "${index + 1}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            if (deductions.length > 1)
-                                              IconButton(
-                                                icon: const Icon(Icons.remove_circle, color: Colors.red),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    deductions.removeAt(index);
-                                                  });
-                                                },
-                                              ),
-                                          ],
-                                        ),
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.name}",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black),
-                                              ),
-                                              TextSpan(
-                                                text: " *",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        TextFormField(
-                                            keyboardType: TextInputType.text,
-                                            controller: item.title,
-                                            decoration: InputDecoration(
-                                              hintText: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.name}",
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide:
-                                                const BorderSide(color: Colors.grey),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide: const BorderSide(
-                                                    color: Colors.black, width: 1.5),
-                                              ),
-                                              border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8)),
-                                              contentPadding: const EdgeInsets.symmetric(
-                                                  horizontal: 12, vertical: 14),
-                                            )),
-                                        const SizedBox(height: 10),
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: "${AppLocalizations.of(context)!.deductions} ${AppLocalizations.of(context)!.type}",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black),
-                                              ),
-                                              TextSpan(
-                                                text: " *",
-                                                style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.grey),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        DropdownButtonFormField<String>(
-                                          dropdownColor: Colors.white,
-                                          value: item.type,
-                                          items: ["Fixed", "Variable"]
-                                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                                              .toList(),
-                                          onChanged: (val) {
-                                            setState(() => item.type = val);
-                                          },
-                                          decoration: InputDecoration(
-                                            hintText: AppLocalizations.of(context)!.selectDeductionType,
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide:
-                                              const BorderSide(color: Colors.grey),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: const BorderSide(
-                                                  color: Colors.black, width: 1.5),
-                                            ),
-                                            border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8)),
-                                            contentPadding: const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 14),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        if(item.type  == "Variable")...[
-                                          RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: AppLocalizations.of(context)!.basedOn,
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black),
-                                                ),
-                                                TextSpan(
-                                                  text: " *",
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          DropdownButtonFormField<String>(
-                                            dropdownColor: Colors.white,
-                                            value: item.basedOn,
-                                            items: ["Salary"]
-                                                .map((e) => DropdownMenuItem(
-                                                value: e, child: Text(e)))
-                                                .toList(),
-                                            onChanged: (val) {
-                                              setState(() => item.basedOn = val);
-                                            },
-                                            decoration: InputDecoration(
-                                              hintText: AppLocalizations.of(context)!.selectOption,
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide:
-                                                const BorderSide(color: Colors.grey),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                                borderSide: const BorderSide(
-                                                    color: Colors.black, width: 1.5),
-                                              ),
-                                              border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8)),
-                                              contentPadding: const EdgeInsets.symmetric(
-                                                  horizontal: 12, vertical: 14),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 12),
-                                          RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: AppLocalizations.of(context)!.deductionPercentage,
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black),
-                                                ),
-                                                TextSpan(
-                                                  text: " *",
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          TextFormField(
-                                              keyboardType: TextInputType.text,
-                                              controller: item.percentage,
-                                              decoration: InputDecoration(
-                                                hintText: AppLocalizations.of(context)!.enterPercentage,
-                                                enabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide:
-                                                  const BorderSide(color: Colors.grey),
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: const BorderSide(
-                                                      color: Colors.black, width: 1.5),
-                                                ),
-                                                border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(8)),
-                                                contentPadding: const EdgeInsets.symmetric(
-                                                    horizontal: 12, vertical: 14),
-                                              )),
-                                        ],
-                                        if (item.type  == "Fixed")...[
-                                          RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: AppLocalizations.of(context)!.deductionAmount,
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black),
-                                                ),
-                                                TextSpan(
-                                                  text: " *",
-                                                  style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          TextFormField(
-                                              keyboardType: TextInputType.text,
-                                              controller: item.amount,
-                                              decoration: InputDecoration(
-                                                hintText: AppLocalizations.of(context)!.enterAmount,
-                                                enabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide:
-                                                  const BorderSide(color: Colors.grey),
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: const BorderSide(
-                                                      color: Colors.black, width: 1.5),
-                                                ),
-                                                border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(8)),
-                                                contentPadding: const EdgeInsets.symmetric(
-                                                    horizontal: 12, vertical: 14),
-                                              )),
-                                        ],
-                                        const Divider(height: 32),
-                                      ],
-                                    );
-                                  },
-                                ),
-
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    local.noFileChosen,
+                    style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 13),
                   ),
                 ),
-              ]),
-              if (isLoading) Loader(),
-            ])));
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
-  ///S3 Bucket Call Method
+  // ── PAGE 3: Professional Information ──────────────────────────────────
+  Widget _buildPage3(BuildContext context, AppLocalizations local) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: _buildSectionCard(
+        title: local.professionalInformation,
+        icon: Icons.work_rounded,
+        children: [
+          /// Hierarchy Group
+          _buildFieldLabel(local.hierarchyGroup, icon: Icons.admin_panel_settings_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: local.selectHierarchyGroup,
+            ),
+            value: hierarchyGroup,
+            items: ["Admin", "Manager", "Supervisor", "Employee"]
+                .map((val) => DropdownMenuItem(value: val, child: Text(val)))
+                .toList(),
+            onChanged: (val) {
+              setState(() => hierarchyGroup = val);
+            },
+          ),
+          const SizedBox(height: 16),
+
+          /// Designation
+          _buildFieldLabel(local.designation, icon: Icons.work_outline_rounded),
+          TextField(
+            controller: designation,
+            decoration: _buildInputDecoration(
+              hintText: local.enterDesignation,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          /// Role
+          _buildFieldLabel(local.role, icon: Icons.badge_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            decoration: _buildInputDecoration(
+              hintText: local.selectRole,
+            ),
+            value: role,
+            items: [local.junior, local.mid, local.senior]
+                .map((val) => DropdownMenuItem(value: val, child: Text(val)))
+                .toList(),
+            onChanged: (val) {
+              setState(() => role = val);
+            },
+          ),
+          const SizedBox(height: 16),
+
+          /// Contract Type
+          _buildFieldLabel(local.contractType, icon: Icons.description_rounded),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              children: [
+                Radio<String>(
+                  value: "Permanent",
+                  activeColor: NasColors.darkBlue,
+                  groupValue: contractType,
+                  onChanged: (val) {
+                    setState(() => contractType = val);
+                  },
+                ),
+                Text(
+                  local.permanent,
+                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 24),
+                Radio<String>(
+                  value: "Temporary",
+                  activeColor: NasColors.darkBlue,
+                  groupValue: contractType,
+                  onChanged: (val) {
+                    setState(() => contractType = val);
+                  },
+                ),
+                Text(
+                  local.temporary,
+                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          /// End of Contract (if Temporary)
+          if (contractType == "Temporary") ...[
+            _buildFieldLabel(local.endOfContract, icon: Icons.event_busy_rounded),
+            GestureDetector(
+              onTap: () async {
+                DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
+                  builder: (BuildContext context, Widget? child) {
+                    return Theme(
+                      data: ThemeData.light().copyWith(
+                        colorScheme: ColorScheme.light(
+                          primary: NasColors.darkBlue,
+                          onPrimary: Colors.white,
+                          onSurface: Colors.black,
+                        ),
+                        dialogBackgroundColor: Colors.white,
+                        textButtonTheme: TextButtonThemeData(
+                          style: TextButton.styleFrom(
+                            foregroundColor: NasColors.darkBlue,
+                          ),
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (picked != null) {
+                  setState(() => contractEndDate = picked);
+                }
+              },
+              child: AbsorbPointer(
+                child: TextField(
+                  decoration: _buildInputDecoration(
+                    hintText: contractEndDate != null
+                        ? "${contractEndDate!.day}/${contractEndDate!.month}/${contractEndDate!.year}"
+                        : "dd/mm/yyyy",
+                    suffixIcon: Icon(Icons.calendar_today_rounded, color: NasColors.darkBlue),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── PAGE 4: Salary & Financial Information ─────────────────────────────
+  Widget _buildPage4(BuildContext context, AppLocalizations local) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: _buildSectionCard(
+        title: local.salaryInformation,
+        icon: Icons.payments_rounded,
+        children: [
+          /// Basic Salary
+          _buildFieldLabel(local.basicSalary, icon: Icons.attach_money_rounded),
+          TextFormField(
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            controller: basicSalary,
+            decoration: _buildInputDecoration(
+              hintText: local.enterBasicSalary,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Currency
+          _buildFieldLabel(local.currency, icon: Icons.currency_exchange_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            value: currency,
+            items: ["USD", "PKR", "SAR", "EUR"]
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: (val) {
+              setState(() => currency = val);
+            },
+            decoration: _buildInputDecoration(
+              hintText: local.selectCategory,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Salary Period
+          _buildFieldLabel(local.salaryPeriod, icon: Icons.calendar_month_rounded),
+          DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            value: salaryPeriod,
+            items: ["Daily", "Weekly", "Monthly", "Hourly"]
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: (val) {
+              setState(() => salaryPeriod = val);
+            },
+            decoration: _buildInputDecoration(
+              hintText: local.selectSalaryPeriod,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Bank Name
+          _buildFieldLabel(local.bankName, icon: Icons.account_balance_rounded),
+          TextField(
+            controller: bankName,
+            decoration: _buildInputDecoration(
+              hintText: local.enterBankName,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          /// Account Number
+          _buildFieldLabel(local.accountNo, icon: Icons.account_balance_wallet_rounded),
+          TextFormField(
+            keyboardType: TextInputType.text,
+            controller: accountNo,
+            decoration: _buildInputDecoration(
+              hintText: local.enterAccountNo,
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          /// Allowances Section Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: NasColors.darkBlue.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.add_card_rounded, color: NasColors.darkBlue, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  local.allowance,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: NasColors.darkBlue,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(
+                    allowanceExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: NasColors.darkBlue,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      allowanceExpanded = !allowanceExpanded;
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.add_circle_rounded, color: NasColors.darkBlue),
+                  onPressed: () {
+                    setState(() {
+                      allowances.add(AllowanceFormModel());
+                      allowanceExpanded = true;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          if (allowanceExpanded) ...[
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: allowances.length,
+              padding: EdgeInsets.zero,
+              itemBuilder: (context, index) {
+                final item = allowances[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: NasColors.darkBlue,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "#${index + 1}",
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          if (allowances.length > 1)
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  allowances.removeAt(index);
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFieldLabel("${local.allowance} ${local.name}", isRequired: false),
+                      TextFormField(
+                        keyboardType: TextInputType.text,
+                        controller: item.title,
+                        decoration: _buildInputDecoration(
+                          hintText: "${local.allowance} ${local.name}",
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFieldLabel("${local.allowance} ${local.type}", isRequired: false),
+                      DropdownButtonFormField<String>(
+                        dropdownColor: Colors.white,
+                        value: item.type,
+                        items: ["Fixed", "Variable"]
+                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() => item.type = val);
+                        },
+                        decoration: _buildInputDecoration(
+                          hintText: local.selectAllowanceType,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      if (item.type == "Variable") ...[
+                        _buildFieldLabel(local.basedOn, isRequired: false),
+                        DropdownButtonFormField<String>(
+                          dropdownColor: Colors.white,
+                          value: item.basedOn,
+                          items: ["Salary"]
+                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() => item.basedOn = val);
+                          },
+                          decoration: _buildInputDecoration(
+                            hintText: local.selectOption,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFieldLabel(local.allowancePercentage, isRequired: false),
+                        TextFormField(
+                          keyboardType: TextInputType.text,
+                          controller: item.percentage,
+                          decoration: _buildInputDecoration(
+                            hintText: local.enterPercentage,
+                          ),
+                        ),
+                      ],
+                      if (item.type == "Fixed") ...[
+                        _buildFieldLabel(local.allowanceAmount, isRequired: false),
+                        TextFormField(
+                          keyboardType: TextInputType.text,
+                          controller: item.amount,
+                          decoration: _buildInputDecoration(
+                            hintText: local.enterAmount,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+          const SizedBox(height: 14),
+
+          /// Deductions Section Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.remove_shopping_cart_rounded, color: Colors.red.shade700, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  local.deductions,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red.shade700,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(
+                    deductionExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: Colors.red.shade700,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      deductionExpanded = !deductionExpanded;
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.add_circle_rounded, color: Colors.red.shade700),
+                  onPressed: () {
+                    setState(() {
+                      deductions.add(DeductionFormModel());
+                      deductionExpanded = true;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          if (deductionExpanded) ...[
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: deductions.length,
+              padding: EdgeInsets.zero,
+              itemBuilder: (context, index) {
+                final item = deductions[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade700,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "#${index + 1}",
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          if (deductions.length > 1)
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  deductions.removeAt(index);
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFieldLabel("${local.deductions} ${local.name}", isRequired: false),
+                      TextFormField(
+                        keyboardType: TextInputType.text,
+                        controller: item.title,
+                        decoration: _buildInputDecoration(
+                          hintText: "${local.deductions} ${local.name}",
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFieldLabel("${local.deductions} ${local.type}", isRequired: false),
+                      DropdownButtonFormField<String>(
+                        dropdownColor: Colors.white,
+                        value: item.type,
+                        items: ["Fixed", "Variable"]
+                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() => item.type = val);
+                        },
+                        decoration: _buildInputDecoration(
+                          hintText: local.selectDeductionType,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      if (item.type == "Variable") ...[
+                        _buildFieldLabel(local.basedOn, isRequired: false),
+                        DropdownButtonFormField<String>(
+                          dropdownColor: Colors.white,
+                          value: item.basedOn,
+                          items: ["Salary"]
+                              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() => item.basedOn = val);
+                          },
+                          decoration: _buildInputDecoration(
+                            hintText: local.selectOption,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFieldLabel(local.deductionPercentage, isRequired: false),
+                        TextFormField(
+                          keyboardType: TextInputType.text,
+                          controller: item.percentage,
+                          decoration: _buildInputDecoration(
+                            hintText: local.enterPercentage,
+                          ),
+                        ),
+                      ],
+                      if (item.type == "Fixed") ...[
+                        _buildFieldLabel(local.deductionAmount, isRequired: false),
+                        TextFormField(
+                          keyboardType: TextInputType.text,
+                          controller: item.amount,
+                          decoration: _buildInputDecoration(
+                            hintText: local.enterAmount,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Bottom Navigation Bar ──────────────────────────────────────────────
+  Widget _buildBottomNavigation(BuildContext context, AppLocalizations local) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          if (_currentPage > 0) ...[
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _previousPage,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: NasColors.darkBlue, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.arrow_back_ios_new_rounded,
+                        size: 16, color: NasColors.darkBlue),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Back",
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: NasColors.darkBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: () {
+                if (_currentPage == 3) {
+                  createEmployee();
+                } else {
+                  _nextPage();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: NasColors.darkBlue,
+                foregroundColor: Colors.white,
+                elevation: 2,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _currentPage == 3 ? "Submit" : "Next",
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    _currentPage == 3
+                        ? Icons.check_circle_rounded
+                        : Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// S3 Bucket Call Method
   Future<String?> uploadProfileToS3(PlatformFile file) async {
     try {
       setState(() => isLoading = true);
 
-      // ✅ Convert file to bytes (if not already)
       Uint8List fileBytes = file.bytes ?? await File(file.path!).readAsBytes();
 
-      // ✅ Compress if size > 1MB
       if (fileBytes.length > 1000000) {
         fileBytes = await FlutterImageCompress.compressWithList(
           fileBytes,
@@ -3024,7 +1928,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
       }
 
-      // ✅ Prepare request
       var uri = Uri.parse('${singletonClass.baseURL}/s3-bucket/upload');
       var request = http.MultipartRequest('POST', uri);
       final mimeType =
@@ -3042,7 +1945,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       request.fields['attachmentName'] = file.name;
       request.fields['attachmentType'] = file.extension ?? '';
 
-      // ✅ Send request
       var response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
@@ -3061,67 +1963,70 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return null;
   }
 
-  ///API CALL METHOD
+  /// API CALL METHOD
   Future<void> createEmployee() async {
     final today = DateTime.now().toIso8601String().split('T').first;
     String? organizationID = singletonClass.getJWTModel()?.organizationId;
-    final List<Map<String, dynamic>> allowanceBenefits =
-    (allowances.isEmpty)
+    final List<Map<String, dynamic>> allowanceBenefits = (allowances.isEmpty)
         ? <Map<String, dynamic>>[]
         : allowances.map((e) {
-      return {
-        "allowanceTitle": e.title.text,
-        "allowanceType": (e.type ?? "").toUpperCase(),
-        "basedOn": e.type == "Variable" ? "Salary" : "",
-        "amount": e.type == "Fixed"
-            ? e.amount.text
-            : calculatePercentageAmount(
-          baseSalary: basicSalary.text,
-          percentage: e.percentage.text,
-        ),
-      };
-    }).toList();
+            return {
+              "allowanceTitle": e.title.text,
+              "allowanceType": (e.type ?? "").toUpperCase(),
+              "basedOn": e.type == "Variable" ? "Salary" : "",
+              "amount": e.type == "Fixed"
+                  ? e.amount.text
+                  : calculatePercentageAmount(
+                      baseSalary: basicSalary.text,
+                      percentage: e.percentage.text,
+                    ),
+            };
+          }).toList();
 
-    final List<Map<String, dynamic>> deductionList =
-    (deductions.isEmpty)
+    final List<Map<String, dynamic>> deductionList = (deductions.isEmpty)
         ? <Map<String, dynamic>>[]
         : deductions.map((e) {
-      return {
-        "deductionTitle": e.title.text,
-        "deductionType": (e.type ?? "").toUpperCase(),
-        "basedOn": e.type == "Variable" ? "Salary" : "",
-        "amount": e.type == "Fixed"
-            ? e.amount.text
-            : calculatePercentageAmount(
-          baseSalary: basicSalary.text,
-          percentage: e.percentage.text,
-        ),
-      };
-    }).toList();
-
-
+            return {
+              "deductionTitle": e.title.text,
+              "deductionType": (e.type ?? "").toUpperCase(),
+              "basedOn": e.type == "Variable" ? "Salary" : "",
+              "amount": e.type == "Fixed"
+                  ? e.amount.text
+                  : calculatePercentageAmount(
+                      baseSalary: basicSalary.text,
+                      percentage: e.percentage.text,
+                    ),
+            };
+          }).toList();
 
     final Map<String, dynamic> data = {
       "userName": userName.text.isNotEmpty ? userName.text : "",
       "password": password.text.isNotEmpty ? password.text : "",
       "email": [
         {
-          "personalEmail": emailController.text.isNotEmpty ? emailController.text : "",
-          "workEmail": emailController.text.isNotEmpty ? emailController.text : "",
+          "personalEmail":
+              emailController.text.isNotEmpty ? emailController.text : "",
+          "workEmail":
+              emailController.text.isNotEmpty ? emailController.text : "",
         }
       ],
-      "firstName": firstNameController.text.isNotEmpty ? firstNameController.text : "",
+      "firstName":
+          firstNameController.text.isNotEmpty ? firstNameController.text : "",
       "middleName": "",
-      "lastName": lastNameController.text.isNotEmpty ? lastNameController.text : "",
+      "lastName":
+          lastNameController.text.isNotEmpty ? lastNameController.text : "",
       "branchId": selectedBranchId ?? "",
       "martialStatus": (maritalStatus?.toString() ?? ""),
       "religion": (religion?.toString() ?? ""),
       "address": {
-        "streetAddress": addressController.text.isNotEmpty ? addressController.text : "",
+        "streetAddress":
+            addressController.text.isNotEmpty ? addressController.text : "",
         "city": "",
         "country": nationality?.toString() ?? "",
       },
-      "NIC": nationalIdController.text.isNotEmpty ? nationalIdController.text : "",
+      "NIC": nationalIdController.text.isNotEmpty
+          ? nationalIdController.text
+          : "",
       "iqamaNumber": {
         "id": iqamaController.text.isNotEmpty ? iqamaController.text : "",
         "issueDate": "",
@@ -3135,8 +2040,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       "age": selectedDate != null ? _calculateAge(selectedDate.toString()) : "",
       "phoneNumber": [
         {
-          "mobileNumber": phoneController.text.isNotEmpty ? phoneController.text : "",
-          "landlineNumber": phoneController.text.isNotEmpty ? phoneController.text : "",
+          "mobileNumber":
+              phoneController.text.isNotEmpty ? phoneController.text : "",
+          "landlineNumber":
+              phoneController.text.isNotEmpty ? phoneController.text : "",
         }
       ],
       "gender": gender?.toString() ?? "",
@@ -3193,12 +2100,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           "grade": hierarchyGroup == "Admin"
               ? "L1"
               : hierarchyGroup == "Manager"
-              ? "L2"
-              : hierarchyGroup == "Supervisor"
-              ? "L3"
-              : hierarchyGroup == "Employee"
-              ? "L4"
-              : "",
+                  ? "L2"
+                  : hierarchyGroup == "Supervisor"
+                      ? "L3"
+                      : hierarchyGroup == "Employee"
+                          ? "L4"
+                          : "",
           "workDomain": "",
           "location": selectedBranch?.toString() ?? "",
           "employeeStatus": "Active",
@@ -3338,7 +2245,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-/// helper method
+  /// Helper method
   int _calculateAge(String? birthDateString) {
     if (birthDateString == null || birthDateString.isEmpty) return 0;
     final birthDate = DateTime.tryParse(birthDateString);
@@ -3362,10 +2269,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final double amount = (salary * percent) / 100;
     return amount.toStringAsFixed(2);
   }
-
 }
 
-///Static Models
+/// Static Models
 class AllowanceFormModel {
   final TextEditingController title = TextEditingController();
   final TextEditingController amount = TextEditingController();
@@ -3383,5 +2289,3 @@ class DeductionFormModel {
   String? type;
   String? basedOn;
 }
-
-

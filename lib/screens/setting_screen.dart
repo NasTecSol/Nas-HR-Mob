@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nashr/l10n/app_localizations.dart';
 import '../UTILS/auth_services.dart';
 
-
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
 
@@ -20,7 +19,7 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   SingletonClass singletonClass = SingletonClass();
-  bool _isToggled = false ;
+  bool _isToggled = false;
   bool isBiometricEnabled = false;
   bool _isBiometricEnabled = false;
   bool _isNotificationToggled = true;
@@ -47,7 +46,6 @@ class _SettingScreenState extends State<SettingScreen> {
       _isToggled = isBiometricEnabled;
     });
   }
-
 
   // Save the state to SharedPreferences
   Future<void> _saveBiometricState(bool value) async {
@@ -76,358 +74,366 @@ class _SettingScreenState extends State<SettingScreen> {
     return prefs.getBool('notifications_enabled') ?? true; // Default to true
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.settings,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingTile({
+    required IconData icon,
+    required String title,
+    Widget? trailing,
+    VoidCallback? onTap,
+    Color? iconBgColor,
+    Color? iconColor,
+    Color? titleColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: NasColors.darkBlue.withOpacity(0.06)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        leading: Container(
+          height: 42,
+          width: 42,
+          decoration: BoxDecoration(
+            color: iconBgColor ?? NasColors.darkBlue.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor ?? NasColors.darkBlue,
+            size: 22,
+          ),
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: titleColor ?? NasColors.darkBlue,
+          ),
+        ),
+        trailing: trailing ??
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey.shade400,
+              size: 24,
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: ListView(
-        padding: EdgeInsets.zero,
+      body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
-            child: Column(
+          _buildHeader(context),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withValues(alpha: 0.4),
-                                  spreadRadius: 5,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_outlined,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 0.0, top: 0.0),
-                      child: Text(
-                        AppLocalizations.of(context)!.settings,
-                        style: GoogleFonts.inter(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  height: 50,
-                  width: MediaQuery.of(context).size.width - 50,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.5),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.fingerprint , size: 28,color: NasColors.darkBlue,),
-                      Text( AppLocalizations.of(context)!.biometrics,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                      const Spacer(),
-                      Switch(
-                        value: _isToggled,
-                        onChanged: (bool value) async {
-                          setState(() {
-                            _isToggled = value;
-                          });
+                _buildSettingTile(
+                  icon: Icons.fingerprint_rounded,
+                  title: AppLocalizations.of(context)!.biometrics,
+                  trailing: Switch(
+                    value: _isToggled,
+                    onChanged: (bool value) async {
+                      setState(() {
+                        _isToggled = value;
+                      });
 
-                          if (_isToggled) {
-                            if (!(await _authService.checkBiometricAvailability())) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(AppLocalizations.of(context)!.pleaseSetupBiometric,
+                      if (_isToggled) {
+                        if (!(await _authService.checkBiometricAvailability())) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)!.pleaseSetupBiometric,
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white,
-                                    fontSize: 15
+                                    fontSize: 15,
                                   ),
-                                )),
-                              );
-                              setState(() {
-                                _isToggled = false;
-                              });
-                              return;
-                            }
-
-                            bool isAuthenticated = await _authService.authenticateWithBiometrics(context);
-                            if (isAuthenticated) {
-                              setState(() {
-                                _isBiometricEnabled = value;
-                              });
-                              await _saveBiometricState(value);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                 SnackBar(content: Text(AppLocalizations.of(context)!.biometricAuthenticationEnabled,
-                                   style: GoogleFonts.inter(
-                                       fontWeight: FontWeight.w500,
-                                       color: Colors.white,
-                                       fontSize: 15
-                                   ),
-                                )),
-                              );
-                            } else {
-                              setState(() {
-                                _isToggled = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                 SnackBar(content: Text(AppLocalizations.of(context)!.biometricAuthenticationFailed,
-                                  style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                      fontSize: 15
-                                  ),
-                                )),
-                              );
-                            }
-                          } else {
-                            await _saveBiometricState(false); // Save state when disabling
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(AppLocalizations.of(context)!.biometricAuthenticationDisabled,
-                                style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    fontSize: 15
                                 ),
-                              )),
+                              ),
                             );
                           }
-                        },
-                        activeColor: Colors.white,
-                        activeTrackColor: NasColors.lightBlue,
-                        inactiveTrackColor: Colors.white,
-                        inactiveThumbColor: Colors.black,
-                      ),
-
-
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  height: 50,
-                  width: MediaQuery.of(context).size.width - 50,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.5),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.notifications_none_sharp , size: 28,color: NasColors.darkBlue,),
-                      Text( AppLocalizations.of(context)!.notifications,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                      const Spacer(),
-                      Switch(
-                        value: _isNotificationToggled,
-                        onChanged: (bool value) async {
                           setState(() {
-                            _isNotificationToggled = value;
+                            _isToggled = false;
                           });
+                          return;
+                        }
 
-                          await _saveNotificationState(value);
-
-                          if (value) {
+                        bool isAuthenticated =
+                            await _authService.authenticateWithBiometrics(context);
+                        if (isAuthenticated) {
+                          setState(() {
+                            _isBiometricEnabled = value;
+                          });
+                          await _saveBiometricState(value);
+                          if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(AppLocalizations.of(context)!.notificationEnabled,
-                                style: GoogleFonts.inter(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)!
+                                      .biometricAuthenticationEnabled,
+                                  style: GoogleFonts.inter(
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white,
-                                    fontSize: 15
+                                    fontSize: 15,
+                                  ),
                                 ),
-                              )),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                               SnackBar(content:  Text(AppLocalizations.of(context)!.notificationsDisabled,
-                                 style: GoogleFonts.inter(
-                                     fontWeight: FontWeight.w500,
-                                     color: Colors.white,
-                                     fontSize: 15
-                                 ),
-                               )),
+                              ),
                             );
                           }
-                        },
-                        activeColor: Colors.white,
-                        activeTrackColor: NasColors.lightBlue,
-                        inactiveTrackColor: Colors.white,
-                        inactiveThumbColor: Colors.black,
-                      ),
-
-
-
-                    ],
+                        } else {
+                          setState(() {
+                            _isToggled = false;
+                          });
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)!
+                                      .biometricAuthenticationFailed,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                      } else {
+                        await _saveBiometricState(false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                AppLocalizations.of(context)!
+                                    .biometricAuthenticationDisabled,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    activeColor: Colors.white,
+                    activeTrackColor: NasColors.darkBlue,
+                    inactiveTrackColor: Colors.grey.shade300,
+                    inactiveThumbColor: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 20),
-                GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=> const LanguageScreen()));
+                _buildSettingTile(
+                  icon: Icons.notifications_none_rounded,
+                  title: AppLocalizations.of(context)!.notifications,
+                  trailing: Switch(
+                    value: _isNotificationToggled,
+                    onChanged: (bool value) async {
+                      setState(() {
+                        _isNotificationToggled = value;
+                      });
+
+                      await _saveNotificationState(value);
+
+                      if (mounted) {
+                        if (value) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                AppLocalizations.of(context)!.notificationEnabled,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                AppLocalizations.of(context)!.notificationsDisabled,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    activeColor: Colors.white,
+                    activeTrackColor: NasColors.darkBlue,
+                    inactiveTrackColor: Colors.grey.shade300,
+                    inactiveThumbColor: Colors.white,
+                  ),
+                ),
+                _buildSettingTile(
+                  icon: Icons.language_rounded,
+                  title: AppLocalizations.of(context)!.language,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LanguageScreen(),
+                      ),
+                    );
                   },
-                  child: Container(
-                    height: 50,
-                    width: MediaQuery.of(context).size.width - 50,
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.5),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.language , size: 28,color: NasColors.darkBlue,),
-                        const SizedBox(width: 2),
-                        Text( AppLocalizations.of(context)!.language,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: NasColors.darkBlue,
-                          ),
-                        ),
-                        const Spacer(),
-
-                      ],
-                    ),
-                  ),
                 ),
-                const SizedBox(height: 20),
-                GestureDetector(
+                _buildSettingTile(
+                  icon: Icons.logout_rounded,
+                  iconBgColor: Colors.red.withOpacity(0.1),
+                  iconColor: Colors.red.shade600,
+                  titleColor: Colors.red.shade600,
+                  title: AppLocalizations.of(context)!.logout,
+                  trailing: const SizedBox.shrink(),
                   onTap: () async {
                     showDialog(
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          backgroundColor: NasColors.backGround,
-
-                      title: Text(AppLocalizations.of(context)!.areYouSureToLogout,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(AppLocalizations.of(context)!.cancel,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            await logout();
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (context) => SplashScreen()),
-                                  (Route<dynamic> route) => false,
-                            );
-                          },
-                          child: Text(AppLocalizations.of(context)!.yes,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),);
-                  },
-                  child: Container(
-                    height: 50,
-                    width: MediaQuery.of(context).size.width - 50,
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.5),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout , size: 28,color: NasColors.darkBlue,),
-                        const SizedBox(width: 2),
-                        Text( AppLocalizations.of(context)!.logout,
+                        title: Text(
+                          AppLocalizations.of(context)!.areYouSureToLogout,
                           style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                             color: NasColors.darkBlue,
                           ),
                         ),
-                        const Spacer(),
-
-                      ],
-                    ),
-                  ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(
+                              AppLocalizations.of(context)!.cancel,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade600,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              await logout();
+                              if (mounted) {
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (context) => const SplashScreen(),
+                                  ),
+                                  (Route<dynamic> route) => false,
+                                );
+                              }
+                            },
+                            child: Text(
+                              AppLocalizations.of(context)!.yes,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-
               ],
             ),
-          )
+          ),
         ],
       ),
     );

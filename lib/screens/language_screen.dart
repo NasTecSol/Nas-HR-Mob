@@ -25,109 +25,181 @@ class _LanguageScreenState extends State<LanguageScreen> {
     _selectedLocale = _languageController.appLocale;
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.language,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile({
+    required String title,
+    required String subtitle,
+    required Locale locale,
+    required IconData icon,
+  }) {
+    final bool isSelected = _selectedLocale?.languageCode == locale.languageCode;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedLocale = locale;
+          SingletonClass().local = locale.languageCode;
+        });
+        _languageController.changeLanguage(locale);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? NasColors.darkBlue
+                : NasColors.darkBlue.withOpacity(0.06),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            height: 44,
+            width: 44,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? NasColors.darkBlue.withOpacity(0.12)
+                  : NasColors.darkBlue.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              icon,
+              color: isSelected ? NasColors.darkBlue : Colors.grey.shade600,
+              size: 24,
+            ),
+          ),
+          title: Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: NasColors.darkBlue,
+            ),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade500,
+            ),
+          ),
+          trailing: Radio<Locale>(
+            activeColor: NasColors.darkBlue,
+            value: locale,
+            groupValue: _selectedLocale,
+            onChanged: (Locale? value) {
+              if (value != null) {
+                setState(() {
+                  _selectedLocale = value;
+                  SingletonClass().local = value.languageCode;
+                });
+                _languageController.changeLanguage(value);
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: NasColors.backGround,
-        body: ListView(
-          padding: EdgeInsets.zero,
-          children: [ Padding(
-            padding: const EdgeInsets.only(top: 45.0, left: 20, right: 20),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(0.0),
-                        child: IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.4),
-                                    spreadRadius: 5,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ]),
-                            child: const Icon(
-                              Icons.arrow_back_ios_new_outlined,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 0.0, top: 0.0),
-                        child: Text(
-                          AppLocalizations.of(context)!.language,
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: NasColors.darkBlue,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  ListTile(
-                    title: Text('English',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        )),
-                    leading: Radio<Locale>(
-                      activeColor: NasColors.darkBlue,
-                      hoverColor: Colors.black,
-                      value: const Locale('en'),
-                      groupValue: _selectedLocale,
-                      onChanged: (Locale? value) {
-                        setState(() {
-                          _selectedLocale = value;
-                          SingletonClass().local = value!.languageCode;
-                        });
-                        if (_selectedLocale != null) {
-                          _languageController.changeLanguage(_selectedLocale!);
-                        }
-                      },
-                    ),
-                  ),
-                  ListTile(
-                    title: Text('العربية',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        )),
-                    leading: Radio<Locale>(
-                      activeColor: NasColors.darkBlue,
-                      hoverColor: Colors.black,
-                      value: const Locale('ar'),
-                      groupValue: _selectedLocale,
-                      onChanged: (Locale? value) {
-                        setState(() {
-                          _selectedLocale = value;
-                          SingletonClass().local = value!.languageCode;
-                        });
-                        if (_selectedLocale != null) {
-                          _languageController.changeLanguage(_selectedLocale!);
-
-                        }
-                      },
-                    ),
-                  ),
-                ]),
+      backgroundColor: NasColors.backGround,
+      body: Column(
+        children: [
+          _buildHeader(context),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              children: [
+                _buildLanguageTile(
+                  title: 'English',
+                  subtitle: 'English (US)',
+                  locale: const Locale('en'),
+                  icon: Icons.language_rounded,
+                ),
+                _buildLanguageTile(
+                  title: 'العربية',
+                  subtitle: 'Arabic (العربية)',
+                  locale: const Locale('ar'),
+                  icon: Icons.translate_rounded,
+                ),
+              ],
+            ),
           ),
-        ]));
+        ],
+      ),
+    );
   }
 }

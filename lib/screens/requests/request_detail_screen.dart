@@ -40,6 +40,84 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     super.dispose();
   }
 
+  Widget _buildHeader(BuildContext context, AppLocalizations? localizations) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  localizations?.approvals ?? 'Approvals',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => printPdf(),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.print_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
@@ -77,63 +155,39 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // AppBar
-                  Row(
+      body: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(context, localizations),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    physics: const BouncingScrollPhysics(),
                     children: [
-                      _circleButton(
-                        icon: Icons.arrow_back_ios_new_rounded,
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        localizations?.approvals ?? 'Approvals',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: NasColors.darkBlue,
-                        ),
-                      ),
-                      const Spacer(),
-                      _circleButton(
-                        icon: Icons.print_rounded,
-                        onTap: () => printPdf(),
-                      ),
+                      _buildSummaryCard(context, date, currentStatus, getSubtypeText(widget.dataApprover.subType)),
+                      const SizedBox(height: 16),
+                      _buildDetailsCard(context),
+                      const SizedBox(height: 16),
+                      _buildApprovalFlowCard(context, allApproved, allRejected),
+                      const SizedBox(height: 16),
+                      _buildCommentsCard(context, approversWithComments),
+                      const SizedBox(height: 16),
+                      _buildAttachmentsCard(context),
+                      const SizedBox(height: 24),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  Expanded(
-                    child: ListView(
-                      physics: const BouncingScrollPhysics(),
-                      children: [
-                        _buildSummaryCard(context, date, currentStatus, getSubtypeText(widget.dataApprover.subType)),
-                        const SizedBox(height: 16),
-                        _buildDetailsCard(context),
-                        const SizedBox(height: 16),
-                        _buildApprovalFlowCard(context, allApproved, allRejected),
-                        const SizedBox(height: 16),
-                        _buildCommentsCard(context, approversWithComments),
-                        const SizedBox(height: 16),
-                        _buildAttachmentsCard(context),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            if (isLoading)
-              const Center(child: Loader()),
-          ],
-        ),
+            ],
+          ),
+          if (isLoading)
+            const Center(child: Loader()),
+        ],
       ),
       bottomNavigationBar: (widget.dataApprover.approvers != null &&
               widget.dataApprover.approvers!.any(

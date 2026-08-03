@@ -758,9 +758,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get approval => 'الموافقة';
 
   @override
-  String get balance => 'الرصيد';
-
-  @override
   String get absentCount => 'عدد الغياب';
 
   @override
@@ -1131,7 +1128,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get high => 'مرتفع';
 
   @override
-  String get insufficientBalance => 'رصيد الإجازة غير كافٍ';
+  String get insufficient => 'غير كافٍ';
+
+  @override
+  String get balance => 'توازن';
 
   @override
   String get ok => 'حسناً';

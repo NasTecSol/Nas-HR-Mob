@@ -469,17 +469,15 @@ class _UserActivityScreenState extends State<UserActivityScreen>
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(context),
-            _buildDateStrip(context),
-            const SizedBox(height: 6),
-            if (grade != 'L4') _buildActionRow(context),
-            const SizedBox(height: 6),
-            Expanded(child: _buildBody(context)),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildAppBar(context),
+          _buildDateStrip(context),
+          const SizedBox(height: 6),
+          if (grade != 'L4') _buildActionRow(context),
+          const SizedBox(height: 6),
+          Expanded(child: _buildBody(context)),
+        ],
       ),
     );
   }
@@ -487,29 +485,78 @@ class _UserActivityScreenState extends State<UserActivityScreen>
   // ── App Bar ───────────────────────────────────────────────────────────────
 
   Widget _buildAppBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 8,
+        left: 16,
+        right: 16,
+        bottom: 20,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          _iconButton(
-            icon:  Icons.arrow_back_ios_new_rounded,
+          GestureDetector(
             onTap: () => Navigator.pop(context),
+            child: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withOpacity(0.18),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 14),
           Expanded(
             child: Text(
               AppLocalizations.of(context)!.userActivity,
               style: GoogleFonts.inter(
-                fontSize:   18,
-                fontWeight: FontWeight.w700,
-                color:      NasColors.darkBlue,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          _iconButton(
-            icon:  Icons.calendar_month_rounded,
+          GestureDetector(
             onTap: () => _pickDateRange(context),
+            child: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withOpacity(0.18),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: const Icon(
+                Icons.calendar_month_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
           ),
         ],
       ),

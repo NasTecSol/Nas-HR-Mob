@@ -6,6 +6,12 @@ on:
       - releases_ios
       - releases_android
 
+# Cancel any in-progress run on the same branch when a new push arrives.
+# This ensures only ONE pipeline is active at a time per branch.
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ─────────────────────────────────────────────
   # 1. Flutter Test (runs on every push)
@@ -14,9 +20,9 @@ jobs:
     name: Run Flutter Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -26,11 +32,14 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - run: flutter pub get
-      - run: flutter --version
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Print Flutter version
+        run: flutter --version
 
   # ─────────────────────────────────────────────
-  # 2. iOS Build
+  # 2. iOS Build & IPA
   # ─────────────────────────────────────────────
   build_iOSApp:
     name: Build Flutter App (iOS)
@@ -38,9 +47,9 @@ jobs:
     needs: [flutter_test]
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -50,11 +59,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # ✅ FIX 1: Disable SPM via Flutter config (replaces the invalid --no-swift-package-manager flag)
+      # ✅ Disable SPM via Flutter config
       - name: Disable Swift Package Manager integration
         run: flutter config --no-enable-swift-package-manager
 
-      # ✅ FIX 2: Full clean — removes stale Pods, Podfile.lock, and Flutter build cache
+      # ✅ Full clean — removes stale Pods, Podfile.lock, and Flutter build cache
       - name: Clean Flutter & iOS artifacts
         run: |
           flutter clean
@@ -62,40 +71,39 @@ jobs:
           rm -rf Pods Podfile.lock
           cd ..
 
-      # ✅ FIX 3: Wipe DerivedData to remove any corrupt cached module maps from previous runs
+      # ✅ Wipe DerivedData to remove corrupt cached module maps
       - name: Clear Xcode DerivedData
         run: rm -rf ~/Library/Developer/Xcode/DerivedData
 
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # ✅ FIX 4: Cache CocoaPods gems to speed up pod install
+      # ✅ Cache CocoaPods gems to speed up pod install
       - name: Cache CocoaPods gems
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cocoapods
           key: cocoapods-${{ hashFiles('ios/Podfile') }}
           restore-keys: |
             cocoapods-
 
-      # Build without codesign (SPM is already disabled via flutter config above)
-      - name: Build iOS (no codesign)
-        run: flutter build ios --no-codesign
-
-      - name: Package IPA
+      # ✅ Run pod install — required after flutter clean deletes Pods/
+      - name: Install CocoaPods dependencies
         run: |
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
+          cd ios
+          pod install --repo-update
           cd ..
-          zip -r app.ipa Payload
 
-      - name: Upload iOS Build Artifact
+      # ✅ Build IPA (not just .app) — required for App Store Connect upload
+      # MinimumOSVersion is now present in ios/Flutter/AppFrameworkInfo.plist (fixes errors 90530 & 90360)
+      - name: Build iOS IPA (no codesign)
+        run: flutter build ipa --no-codesign
+
+      - name: Upload iOS IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: iOS_App_Build
-          path: build/ios/iphoneos/app.ipa
+          path: build/ios/ipa/*.ipa
 
   # ─────────────────────────────────────────────
   # 3. Android Build
@@ -106,10 +114,10 @@ jobs:
     needs: [flutter_test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -124,31 +132,52 @@ jobs:
 
       - run: flutter pub get
       - run: flutter clean
-      - run: flutter build apk --debug
+
+      # ✅ Build release APK (not debug) suitable for Play Store
+      - run: flutter build apk --release
 
       - name: Upload Android Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Android_App_Build
-          path: build/app/outputs/apk/debug/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
   # ─────────────────────────────────────────────
   # 4. Slack Notification
-  # if: always() ensures this fires on both success and failure
+  # Uses `if: always()` so this ALWAYS fires — even when one build job is
+  # skipped (e.g., iOS job is skipped on releases_android branch).
+  # The color logic checks only the jobs that actually ran.
   # ─────────────────────────────────────────────
   notify_Slack:
     name: Slack Notification
     runs-on: ubuntu-latest
     if: always()
-    needs: [build_iOSApp, build_androidApk]
+    needs: [flutter_test, build_iOSApp, build_androidApk]
     steps:
+      - name: Determine build status
+        id: status
+        run: |
+          # A job result is 'skipped' when the branch condition didn't match.
+          # We consider only non-skipped jobs when computing failure.
+          IOS_RESULT="${{ needs.build_iOSApp.result }}"
+          ANDROID_RESULT="${{ needs.build_androidApk.result }}"
+          TEST_RESULT="${{ needs.flutter_test.result }}"
+
+          if [[ "$TEST_RESULT" == "failure" || "$IOS_RESULT" == "failure" || "$ANDROID_RESULT" == "failure" ]]; then
+            echo "color=#de2c2c" >> $GITHUB_OUTPUT
+            echo "message=❌ Build FAILED for Nas-HR" >> $GITHUB_OUTPUT
+          else
+            echo "color=#2cde04" >> $GITHUB_OUTPUT
+            echo "message=✅ New build for Nas-HR launched successfully 🚀" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: flutter-builds
-          SLACK_COLOR: ${{ contains(needs.*.result, 'failure') && '#de2c2c' || '#2cde04' }}
+          SLACK_COLOR: ${{ steps.status.outputs.color }}
           SLACK_ICON: https://github.com/ED209Repo/AnyPick/blob/main/images/mainlogo.png?size=48
-          SLACK_MESSAGE: 'New build for Nas-HR launched 🚀'
+          SLACK_MESSAGE: ${{ steps.status.outputs.message }}
           SLACK_TITLE: Build Completed
           SLACK_USERNAME: Danial
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
