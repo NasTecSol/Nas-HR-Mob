@@ -1424,7 +1424,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
   //Request
   Future<RequestDataModel?> getRequestData(
-      {int page = 0, int limit = 25}) async {
+      {int page = 0, int limit = 100}) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
 
     // Request body with the required parameter
@@ -1950,94 +1950,20 @@ class _RequestScreenState extends State<RequestScreen> {
   }
 
   Future<void> _fetchTotalApprovedRequestsCount() async {
-    try {
-      final employeeId = singletonClass.getJWTModel()?.employeeId;
-      if (employeeId == null) return;
-
-      final requestBody = {
-        "requestTypes": [
-          "leaveRequest",
-          "loanRequest",
-          "expenseRequest",
-          "allowance_Increment",
-          "documentRequest",
-          "specialLeaveRequest",
-          "attendanceRequest",
-          "overTimeRequest",
-          "remoteRequest",
-          "resignationRequest",
-          "complaintRequest"
-        ],
-      };
-
-      final uri = Uri.parse(
-        '${singletonClass.baseURL}/request/employee/$employeeId?limit=1000&page=0',
-      );
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: singletonClass.getHeaders(),
-      );
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final responseBody = json.decode(response.body);
-        final requestData = RequestDataModel.fromJson(responseBody);
-        if (requestData.data != null && requestData.data!.data != null) {
-          final count = requestData.data!.data!.where((req) => req.status == 'approved').length;
-          setState(() {
-            _totalApprovedRequestsCount = count;
-          });
-        }
-      }
-    } catch (e) {
-      log('Error counting approved requests: $e');
+    final count = await singletonClass.fetchTotalApprovedRequestsCount();
+    if (mounted) {
+      setState(() {
+        _totalApprovedRequestsCount = count;
+      });
     }
   }
 
   Future<void> _fetchTotalPendingApprovalsCount() async {
-    try {
-      final grade = singletonClass.getJWTModel()?.grade;
-      final isTargetGrade = ['L0', 'L1', 'L2'].contains(grade);
-
-      ApproverRequestData? data;
-      if (isTargetGrade && !_isTeamChecked) {
-        final companyId = singletonClass.selectedCompanyId;
-        final branchId = singletonClass.branchID;
-        if (companyId != null && branchId != null && companyId.isNotEmpty && branchId.isNotEmpty) {
-          final uri = Uri.parse(
-            '${singletonClass.baseURL}/request/requestByCompany&BranchId/$companyId/$branchId?page=0&limit=1000',
-          );
-          final response = await http.get(
-            uri,
-            headers: singletonClass.getHeaders(),
-          );
-          if (response.statusCode == 200 || response.statusCode == 201) {
-            final responseBody = json.decode(response.body);
-            data = ApproverRequestData.fromJson(responseBody);
-          }
-        }
-      } else {
-        final uri = Uri.parse(
-          '${singletonClass.baseURL}/request/approverData?page=0&limit=1000',
-        );
-        final response = await http.get(
-          uri,
-          headers: singletonClass.getHeaders(),
-        );
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          final responseBody = json.decode(response.body);
-          data = ApproverRequestData.fromJson(responseBody);
-        }
-      }
-
-      if (data != null && data.data != null && data.data!.data != null) {
-        final count = data.data!.data!.where((req) => req.status == 'pending').length;
-        setState(() {
-          _totalPendingApprovalsCount = count;
-        });
-      }
-    } catch (e) {
-      log('Error counting pending approvals: $e');
+    final count = await singletonClass.fetchTotalPendingApprovalsCount(isTeamChecked: _isTeamChecked);
+    if (mounted) {
+      setState(() {
+        _totalPendingApprovalsCount = count;
+      });
     }
   }
 }

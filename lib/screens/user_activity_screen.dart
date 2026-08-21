@@ -139,7 +139,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
           final first = _singleton.branchDataList.first;
           _singleton.branchID   = first.data?.branch?.id;
           _singleton.branchName = first.data?.branch?.branchName;
-          log('🏢 Seeded branchID: ${_singleton.branchID}');
         }
       }
 
@@ -228,9 +227,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  BRANCH HELPERS
-  // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _extractBranchEmpIds(String? branchId) async {
     await _singleton.getTeamBranchData();
@@ -258,10 +254,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     _branchEmpIds = ids.toSet();
     log('✅ Branch ($branchId): ${_branchEmpIds.length} employees');
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  //  DATE HELPERS
-  // ══════════════════════════════════════════════════════════════════════════
 
   void _buildDateList(DateTime start, DateTime end) {
     _dates.clear();
@@ -296,9 +288,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     return h > 0 ? '${h}h ${m}m' : '${m}m';
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  RESOLVE EMP IDS
-  // ══════════════════════════════════════════════════════════════════════════
 
   Future<List<String>> _resolveEmpIds() async {
     final grade = _singleton.getJWTModel()?.grade ?? '';
@@ -315,8 +304,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
       }
       return _branchEmpIds.toList();
     }
-
-    // Team mode — L3
     if (grade == 'L3') {
       final ids = <String>[];
       for (final bd in _singleton.branchDataList) {
@@ -340,17 +327,11 @@ class _UserActivityScreenState extends State<UserActivityScreen>
       }
       return ids;
     }
-
-    // L0/L1/L2 team mode
     if (_branchEmpIds.isEmpty && (_singleton.branchID?.isNotEmpty ?? false)) {
       await _extractBranchEmpIds(_singleton.branchID);
     }
     return _branchEmpIds.toList();
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  //  FETCH
-  // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _fetchActivity() async {
     if (mounted) setState(() => _isLoadingData = true);
@@ -854,7 +835,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
               .firstWhere((b) => b.branchId.toString() == value);
           _singleton.branchName = branch.branchName ?? '';
 
-          log('🏢 Branch: $value | 👥 IDs: ${_branchEmpIds.length}');
           await _fetchActivity();
         } catch (e) {
           log('❌ Branch error: $e');
@@ -942,6 +922,7 @@ class _UserActivityScreenState extends State<UserActivityScreen>
       ),
     );
   }
+
 
   Widget _buildFilterChip({
     required String       label,

@@ -38,15 +38,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.index;
     _loadData();
-    setState(() {
-      _currentIndex = widget.index;
-      _loadData();
-    });
   }
 
-
-
+  int _getRequestBadgeCount() {
+    return singletonClass.getCombinedRequestBadgeCount();
+  }
 
   Future<void> _loadData() async {
     try {
@@ -68,21 +66,23 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _loadInitialData() async {
     await Future.wait([
-     singletonClass.getCompaniesData(),
-     singletonClass.getRoleAndAccessData(),
-     singletonClass.getUISettingsData(),
-     singletonClass.getEmployeeData(),
-     singletonClass.getClockingData(),
-     singletonClass.getBranchData(),
-     singletonClass.getCompanyData(),
-     singletonClass.getRemoteAttendanceData(),
-     singletonClass.getEmployeeAttendanceData(),
-     singletonClass.getNotifications(),
-     singletonClass.getBranchesData(),
-     singletonClass.getChats(),
-     singletonClass.getOrganizationData(),
-     singletonClass.getPolicyData(),
+      singletonClass.getCompaniesData(),
+      singletonClass.getRoleAndAccessData(),
+      singletonClass.getUISettingsData(),
+      singletonClass.getEmployeeData(),
+      singletonClass.getClockingData(),
+      singletonClass.getBranchData(),
+      singletonClass.getCompanyData(),
+      singletonClass.getRemoteAttendanceData(),
+      singletonClass.getEmployeeAttendanceData(),
+      singletonClass.getNotifications(),
+      singletonClass.getBranchesData(),
+      singletonClass.getChats(),
+      singletonClass.getOrganizationData(),
+      singletonClass.getPolicyData(),
       singletonClass.getCompanyNotificationData(),
+      singletonClass.fetchTotalApprovedRequestsCount(),
+      singletonClass.fetchTotalPendingApprovalsCount(),
     ]);
   }
 
@@ -204,12 +204,12 @@ class _MainScreenState extends State<MainScreen> {
                                   : (index == 0 || index == 2 ? Colors.black : null),
                             ),
                           ),
-                          if (index == 2)
+                          if (index == 2 && _getRequestBadgeCount() > 0)
                             Positioned(
                               right: 0,
                               top: 0,
                               child: Container(
-                                padding: const EdgeInsets.all(2),
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.red,
                                   borderRadius: BorderRadius.circular(10),
@@ -218,32 +218,15 @@ class _MainScreenState extends State<MainScreen> {
                                   minWidth: 18,
                                   minHeight: 18,
                                 ),
-                                child: singletonClass.getJWTModel()?.grade == 'L0' || singletonClass.getJWTModel()?.grade == 'L1'
-                                    || singletonClass.getJWTModel()?.grade == 'L2'
-                                    || singletonClass.getJWTModel()?.grade == 'L3'
-                                    ?
-                                Text(
-                                  '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null &&
-                                      singletonClass.approverDataList.isNotEmpty && singletonClass.approverDataList.first.data != null
-                                      ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length +
-                                      singletonClass.approverDataList.first.data!.data!.where((request) => request.status == 'pending').length
-                                      : 0}',
+                                child: Text(
+                                  '${_getRequestBadgeCount()}',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                   textAlign: TextAlign.center,
-                                ) : Text(
-                                  '${singletonClass.requestDataList.isNotEmpty && singletonClass.requestDataList.first.data != null && singletonClass.requestDataList.first.data!.data != null
-                                      ? singletonClass.requestDataList.first.data!.data!.where((request) => request.status == 'approved').length
-                                      : 0}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                )
-
+                                ),
                               ),
                             ),
                         ],

@@ -122,6 +122,8 @@ class SingletonClass {
   List<ApproverRequestData> approverDataList = [];
   List<CompanyData> companyDataList = [];
   List<RequestDataModel> requestDataList = [];
+  int totalApprovedRequestsCount = 0;
+  int totalPendingApprovalsCount = 0;
   List<EmployeeDetailsData> employeeDetailsDataList = [];
   List<EmployeeDetailsClocking> employeeDetailsClockingDataList = [];
   List<CheckInData> checkInDataList = [];
@@ -827,11 +829,11 @@ class SingletonClass {
   }
 
   ///Request Screen API Calls
-  Future<ApproverRequestData?> getApproverData(
-      {int page = 0, int limit = 25}) async {
+  Future<RequestDataModel?> getRequestData(
+      {int page = 0, int limit = 1000}) async {
     String? employeeId = getJWTModel()?.employeeId;
+    if (employeeId == null) return null;
 
-    // Request body (stays the same)
     Map<String, dynamic> requestBody = {
       "requestTypes": [
         "leaveRequest",
@@ -847,10 +849,10 @@ class SingletonClass {
         "complaintRequest"
       ],
     };
+
     final uri = Uri.parse(
-      '$baseURL/request/approver/$employeeId?limit=$limit&page=$page',
+      '$baseURL/request/employee/$employeeId?limit=$limit&page=$page',
     );
-    print(uri);
     try {
       final response = await http.post(
         uri,
@@ -858,9 +860,50 @@ class SingletonClass {
         headers: getHeaders(),
       );
 
-      log("Request Log approver: ${response.body}");
+      log("Request Log: ${response.body}");
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        var responseBody = json.decode(response.body);
+        var requestData = RequestDataModel.fromJson(responseBody);
+
+        if (page == 0) {
+          setRequestData([requestData]);
+        } else {
+          final existing = requestDataList;
+          setRequestData([...existing, requestData]);
+        }
+        return requestData;
+      } else {
+        log("Error request Data: Received status code ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      log('Error request data: $e');
+      return null;
+    }
+  }
+
+  Future<ApproverRequestData?> getApproverData(
+      {int page = 0, int limit = 100}) async {
+    final grade = getJWTModel()?.grade;
+    final isTargetGrade = ['L0', 'L1', 'L2'].contains(grade);
+
+    if (isTargetGrade && selectedCompanyId != null && branchID != null && selectedCompanyId!.isNotEmpty && branchID!.isNotEmpty) {
+      return getRequestByCompanyAndBranch(selectedCompanyId!, branchID!, page: page, limit: limit);
+    }
+
+    final uri = Uri.parse(
+      '$baseURL/request/approverData?page=$page&limit=$limit',
+    );
+    try {
+      final response = await http.get(
+        uri,
+        headers: getHeaders(),
+      );
+
+      log("Request Log approverData: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final responseBody = json.decode(response.body);
         final requestData = ApproverRequestData.fromJson(responseBody);
         if (page == 0) {
@@ -879,6 +922,109 @@ class SingletonClass {
       log('Error Approver Data: $e');
       return null;
     }
+  }
+
+  Future<int> fetchTotalApprovedRequestsCount() async {
+    try {
+      final employeeId = getJWTModel()?.employeeId;
+      if (employeeId == null) return totalApprovedRequestsCount;
+
+      final requestBody = {
+        "requestTypes": [
+          "leaveRequest",
+          "loanRequest",
+          "expenseRequest",
+          "allowance_Increment",
+          "documentRequest",
+          "specialLeaveRequest",
+          "attendanceRequest",
+          "overTimeRequest",
+          "remoteRequest",
+          "resignationRequest",
+          "complaintRequest"
+        ],
+      };
+
+      final uri = Uri.parse(
+        '$baseURL/request/employee/$employeeId?limit=1000&page=0',
+      );
+      final response = await http.post(
+        uri,
+        body: json.encode(requestBody),
+        headers: getHeaders(),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        final requestData = RequestDataModel.fromJson(responseBody);
+        if (requestData.data != null && requestData.data!.data != null) {
+          setRequestData([requestData]);
+          final count = requestData.data!.data!.where((req) {
+            final status = req.status?.toLowerCase();
+            return status == 'approved' || status == 'rejected';
+          }).length;
+          totalApprovedRequestsCount = count;
+          return count;
+        }
+      }
+    } catch (e) {
+      log('Error counting approved/rejected requests: $e');
+    }
+    return totalApprovedRequestsCount;
+  }
+
+  Future<int> fetchTotalPendingApprovalsCount({bool isTeamChecked = false}) async {
+    try {
+      final grade = getJWTModel()?.grade;
+      final isTargetGrade = ['L0', 'L1', 'L2'].contains(grade);
+
+      ApproverRequestData? data;
+      if (isTargetGrade && !isTeamChecked) {
+        final companyId = selectedCompanyId;
+        final branchId = branchID;
+        if (companyId != null && branchId != null && companyId.isNotEmpty && branchId.isNotEmpty) {
+          final uri = Uri.parse(
+            '$baseURL/request/requestByCompany&BranchId/$companyId/$branchId?page=0&limit=1000',
+          );
+          final response = await http.get(
+            uri,
+            headers: getHeaders(),
+          );
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            final responseBody = json.decode(response.body);
+            data = ApproverRequestData.fromJson(responseBody);
+          }
+        }
+      }
+
+      if (data == null) {
+        final uri = Uri.parse(
+          '$baseURL/request/approverData?page=0&limit=1000',
+        );
+        final response = await http.get(
+          uri,
+          headers: getHeaders(),
+        );
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final responseBody = json.decode(response.body);
+          data = ApproverRequestData.fromJson(responseBody);
+        }
+      }
+
+      if (data != null && data.data != null && data.data!.data != null) {
+        setApproverDataList([data]);
+        final count = data.data!.data!.where((req) => req.status == 'pending').length;
+        totalPendingApprovalsCount = count;
+        return count;
+      }
+    } catch (e) {
+      log('Error counting pending approvals: $e');
+    }
+    return totalPendingApprovalsCount;
+  }
+
+  int getCombinedRequestBadgeCount() {
+    return totalApprovedRequestsCount + totalPendingApprovalsCount;
   }
 
   Future<ApproverRequestData?> getRequestByCompanyAndBranch(
@@ -916,32 +1062,6 @@ class SingletonClass {
       return null;
     }
   }
-
-  // Future<void> fetchCompanyHeaderFooter(String companyId) async {
-  //   try {
-  //     final url = Uri.parse('${baseURL}/documents/getCompanyDocsByType/$companyId?type=letter_head_approval');
-  //     final response = await http.get(url, headers: getHeaders());
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body)['data'] as List? ?? [];
-  //       if (data.isNotEmpty) {
-  //         final doc = data.first;
-  //         headerUrl = doc['objectDetails']?['parameters']?['headerUrl'] ?? '';
-  //         footerUrl = doc['objectDetails']?['parameters']?['footerUrl'] ?? '';
-  //         if (kDebugMode) {
-  //           print('Header URL: $headerUrl');
-  //           print('Footer URL: $footerUrl');
-  //         }
-  //       } else {
-  //         if (kDebugMode) print('No documents found for this company.');
-  //       }
-  //     } else {
-  //       if (kDebugMode) print('Failed to fetch documents. Status code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     if (kDebugMode) print('Error fetching company documents: $e');
-  //   }
-  // }
-
 
   ///Clear all data lists
   void reset() {

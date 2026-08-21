@@ -376,7 +376,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                           decoration: BoxDecoration(
                             color: isAdmin 
                                 ? NasColors.pending.withOpacity(0.12) 
-                                : NasColors.darkBlue.withOpacity(0.08),
+                                : NasColors.darkBlue.withOpacity(0.41),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

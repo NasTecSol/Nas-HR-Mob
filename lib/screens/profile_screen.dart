@@ -328,8 +328,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               Align(
                                                 alignment: Alignment.center,
                                                 child: Text(
-                                                  (employeeProfile.profession?.isNotEmpty == true)
-                                                      ? employeeProfile.profession!
+                                                  (employeeProfile.employeeInfo?.isNotEmpty == true &&
+                                                      (employeeProfile.employeeInfo?.first.empId?.isNotEmpty ==
+                                                          true))
+                                                      ? employeeProfile.employeeInfo!.first.empId! 
                                                       : "---",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,
@@ -375,10 +377,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 Align(
                                                   alignment: Alignment.center,
                                                   child: Text(
-                                                    (employeeProfile.employeeInfo?.isNotEmpty == true &&
-                                                        (employeeProfile.employeeInfo?.first.grade?.isNotEmpty ==
-                                                            true))
-                                                        ? employeeProfile.employeeInfo!.first.grade!
+                                                    (employeeProfile.profession?.isNotEmpty == true)
+                                                        ? employeeProfile.profession!
                                                         : "---",
                                                     style: GoogleFonts.inter(
                                                       fontSize: 15,
