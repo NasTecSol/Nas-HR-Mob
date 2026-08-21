@@ -21,11 +21,19 @@ class _DocumentScreenState extends State<DocumentScreen> {
   final SingletonClass singletonClass = SingletonClass();
   int _selectedOptionIndex = 0;
   bool isLoading = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _initializeData();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeData() async {
@@ -109,73 +117,163 @@ class _DocumentScreenState extends State<DocumentScreen> {
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(context, canCreateHRLetter),
-            _buildFilterChips(context, canSeeHRLetter, docCount, hrCount),
-            const SizedBox(height: 10),
-            Expanded(child: _buildBody(context)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context, bool canCreateHRLetter) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      child: Row(
+      body: Column(
         children: [
-          _circleButton(
-            icon: Icons.arrow_back_ios_new_rounded,
-            onTap: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            AppLocalizations.of(context)!.myDocuments,
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: NasColors.darkBlue,
-            ),
-          ),
-          const Spacer(),
-          if (canCreateHRLetter && _selectedOptionIndex == 2)
-            _circleButton(
-              icon: Icons.add,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CreateHrLetterScreen()),
-                ).then((_) {
-                  fetchLatestDocumentData();
-                });
-              },
-            ),
+          _buildHeader(context, canCreateHRLetter),
+          const SizedBox(height: 12),
+          _buildFilterChips(context, canSeeHRLetter, docCount, hrCount),
+          const SizedBox(height: 10),
+          Expanded(child: _buildBody(context)),
         ],
       ),
     );
   }
 
-  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 42,
-        width: 42,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.25),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+  Widget _buildHeader(BuildContext context, bool canCreateHRLetter) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Icon(icon, color: NasColors.darkBlue, size: 20),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    AppLocalizations.of(context)!.myDocuments,
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (canCreateHRLetter && _selectedOptionIndex == 2)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CreateHrLetterScreen()),
+                        ).then((_) {
+                          fetchLatestDocumentData();
+                        });
+                      },
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: NasColors.darkBlue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val;
+                          });
+                        },
+                        cursorColor: NasColors.darkBlue,
+                        style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                        decoration: InputDecoration(
+                          hintText: '${AppLocalizations.of(context)!.search}...',
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                        ),
+                      ),
+                    ),
+                    if (_searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.grey.shade600,
+                          size: 18,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -229,6 +327,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
         return DocumentListTab(
           documentsInfo: filteredDocs,
           onRefresh: fetchLatestDocumentData,
+          searchQuery: _searchQuery,
         );
       case 1:
         return DocumentCardsTab(
@@ -247,6 +346,7 @@ class _DocumentScreenState extends State<DocumentScreen> {
         return DocumentHrLettersTab(
           hrLetters: hrLetters,
           onRefresh: fetchLatestDocumentData,
+          searchQuery: _searchQuery,
         );
       default:
         return const SizedBox.shrink();

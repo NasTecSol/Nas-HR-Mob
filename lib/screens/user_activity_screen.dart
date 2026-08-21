@@ -139,7 +139,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
           final first = _singleton.branchDataList.first;
           _singleton.branchID   = first.data?.branch?.id;
           _singleton.branchName = first.data?.branch?.branchName;
-          log('🏢 Seeded branchID: ${_singleton.branchID}');
         }
       }
 
@@ -228,9 +227,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  BRANCH HELPERS
-  // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _extractBranchEmpIds(String? branchId) async {
     await _singleton.getTeamBranchData();
@@ -258,10 +254,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     _branchEmpIds = ids.toSet();
     log('✅ Branch ($branchId): ${_branchEmpIds.length} employees');
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  //  DATE HELPERS
-  // ══════════════════════════════════════════════════════════════════════════
 
   void _buildDateList(DateTime start, DateTime end) {
     _dates.clear();
@@ -296,9 +288,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     return h > 0 ? '${h}h ${m}m' : '${m}m';
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  RESOLVE EMP IDS
-  // ══════════════════════════════════════════════════════════════════════════
 
   Future<List<String>> _resolveEmpIds() async {
     final grade = _singleton.getJWTModel()?.grade ?? '';
@@ -315,8 +304,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
       }
       return _branchEmpIds.toList();
     }
-
-    // Team mode — L3
     if (grade == 'L3') {
       final ids = <String>[];
       for (final bd in _singleton.branchDataList) {
@@ -340,17 +327,11 @@ class _UserActivityScreenState extends State<UserActivityScreen>
       }
       return ids;
     }
-
-    // L0/L1/L2 team mode
     if (_branchEmpIds.isEmpty && (_singleton.branchID?.isNotEmpty ?? false)) {
       await _extractBranchEmpIds(_singleton.branchID);
     }
     return _branchEmpIds.toList();
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  //  FETCH
-  // ══════════════════════════════════════════════════════════════════════════
 
   Future<void> _fetchActivity() async {
     if (mounted) setState(() => _isLoadingData = true);
@@ -469,17 +450,15 @@ class _UserActivityScreenState extends State<UserActivityScreen>
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(context),
-            _buildDateStrip(context),
-            const SizedBox(height: 6),
-            if (grade != 'L4') _buildActionRow(context),
-            const SizedBox(height: 6),
-            Expanded(child: _buildBody(context)),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildAppBar(context),
+          _buildDateStrip(context),
+          const SizedBox(height: 6),
+          if (grade != 'L4') _buildActionRow(context),
+          const SizedBox(height: 6),
+          Expanded(child: _buildBody(context)),
+        ],
       ),
     );
   }
@@ -487,56 +466,151 @@ class _UserActivityScreenState extends State<UserActivityScreen>
   // ── App Bar ───────────────────────────────────────────────────────────────
 
   Widget _buildAppBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      child: Row(
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 8,
+        left: 16,
+        right: 16,
+        bottom: 20,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _iconButton(
-            icon:  Icons.arrow_back_ios_new_rounded,
-            onTap: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context)!.userActivity,
-              style: GoogleFonts.inter(
-                fontSize:   18,
-                fontWeight: FontWeight.w700,
-                color:      NasColors.darkBlue,
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.18),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.userActivity,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _pickDateRange(context),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.18),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_month_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
-          _iconButton(
-            icon:  Icons.calendar_month_rounded,
-            onTap: () => _pickDateRange(context),
+          const SizedBox(height: 14),
+          Container(
+            height: 46,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.search,
+                  color: NasColors.darkBlue,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    onChanged: (val) {
+                      _applySearch(val);
+                      setState(() {
+                        _isSearching = val.isNotEmpty;
+                      });
+                    },
+                    cursorColor: NasColors.darkBlue,
+                    style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                    decoration: InputDecoration(
+                      hintText: '${AppLocalizations.of(context)!.search}...',
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                    ),
+                  ),
+                ),
+                if (_searchCtrl.text.isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      _searchCtrl.clear();
+                      _applySearch('');
+                      setState(() {
+                        _isSearching = false;
+                      });
+                    },
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.grey.shade600,
+                      size: 18,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _iconButton({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 42,
-        width:  42,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13),
-          color:        Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color:      Colors.grey.withOpacity(0.25),
-              blurRadius: 8,
-              offset:     const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: NasColors.darkBlue, size: 20),
-      ),
-    );
-  }
+
 
   // ── Date Range Picker ─────────────────────────────────────────────────────
 
@@ -700,20 +774,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
 
             const SizedBox(width: 8),
           ],
-
-          // Search toggle — always last
-          _iconButton(
-            icon:  _isSearching ? Icons.close_rounded : Icons.search_rounded,
-            onTap: () {
-              setState(() {
-                _isSearching = !_isSearching;
-                if (!_isSearching) {
-                  _searchCtrl.clear();
-                  _filteredRows = List.from(_rows);
-                }
-              });
-            },
-          ),
         ],
       ),
     );
@@ -775,7 +835,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
               .firstWhere((b) => b.branchId.toString() == value);
           _singleton.branchName = branch.branchName ?? '';
 
-          log('🏢 Branch: $value | 👥 IDs: ${_branchEmpIds.length}');
           await _fetchActivity();
         } catch (e) {
           log('❌ Branch error: $e');
@@ -863,6 +922,7 @@ class _UserActivityScreenState extends State<UserActivityScreen>
       ),
     );
   }
+
 
   Widget _buildFilterChip({
     required String       label,

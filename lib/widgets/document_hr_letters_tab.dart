@@ -9,11 +9,13 @@ import 'package:url_launcher/url_launcher.dart';
 class DocumentHrLettersTab extends StatelessWidget {
   final List<dynamic> hrLetters;
   final Future<void> Function() onRefresh;
+  final String searchQuery;
 
   const DocumentHrLettersTab({
     super.key,
     required this.hrLetters,
     required this.onRefresh,
+    this.searchQuery = '',
   });
 
   String _getFileIcon(String fileUrl) {
@@ -38,8 +40,14 @@ class DocumentHrLettersTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final query = searchQuery.toLowerCase().trim();
+    final visibleLetters = hrLetters.where((doc) {
+      if (query.isEmpty) return true;
+      final name = doc.objectDetails?.objectName?.toString().toLowerCase() ?? '';
+      return name.contains(query);
+    }).toList();
 
-    if (hrLetters.isEmpty) {
+    if (visibleLetters.isEmpty) {
       return RefreshIndicator(
         color: NasColors.darkBlue,
         backgroundColor: Colors.white,
@@ -79,9 +87,9 @@ class DocumentHrLettersTab extends StatelessWidget {
         child: ListView.builder(
           padding: const EdgeInsets.only(bottom: 24, top: 10),
           physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: hrLetters.length,
+          itemCount: visibleLetters.length,
           itemBuilder: (BuildContext context, int index) {
-            final doc = hrLetters[index];
+            final doc = visibleLetters[index];
             final url = doc.objectDetails!.parameters!.documentUrl ?? '';
             final fileType = url.split('.').last.toLowerCase();
             final isImage = ['png', 'jpg', 'jpeg', 'gif'].contains(fileType);

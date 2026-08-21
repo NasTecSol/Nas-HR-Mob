@@ -689,11 +689,11 @@ class AssetsInfo {
   AssetsInfo({this.assetName, this.assetId ,  this.assetType, this.issueDateFrom, this.issueDateTo});
 
   AssetsInfo.fromJson(Map<String, dynamic> json) {
-    assetName = json["assetName"];
-    assetId = json["assetId"];
-    assetType = json["assetType"];
-    issueDateFrom = json["issueDateFrom"];
-    issueDateTo = json["issueDateTo"];
+    assetName = json["assetName"] ?? json["name"] ?? json["objectName"];
+    assetId = json["assetId"] ?? json["_id"] ?? json["id"] ?? json["randomId"] ?? json["objectId"];
+    assetType = json["assetType"] ?? json["type"] ?? json["templateType"];
+    issueDateFrom = json["issueDateFrom"] ?? json["issuedFrom"] ?? json["fromDate"];
+    issueDateTo = json["issueDateTo"] ?? json["issuedTo"] ?? json["toDate"];
   }
 
   Map<String, dynamic> toJson() {

@@ -557,6 +557,144 @@ class _RequestScreenState extends State<RequestScreen> {
     _overlayEntry = null;
   }
 
+  Widget _buildHeader(BuildContext context, bool showRequest) {
+    final title = singletonClass.getJWTModel()?.grade == 'L4'
+        ? AppLocalizations.of(context)!.requests
+        : AppLocalizations.of(context)!.requestAndApproval;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  if (showRequest == true)
+                    GestureDetector(
+                      onTap: () {
+                        _overlayEntry = _createOverlayEntry();
+                        Overlay.of(context).insert(_overlayEntry!);
+                      },
+                      child: Container(
+                        height: 36,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add, color: Colors.white, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              AppLocalizations.of(context)!.requests,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: NasColors.darkBlue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: (val) {
+                          setState(() {});
+                        },
+                        cursorColor: NasColors.darkBlue,
+                        style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
+                        decoration: InputDecoration(
+                          hintText: '${AppLocalizations.of(context)!.search}...',
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                        ),
+                      ),
+                    ),
+                    if (searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          searchController.clear();
+                          setState(() {});
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.grey.shade600,
+                          size: 18,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final showRequest = singletonClass.roleAndAccessModelDataList.first.data
@@ -579,108 +717,29 @@ class _RequestScreenState extends State<RequestScreen> {
 
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 65.0, left: 16.0, right: 16.0),
-        child: RefreshIndicator(
-          color: NasColors.darkBlue,
-          backgroundColor: Colors.white,
-          onRefresh: fetchLatestRequestData,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    singletonClass.getJWTModel()?.grade == 'L4'
-                        ? AppLocalizations.of(context)!.requests
-                        : AppLocalizations.of(context)!.requestAndApproval,
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: NasColors.darkBlue,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (showRequest == true)
-                    GestureDetector(
-                      onTap: () {
-                        _overlayEntry = _createOverlayEntry();
-                        Overlay.of(context).insert(_overlayEntry!);
-                      },
-                      child: Container(
-                        height: 30,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: NasColors.darkBlue,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: NasColors.darkBlue.withOpacity(0.15),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.add, color: Colors.white, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              AppLocalizations.of(context)!.requests,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (singletonClass.getJWTModel()?.grade == 'L0' ||
-                  singletonClass.getJWTModel()?.grade == 'L1' ||
-                  singletonClass.getJWTModel()?.grade == 'L2' ||
-                  singletonClass.getJWTModel()?.grade == 'L3') ...[
-                _buildSegmentedControl(),
-              ],
+      body: Column(
+        children: [
+          _buildHeader(context, showRequest),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: RefreshIndicator(
+                color: NasColors.darkBlue,
+                backgroundColor: Colors.white,
+                onRefresh: fetchLatestRequestData,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (singletonClass.getJWTModel()?.grade == 'L0' ||
+                        singletonClass.getJWTModel()?.grade == 'L1' ||
+                        singletonClass.getJWTModel()?.grade == 'L2' ||
+                        singletonClass.getJWTModel()?.grade == 'L3') ...[
+                      _buildSegmentedControl(),
+                    ],
               const SizedBox(height: 10),
               if (singletonClass.getJWTModel()?.grade == 'L4') ...[
-                Container(
-                    height: 38,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(19),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search, size: 18, color: Colors.grey),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: TextField(
-                            controller: searchController,
-                            cursorColor: Colors.grey,
-                            style: GoogleFonts.inter(fontSize: 13),
-                            decoration: InputDecoration(
-                              hintText: '${AppLocalizations.of(context)!.search}...',
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                            onChanged: (value) {
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 Expanded(
                   child: FutureBuilder(
                       future: getRequestData(),
@@ -820,37 +879,6 @@ class _RequestScreenState extends State<RequestScreen> {
                   singletonClass.getJWTModel()?.grade == 'L2' ||
                   singletonClass.getJWTModel()?.grade == 'L3') ...[
                 if (_selectedOptionIndex == 0) ...[
-                  Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(19),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.search, size: 18, color: Colors.grey),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: TextField(
-                              controller: searchController,
-                              cursorColor: Colors.grey,
-                              style: GoogleFonts.inter(fontSize: 13),
-                              decoration: InputDecoration(
-                                hintText: '${AppLocalizations.of(context)!.search}...',
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   Expanded(
                     child: FutureBuilder(
                         future: getRequestData(),
@@ -988,72 +1016,22 @@ class _RequestScreenState extends State<RequestScreen> {
                   ),
                 ],
                 if (_selectedOptionIndex == 1) ...[
-                  Row(
-                    children: [
-                      if (isSearching) ...[
-                        Expanded(
-                          child: Container(
-                            height: 38,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(19),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.search, size: 18, color: Colors.grey),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: TextField(
-                                    controller: searchController,
-                                    cursorColor: Colors.grey,
-                                    style: GoogleFonts.inter(fontSize: 13),
-                                    decoration: InputDecoration(
-                                      hintText: '${AppLocalizations.of(context)!.search}...',
-                                      border: InputBorder.none,
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.zero,
-                                    ),
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                  if (_selectedOptionIndex == 1 &&
+                      ['L0', 'L1', 'L2'].contains(singletonClass.getJWTModel()?.grade)) ...[
+                    Row(
+                      children: [
+                        _buildBranchDropdown(context),
+                        const Spacer(),
+                        _buildLabeledCheckbox(
+                          label: AppLocalizations.of(context)!.teams,
+                          value: _isTeamChecked,
+                          enabled: singletonClass.branchID != null,
+                          onChanged: _onTeamCheckboxChanged,
                         ),
-                        const SizedBox(width: 8),
-                      ] else ...[
-                        if (_selectedOptionIndex == 1 &&
-                            ['L0', 'L1', 'L2'].contains(singletonClass.getJWTModel()?.grade)) ...[
-                          _buildBranchDropdown(context),
-                          const Spacer(),
-                          _buildLabeledCheckbox(
-                            label: AppLocalizations.of(context)!.teams,
-                            value: _isTeamChecked,
-                            enabled: singletonClass.branchID != null,
-                            onChanged: _onTeamCheckboxChanged,
-                          ),
-                          const SizedBox(width: 8),
-                        ] else ...[
-                          const Spacer(),
-                        ],
                       ],
-                      _circleButton(
-                        icon: isSearching ? Icons.close_rounded : Icons.search_rounded,
-                        onTap: () {
-                          setState(() {
-                            isSearching = !isSearching;
-                            if (!isSearching) {
-                              searchController.clear();
-                            }
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Expanded(
                     child: FutureBuilder(
                         future: _approvalsFuture,
@@ -1197,7 +1175,10 @@ class _RequestScreenState extends State<RequestScreen> {
           ),
         ),
       ),
-    );
+    ),
+  ],
+),
+);
   }
 
   Widget _buildSegmentedControl() {
@@ -1443,7 +1424,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
   //Request
   Future<RequestDataModel?> getRequestData(
-      {int page = 0, int limit = 25}) async {
+      {int page = 0, int limit = 100}) async {
     String? employeeId = singletonClass.getJWTModel()?.employeeId;
 
     // Request body with the required parameter
@@ -1621,27 +1602,7 @@ class _RequestScreenState extends State<RequestScreen> {
     );
   }
 
-  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 38,
-        width: 38,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: NasColors.darkBlue, size: 20),
-      ),
-    );
-  }
+
 
   Widget _buildUnifiedRequestCard({
     required BuildContext context,
@@ -1989,94 +1950,20 @@ class _RequestScreenState extends State<RequestScreen> {
   }
 
   Future<void> _fetchTotalApprovedRequestsCount() async {
-    try {
-      final employeeId = singletonClass.getJWTModel()?.employeeId;
-      if (employeeId == null) return;
-
-      final requestBody = {
-        "requestTypes": [
-          "leaveRequest",
-          "loanRequest",
-          "expenseRequest",
-          "allowance_Increment",
-          "documentRequest",
-          "specialLeaveRequest",
-          "attendanceRequest",
-          "overTimeRequest",
-          "remoteRequest",
-          "resignationRequest",
-          "complaintRequest"
-        ],
-      };
-
-      final uri = Uri.parse(
-        '${singletonClass.baseURL}/request/employee/$employeeId?limit=1000&page=0',
-      );
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: singletonClass.getHeaders(),
-      );
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final responseBody = json.decode(response.body);
-        final requestData = RequestDataModel.fromJson(responseBody);
-        if (requestData.data != null && requestData.data!.data != null) {
-          final count = requestData.data!.data!.where((req) => req.status == 'approved').length;
-          setState(() {
-            _totalApprovedRequestsCount = count;
-          });
-        }
-      }
-    } catch (e) {
-      log('Error counting approved requests: $e');
+    final count = await singletonClass.fetchTotalApprovedRequestsCount();
+    if (mounted) {
+      setState(() {
+        _totalApprovedRequestsCount = count;
+      });
     }
   }
 
   Future<void> _fetchTotalPendingApprovalsCount() async {
-    try {
-      final grade = singletonClass.getJWTModel()?.grade;
-      final isTargetGrade = ['L0', 'L1', 'L2'].contains(grade);
-
-      ApproverRequestData? data;
-      if (isTargetGrade && !_isTeamChecked) {
-        final companyId = singletonClass.selectedCompanyId;
-        final branchId = singletonClass.branchID;
-        if (companyId != null && branchId != null && companyId.isNotEmpty && branchId.isNotEmpty) {
-          final uri = Uri.parse(
-            '${singletonClass.baseURL}/request/requestByCompany&BranchId/$companyId/$branchId?page=0&limit=1000',
-          );
-          final response = await http.get(
-            uri,
-            headers: singletonClass.getHeaders(),
-          );
-          if (response.statusCode == 200 || response.statusCode == 201) {
-            final responseBody = json.decode(response.body);
-            data = ApproverRequestData.fromJson(responseBody);
-          }
-        }
-      } else {
-        final uri = Uri.parse(
-          '${singletonClass.baseURL}/request/approverData?page=0&limit=1000',
-        );
-        final response = await http.get(
-          uri,
-          headers: singletonClass.getHeaders(),
-        );
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          final responseBody = json.decode(response.body);
-          data = ApproverRequestData.fromJson(responseBody);
-        }
-      }
-
-      if (data != null && data.data != null && data.data!.data != null) {
-        final count = data.data!.data!.where((req) => req.status == 'pending').length;
-        setState(() {
-          _totalPendingApprovalsCount = count;
-        });
-      }
-    } catch (e) {
-      log('Error counting pending approvals: $e');
+    final count = await singletonClass.fetchTotalPendingApprovalsCount(isTeamChecked: _isTeamChecked);
+    if (mounted) {
+      setState(() {
+        _totalPendingApprovalsCount = count;
+      });
     }
   }
 }

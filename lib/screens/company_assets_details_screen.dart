@@ -501,14 +501,21 @@ class _CompanyAssetsDetailsScreenState extends State<CompanyAssetsDetailsScreen>
 
 
   Future<CompanyAssetsDetailsModel?> getAssetsDetailsData() async {
-    int? assetId = widget.assetsInfo?.randomId;
+    dynamic rawId = widget.assetsInfo?.randomId ?? widget.assetsInfo?.assetId;
+    String? assetId = rawId?.toString();
+    if (assetId == null || assetId.isEmpty || assetId == 'null') return null;
     var client = http.Client();
     var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
-    var response = await client.get(uri,headers: singletonClass.getHeaders());
+    var response = await client.get(uri, headers: singletonClass.getHeaders());
     log("ASSETS DETAILS RESPONSE: ${response.body}");
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 && response.body.trim().isNotEmpty) {
       var responseBody = json.decode(response.body);
-      var assetData = CompanyAssetsDetailsModel.fromJson(responseBody);
+      CompanyAssetsDetailsModel assetData;
+      if (responseBody is List) {
+        assetData = CompanyAssetsDetailsModel.fromJson({"statusCode": 200, "data": responseBody});
+      } else {
+        assetData = CompanyAssetsDetailsModel.fromJson(responseBody);
+      }
       singletonClass.companyAssetsDataList.add(assetData);
       return assetData;
     }

@@ -268,16 +268,23 @@ class _EmployeeDetailsScreenAssetsState extends State<EmployeeDetailsScreenAsset
   }
   Future<EmployeeDetailsAssetsModel?> getEmployeeAssetsDetailsData() async {
     try {
-      int? assetId = widget.assetsInfo?.assetId;
+      dynamic rawId = widget.assetsInfo?.assetId;
+      String? assetId = rawId?.toString();
+      if (assetId == null || assetId.isEmpty || assetId == 'null') return null;
       var client = http.Client();
       var uri = Uri.parse('${singletonClass.baseURL}/assets/getAssetsByIds?ids=$assetId');
-      var response = await client.get(uri,headers: singletonClass.getHeaders());
+      var response = await client.get(uri, headers: singletonClass.getHeaders());
 
       log("EMPLOYEE ASSETS DETAILS RESPONSE: ${response.body}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.body.trim().isNotEmpty) {
         var responseBody = json.decode(response.body);
-        var assetData = EmployeeDetailsAssetsModel.fromJson(responseBody);
+        EmployeeDetailsAssetsModel assetData;
+        if (responseBody is List) {
+          assetData = EmployeeDetailsAssetsModel.fromJson({"statusCode": 200, "data": responseBody});
+        } else {
+          assetData = EmployeeDetailsAssetsModel.fromJson(responseBody);
+        }
         singletonClass.employeeDetailsAssetsModel.add(assetData);
         return assetData;
       } else {

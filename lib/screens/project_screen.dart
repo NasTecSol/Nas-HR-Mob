@@ -77,6 +77,72 @@ class _ProjectScreenState extends State<ProjectScreen> {
     await _loadAllData();
   }
 
+  Widget _buildHeader(BuildContext context, bool canCreateProject) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.project,
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              if (canCreateProject)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CreateProjectScreen()),
+                    );
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final uiSettings = singletonClass.roleAndAccessModelDataList.isNotEmpty
@@ -96,48 +162,22 @@ class _ProjectScreenState extends State<ProjectScreen> {
     });
     return Scaffold(
       backgroundColor: NasColors.backGround,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: RefreshIndicator(
-          color: NasColors.darkBlue,
-          backgroundColor: Colors.white,
-          onRefresh: fetchLatestProjectData,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0, top: 15.0),
-                    child: Text(
-                      AppLocalizations.of(context)!.project,
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: NasColors.darkBlue,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (canCreateProject)
-                      Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.add,
-                          color: NasColors.darkBlue,
-                          size: 30,
-                        ),
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> CreateProjectScreen()));
-                        },
-                      ),
-                    ),
-                  ],
-              ),
-              const SizedBox(height: 20),
-              if (isLoading) ...[
+      body: Column(
+        children: [
+          _buildHeader(context, canCreateProject),
+          const SizedBox(height: 16),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: RefreshIndicator(
+                color: NasColors.darkBlue,
+                backgroundColor: Colors.white,
+                onRefresh: fetchLatestProjectData,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (isLoading) ...[
                 const Expanded(
                   child: Center(
                     child: Loader(),
@@ -193,7 +233,10 @@ class _ProjectScreenState extends State<ProjectScreen> {
           ),
         ),
       ),
-    );
+    ),
+  ],
+),
+);
   }
 
   Widget _buildProjectsList(List<Data> list) {
@@ -333,7 +376,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
                           decoration: BoxDecoration(
                             color: isAdmin 
                                 ? NasColors.pending.withOpacity(0.12) 
-                                : NasColors.darkBlue.withOpacity(0.08),
+                                : NasColors.darkBlue.withOpacity(0.41),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

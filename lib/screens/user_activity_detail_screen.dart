@@ -400,6 +400,135 @@ class _State extends State<UserActivityDetailScreen>
     child: Text(label, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: fg)),
   );
 
+  Widget _buildHeader(BuildContext context, _Parsed data) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 8,
+        left: 16,
+        right: 16,
+        bottom: 20,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [NasColors.darkBlue, NasColors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NasColors.darkBlue.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withOpacity(0.18),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context)!.liveSessions,
+                        style: GoogleFonts.inter(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '${AppLocalizations.of(context)!.employee}: ${widget.empId}',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.85),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  widget.empName,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.circle,
+                  size: 7,
+                  color: data.isOnline ? Colors.greenAccent : Colors.white60,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  data.isOnline
+                      ? AppLocalizations.of(context)!.online
+                      : AppLocalizations.of(context)!.offline,
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
@@ -469,62 +598,11 @@ class _State extends State<UserActivityDetailScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.dark,
-        child: SafeArea(child: Column(children: [
+        value: SystemUiOverlayStyle.light,
+        child: Column(children: [
 
           // ══ AppBar ════════════════════════════════════════════════════════
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 16, 4),
-            child: Row(children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 2))],
-                  ),
-                  child: const Icon(Icons.arrow_back_ios_new_outlined, size: 18, color: Colors.black87),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(6)),
-                    child: Text(AppLocalizations.of(context)!.liveSessions,
-                        style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w800, color: const Color(0xFF15803D))),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(child: Text('${AppLocalizations.of(context)!.employee}: ${widget.empId}',
-                      style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF6B7280)),
-                      overflow: TextOverflow.ellipsis)),
-                ]),
-                const SizedBox(height: 1),
-                Text(widget.empName,
-                    style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: NasColors.darkBlue),
-                    overflow: TextOverflow.ellipsis),
-              ])),
-              // online badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: data.isOnline ? const Color(0xFFDCFCE7) : const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.circle, size: 7,
-                      color: data.isOnline ? const Color(0xFF16A34A) : const Color(0xFF9CA3AF)),
-                  const SizedBox(width: 5),
-                  Text(data.isOnline ? AppLocalizations.of(context)!.online : AppLocalizations.of(context)!.offline,
-                      style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800,
-                          color: data.isOnline ? const Color(0xFF16A34A) : const Color(0xFF6B7280))),
-                ]),
-              ),
-            ]),
-          ),
+          _buildHeader(context, data),
 
           // ══ Scrollable body ═══════════════════════════════════════════════
           Expanded(child: FadeTransition(
@@ -731,7 +809,7 @@ class _State extends State<UserActivityDetailScreen>
               ],
             ),
           )),
-        ])),
+        ]),
       ),
     );
   }

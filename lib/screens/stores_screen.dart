@@ -129,14 +129,13 @@ class _StoresScreenState extends State<StoresScreen> {
                 height: 50,
                 width: MediaQuery.of(context).size.width - 50,
                 padding:
-                const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                const EdgeInsets.symmetric(horizontal: 15),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.5),
-                      spreadRadius: 2,
+                      color: Colors.black.withOpacity(0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -144,27 +143,46 @@ class _StoresScreenState extends State<StoresScreen> {
                 ),
                 child: Row(
                   children: [
+                    Icon(
+                      Icons.search,
+                      color: NasColors.darkBlue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: searchController,
                         onChanged: (value) {
                           setState(() {
-                            isSearching = true;
+                            isSearching = value.isNotEmpty;
                           });
                         },
-                        cursorColor: Colors.black,
+                        cursorColor: NasColors.darkBlue,
+                        style: GoogleFonts.inter(fontSize: 14, color: NasColors.darkBlue),
                         decoration: InputDecoration(
                           hintText:
                           '${AppLocalizations.of(context)!.search}...',
                           border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Icon(
-                      Icons.search,
-                      color: NasColors.darkBlue,
-                    ),
+                    if (searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          searchController.clear();
+                          setState(() {
+                            isSearching = false;
+                          });
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.grey.shade600,
+                          size: 18,
+                        ),
+                      ),
                   ],
                 ),
               ),
