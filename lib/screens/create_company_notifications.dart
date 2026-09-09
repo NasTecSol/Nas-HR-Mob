@@ -288,65 +288,68 @@ class _CreateCompanyNotificationsState
                                 itemCount: _employeeSearchResults.length,
                                 itemBuilder: (context, index) {
                                   var employee = _employeeSearchResults[index];
-                                  return ListTile(
-                                    title: Row(
-                                      children: [
-                                        Container(
-                                          height: 38,
-                                          width: 38,
-                                          decoration: BoxDecoration(
-                                            color: NasColors.darkBlue.withOpacity(0.1),
+                                  return Material(
+                                    color: Colors.transparent,
+                                    child: ListTile(
+                                      title: Row(
+                                        children: [
+                                          Container(
+                                            height: 38,
+                                            width: 38,
+                                            decoration: BoxDecoration(
+                                              color: NasColors.darkBlue.withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.person_rounded,
+                                              color: NasColors.darkBlue,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                employee.employeeName ?? "Unknown",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: NasColors.darkBlue),
+                                              ),
+                                              Text(
+                                                employee.empId ?? "Unknown",
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.grey.shade600),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            if (_selectedEmployees.contains(employee)) {
+                                              _selectedEmployees.remove(employee);
+                                            } else {
+                                              _selectedEmployees.add(employee);
+                                            }
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
+                                            color: Colors.green,
                                           ),
-                                          child: Icon(
-                                            Icons.person_rounded,
-                                            color: NasColors.darkBlue,
-                                            size: 20,
+                                          padding: const EdgeInsets.all(6.0),
+                                          child: const Icon(
+                                            Icons.add_rounded,
+                                            color: Colors.white,
+                                            size: 18,
                                           ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              employee.employeeName ?? "Unknown",
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: NasColors.darkBlue),
-                                            ),
-                                            Text(
-                                              employee.empId ?? "Unknown",
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey.shade600),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          if (_selectedEmployees.contains(employee)) {
-                                            _selectedEmployees.remove(employee);
-                                          } else {
-                                            _selectedEmployees.add(employee);
-                                          }
-                                        });
-                                      },
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.green,
-                                        ),
-                                        padding: const EdgeInsets.all(6.0),
-                                        child: const Icon(
-                                          Icons.add_rounded,
-                                          color: Colors.white,
-                                          size: 18,
                                         ),
                                       ),
                                     ),

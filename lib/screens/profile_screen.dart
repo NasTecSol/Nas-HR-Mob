@@ -331,7 +331,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                   (employeeProfile.employeeInfo?.isNotEmpty == true &&
                                                       (employeeProfile.employeeInfo?.first.empId?.isNotEmpty ==
                                                           true))
-                                                      ? employeeProfile.employeeInfo!.first.empId! 
+                                                      ? employeeProfile.employeeInfo!.first.empId!
                                                       : "---",
                                                   style: GoogleFonts.inter(
                                                     fontSize: 15,

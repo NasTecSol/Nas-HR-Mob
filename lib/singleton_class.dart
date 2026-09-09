@@ -1137,6 +1137,8 @@ class SingletonClass {
     footerUrl = '';
     token = null;
     isTimerActive = false;
+    totalApprovedRequestsCount = 0;
+    totalPendingApprovalsCount = 0;
   }
 
 
