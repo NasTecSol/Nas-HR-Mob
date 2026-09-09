@@ -323,48 +323,52 @@ class _SlackScreenState extends State<SlackScreen> {
                                   ),
                                 ],
                               ),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: NasColors.darkBlue,
-                                  child: Text(
-                                    name.isNotEmpty ? name[0].toUpperCase() : "?",
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
+                              child: Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(16),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: NasColors.darkBlue,
+                                    child: Text(
+                                      name.isNotEmpty ? name[0].toUpperCase() : "?",
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                title: Text(
-                                  name,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                    color: NasColors.darkBlue,
+                                  title: Text(
+                                    name,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                      color: NasColors.darkBlue,
+                                    ),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  designation,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    color: Colors.grey.shade600,
+                                  subtitle: Text(
+                                    designation,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade600,
+                                    ),
                                   ),
-                                ),
-                                trailing: Checkbox(
-                                  value: _selectedEmployees.any((e) => e.employeeId == employee.employeeId),
-                                  onChanged: (checked) {
-                                    setState(() {
-                                      if (checked == true) {
-                                        if (!_selectedEmployees.any((e) => e.employeeId == employee.employeeId)) {
-                                          _selectedEmployees.add(employee);
+                                  trailing: Checkbox(
+                                    value: _selectedEmployees.any((e) => e.employeeId == employee.employeeId),
+                                    onChanged: (checked) {
+                                      setState(() {
+                                        if (checked == true) {
+                                          if (!_selectedEmployees.any((e) => e.employeeId == employee.employeeId)) {
+                                            _selectedEmployees.add(employee);
+                                          }
+                                        } else {
+                                          _selectedEmployees.removeWhere((e) => e.employeeId == employee.employeeId);
                                         }
-                                      } else {
-                                        _selectedEmployees.removeWhere((e) => e.employeeId == employee.employeeId);
-                                      }
-                                    });
-                                  },
-                                  activeColor: NasColors.darkBlue,
-                                  checkColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                      });
+                                    },
+                                    activeColor: NasColors.darkBlue,
+                                    checkColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                  ),
                                 ),
                               ),
                             );
@@ -492,34 +496,38 @@ class _SlackScreenState extends State<SlackScreen> {
                                 ),
                               ],
                             ),
-                            child: ListTile(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ChatScreen(),
-                                  ),
-                                ).then((_) => _fetchChats());
-                              },
-                              leading: CircleAvatar(
-                                backgroundColor: NasColors.darkBlue,
-                                child: const Icon(Icons.group, color: Colors.white),
-                              ),
-                              title: Text(
-                                AppLocalizations.of(context)!.nassMudeer,
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: NasColors.darkBlue,
+                            child: Material(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                              child: ListTile(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ChatScreen(),
+                                    ),
+                                  ).then((_) => _fetchChats());
+                                },
+                                leading: CircleAvatar(
+                                  backgroundColor: NasColors.darkBlue,
+                                  child: const Icon(Icons.group, color: Colors.white),
                                 ),
-                              ),
-                              subtitle: Text(
-                                "",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade600,
+                                title: Text(
+                                  AppLocalizations.of(context)!.nassMudeer,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: NasColors.darkBlue,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: Colors.grey.shade600,
+                                  ),
                                 ),
                               ),
                             ),

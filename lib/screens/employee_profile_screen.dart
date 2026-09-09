@@ -467,14 +467,14 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.address,
                                             (employeeDetails?.isNotEmpty ?? false)
-                                                ? employeeDetails!.first.address?.streetAddress ?? '___'
+                                                ? (employeeDetails!.first.address?.streetAddress?.toString() ?? '___')
                                                 : '___',
                                             icon: Icons.location_on_outlined,
                                           ),
                                           _buildDetailField(
                                             AppLocalizations.of(context)!.passportNo,
                                             (employeeDetails?.isNotEmpty ?? false)
-                                                ? employeeDetails!.first.passport?.id ?? '___'
+                                                ? (employeeDetails!.first.passport?.id?.toString() ?? '___')
                                                 : '___',
                                             icon: Icons.badge_outlined,
                                             isLast: true,

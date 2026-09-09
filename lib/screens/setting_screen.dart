@@ -135,36 +135,40 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
         ],
       ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: Container(
-          height: 42,
-          width: 42,
-          decoration: BoxDecoration(
-            color: iconBgColor ?? NasColors.darkBlue.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Icon(
-            icon,
-            color: iconColor ?? NasColors.darkBlue,
-            size: 22,
-          ),
-        ),
-        title: Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: titleColor ?? NasColors.darkBlue,
-          ),
-        ),
-        trailing: trailing ??
-            Icon(
-              Icons.chevron_right_rounded,
-              color: Colors.grey.shade400,
-              size: 24,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: ListTile(
+          onTap: onTap,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          leading: Container(
+            height: 42,
+            width: 42,
+            decoration: BoxDecoration(
+              color: iconBgColor ?? NasColors.darkBlue.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(14),
             ),
+            child: Icon(
+              icon,
+              color: iconColor ?? NasColors.darkBlue,
+              size: 22,
+            ),
+          ),
+          title: Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: titleColor ?? NasColors.darkBlue,
+            ),
+          ),
+          trailing: trailing ??
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.grey.shade400,
+                size: 24,
+              ),
+        ),
       ),
     );
   }

@@ -120,52 +120,56 @@ class _LanguageScreenState extends State<LanguageScreen> {
             ),
           ],
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: Container(
-            height: 44,
-            width: 44,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? NasColors.darkBlue.withOpacity(0.12)
-                  : NasColors.darkBlue.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(14),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: Container(
+              height: 44,
+              width: 44,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? NasColors.darkBlue.withOpacity(0.12)
+                    : NasColors.darkBlue.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? NasColors.darkBlue : Colors.grey.shade600,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: isSelected ? NasColors.darkBlue : Colors.grey.shade600,
-              size: 24,
+            title: Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: NasColors.darkBlue,
+              ),
             ),
-          ),
-          title: Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: NasColors.darkBlue,
+            subtitle: Text(
+              subtitle,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade500,
+              ),
             ),
-          ),
-          subtitle: Text(
-            subtitle,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade500,
+            trailing: Radio<Locale>(
+              activeColor: NasColors.darkBlue,
+              value: locale,
+              groupValue: _selectedLocale,
+              onChanged: (Locale? value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedLocale = value;
+                    SingletonClass().local = value.languageCode;
+                  });
+                  _languageController.changeLanguage(value);
+                }
+              },
             ),
-          ),
-          trailing: Radio<Locale>(
-            activeColor: NasColors.darkBlue,
-            value: locale,
-            groupValue: _selectedLocale,
-            onChanged: (Locale? value) {
-              if (value != null) {
-                setState(() {
-                  _selectedLocale = value;
-                  SingletonClass().local = value.languageCode;
-                });
-                _languageController.changeLanguage(value);
-              }
-            },
           ),
         ),
       ),

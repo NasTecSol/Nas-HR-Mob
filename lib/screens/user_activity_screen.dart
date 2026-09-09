@@ -332,7 +332,6 @@ class _UserActivityScreenState extends State<UserActivityScreen>
     }
     return _branchEmpIds.toList();
   }
-
   Future<void> _fetchActivity() async {
     if (mounted) setState(() => _isLoadingData = true);
 

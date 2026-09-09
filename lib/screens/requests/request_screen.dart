@@ -1050,8 +1050,7 @@ class _RequestScreenState extends State<RequestScreen> {
                               ),
                             );
                           } else if (snapshot.hasData) {
-                            return singletonClass
-                                    .approverDataList.first.data!.data!.isEmpty
+                            return (_approver == null || _approver!.isEmpty)
                                 ? Center(
                                     child: Padding(
                                       padding: const EdgeInsets.all(20.0),
@@ -1082,7 +1081,7 @@ class _RequestScreenState extends State<RequestScreen> {
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     itemCount: _approver!.length,
                                     itemBuilder: (BuildContext context, int index) {
-                                      final request = _approver!.toList()[index];
+                                      final request = _approver![index];
                                       final searchText = searchController.text.toLowerCase();
                                       if (isSearching) {
                                         final matchesName = request.employeeName?.toLowerCase().contains(searchText) ?? false;
