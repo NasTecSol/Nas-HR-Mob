@@ -2680,4 +2680,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveSessions => 'LIVE SESSIONS';
+
+  @override
+  String get paidLeaves => 'Paid Leaves';
 }

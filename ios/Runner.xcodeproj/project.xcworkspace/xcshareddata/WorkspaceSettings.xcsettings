@@ -4,5 +4,7 @@
 <dict>
 	<key>PreviewsEnabled</key>
 	<false/>
+	<key>IDEPackageSupportUseBuiltinSCM</key>
+	<true/>
 </dict>
 </plist>

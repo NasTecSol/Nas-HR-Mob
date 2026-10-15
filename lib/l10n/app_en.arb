@@ -1333,6 +1333,7 @@
     "pm":"PM",
     "idle":"Idle",
     "retry":"retry",
-    "liveSessions":"LIVE SESSIONS"
+    "liveSessions":"LIVE SESSIONS",
+    "paidLeaves":"Paid Leaves"
 
 }
