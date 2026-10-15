@@ -5383,6 +5383,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'LIVE SESSIONS'**
   String get liveSessions;
+
+  /// No description provided for @paidLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid Leaves'**
+  String get paidLeaves;
 }
 
 class _AppLocalizationsDelegate

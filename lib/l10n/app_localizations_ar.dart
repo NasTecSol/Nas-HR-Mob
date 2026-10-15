@@ -2671,4 +2671,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get liveSessions => 'جلسة مباشرة';
+
+  @override
+  String get paidLeaves => 'إجازات مدفوعة الأجر';
 }

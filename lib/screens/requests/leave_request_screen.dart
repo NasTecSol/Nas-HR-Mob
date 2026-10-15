@@ -41,7 +41,10 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   PlatformFile? selectedFile;
   TimeOfDay? startTime;
   TimeOfDay? endTime;
-  // Computed — no stored bool needed
+
+  // ── Paid / Unpaid days computed from balance ──
+  int _paidDays = 0;
+  int _unpaidDays = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +72,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                         const SizedBox(height: 20),
 
                         // ── Date / Time section ──
-                        if (_selectedSubType?.requestName == 'Short Leave') ...[
+                        if (_selectedSubType?.requestType == 'shortleave') ...[
                           _buildShortLeaveFields(context),
                         ] else ...[
                           _buildRegularLeaveFields(context),
@@ -480,6 +483,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           setState(() {
             _selectedSubType = newValue;
           });
+          _recalculatePaidUnpaid();
         },
       ),
     );
@@ -909,87 +913,200 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   // SUBMIT BUTTON
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildSubmitButton(BuildContext context) {
-    return Builder(builder: (context) {
-      final bool hasSufficientBalance =
-          _isBalanceSufficient(_selectedSubType);
-      return GestureDetector(
-        onTap: hasSufficientBalance
-            ? () {
-                if (_formKey.currentState!.validate()) {
-                  postRequest();
-                }
-              }
-            : () {
-                final String leaveName = _selectedSubType != null
-                    ? _translateRequestSubtype(
-                        _selectedSubType!.requestName, context)
-                    : AppLocalizations.of(context)!.leaveRequests;
-                final double? balance =
-                    _getRemainingLeaveBalance(_selectedSubType?.requestType);
-                final String balanceText = balance != null
-                    ? '$leaveName: ${balance.toStringAsFixed(1)} ${AppLocalizations.of(context)!.days}'
-                    : '${AppLocalizations.of(context)!.insufficient} $leaveName ${AppLocalizations.of(context)!.balance}';
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      balanceText,
-                      style: GoogleFonts.inter(color: Colors.white),
-                    ),
-                    backgroundColor: Colors.grey[700],
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              },
-        child: Container(
-          width: double.infinity,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: hasSufficientBalance
-                ? LinearGradient(
-                    colors: [NasColors.darkBlue, NasColors.lightBlue],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  )
-                : LinearGradient(
-                    colors: [Colors.grey.shade400, Colors.grey.shade400],
-                  ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: hasSufficientBalance
-                ? [
-                    BoxShadow(
-                      color: NasColors.darkBlue.withOpacity(0.35),
-                      blurRadius: 14,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]
-                : [],
+    return GestureDetector(
+      onTap: () {
+        if (!_formKey.currentState!.validate()) return;
+
+        // Show unpaid-balance warning only for sick/casual/annual leave
+        // when some days will be unpaid.
+        if (_isPaidUnpaidApplicable(_selectedSubType) && _unpaidDays > 0) {
+          _showUnpaidLeaveWarningDialog(context);
+        } else {
+          postRequest();
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        height: 52,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [NasColors.darkBlue, NasColors.lightBlue],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                hasSufficientBalance
-                    ? Icons.send_rounded
-                    : Icons.lock_outline_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                AppLocalizations.of(context)!.requests,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: NasColors.darkBlue.withOpacity(0.35),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-      );
-    });
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.send_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              AppLocalizations.of(context)!.requests,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // UNPAID LEAVE WARNING DIALOG
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Shows a confirmation dialog informing the user that some leave days will
+  /// be unpaid. On "Submit" the API call proceeds; on "Cancel" it is aborted.
+  void _showUnpaidLeaveWarningDialog(BuildContext context) {
+    final String leaveName = _translateRequestSubtype(
+        _selectedSubType?.requestName, context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Icon ──
+                Container(
+                  height: 64,
+                  width: 64,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.orange,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Title ──
+                Text(
+                  '$leaveName Balance Exceeded',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // ── Body ──
+                Text(
+                  'Your $leaveName request exceeds the balance, rest of the leaves will be unpaid leaves. Do you still wish to submit the request or cancel?',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Buttons ──
+                Row(
+                  children: [
+                    // Cancel
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(dialogContext).pop(),
+                        child: Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: Colors.grey.shade300),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Submit
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(dialogContext).pop();
+                          postRequest();
+                        },
+                        child: Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                NasColors.darkBlue,
+                                NasColors.lightBlue
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: NasColors.darkBlue
+                                    .withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Submit',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 
   // ─────────────────────────────────────────────────────────────────────────
   // SHARED FORM CARD WRAPPER
@@ -1062,26 +1179,6 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // BALANCE CHECK
-  // ─────────────────────────────────────────────────────────────────────────
-
-  /// Returns true when the selected leave type has enough balance to request,
-  /// or when balance is not applicable (shortLeave / unPaidLeave / nothing selected yet).
-  bool _isBalanceSufficient(SubTypes? subType) {
-    if (subType == null) return true; // nothing chosen yet — show enabled
-    final String? name = subType.requestName;
-    // These types don't consume a counted balance
-    if (name == 'shortLeave' ||
-        name == 'unPaidLeave' ||
-        name == 'Short Leave' ||
-        name == 'UnPaid Leave ') {
-      return true;
-    }
-    final double? remaining = _getRemainingLeaveBalance(subType.requestType);
-    return remaining != null && remaining > 0;
-  }
-
   ///Helper method to calculate remaining days
 
   double? _getRemainingLeaveBalance(String? requestName) {
@@ -1089,16 +1186,12 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     var leaveBalance =
         singletonClass.employeeDataList.first.data.first.leaveBalance;
     for (var entry in leaveBalance!.toJson().entries) {
-      print('Checking entry: ${entry.key}');
       if (entry.key.toLowerCase() == requestName.toLowerCase()) {
-        print('Found entry: ${entry.key}: ${entry.value}');
 
         if (entry.key == 'unPaidLeave' || entry.key == 'shortLeave') {
-          print('No balance check needed for ${entry.key}');
-          return null; // or any sentinel value indicating balance not required
+          return null;
         }
         var remaining = entry.value['remaining'];
-        print('Remaining for ${entry.key}: $remaining');
 
         return remaining is num ? remaining.toDouble() : null;
       }
@@ -1156,6 +1249,40 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     if (days < 0) days = 0;
     setState(() {
       _totalDays.text = days.toString();
+    });
+    _recalculatePaidUnpaid();
+  }
+
+  /// Returns true when the selected subtype is one of the three leave types
+  /// that participate in the paid/unpaid split logic.
+  bool _isPaidUnpaidApplicable(SubTypes? subType) {
+    if (subType == null) return false;
+    final String name = subType.requestType ?? '';
+    return name == 'sickleave' ||
+        name == 'casualleave' ||
+        name == 'annualleave';
+  }
+
+  void _recalculatePaidUnpaid() {
+    if (!_isPaidUnpaidApplicable(_selectedSubType)) {
+      setState(() {
+        _paidDays = 0;
+        _unpaidDays = 0;
+      });
+      return;
+    }
+
+    final int totalDays = int.tryParse(_totalDays.text) ?? 0;
+    final double? remaining =
+        _getRemainingLeaveBalance(_selectedSubType?.requestType);
+    final int remainingInt = remaining != null ? remaining.floor() : 0;
+
+    final int paid = totalDays <= remainingInt ? totalDays : remainingInt;
+    final int unpaid = totalDays - paid;
+
+    setState(() {
+      _paidDays = paid < 0 ? 0 : paid;
+      _unpaidDays = unpaid < 0 ? 0 : unpaid;
     });
   }
 
@@ -1293,6 +1420,13 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           selectedSubType.toLowerCase() == 'short leave' ||
               selectedSubType.toLowerCase() == 'shortleave';
 
+      // ── Determine paid/unpaid values for the payload ──
+      // Only applicable for Sick / Casual / Annual leave; 0 for all others.
+      final int payloadPaid =
+          _isPaidUnpaidApplicable(_selectedSubType) ? _paidDays : 0;
+      final int payloadUnpaid =
+          _isPaidUnpaidApplicable(_selectedSubType) ? _unpaidDays : 0;
+
       final Map<String, dynamic> data = {
         "empId": empId,
         "employeeId": employeeId,
@@ -1311,6 +1445,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                   "endDate": _combineDateAndTime(startDate!, endTime!)
                       .toIso8601String(),
                   "duration": _calculateDurationInHours(),
+                  "paidLeaves": 0,
+                  "unpaidLeaves": 0,
                 }
               : {
                   "leaveType": selectedSubType,
@@ -1318,6 +1454,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                       startDate!.toIso8601String().split('T').first,
                   "endDate": endDate!.toIso8601String().split('T').first,
                   "duration": _totalDays.text,
+                  "paidLeaves": payloadPaid,
+                  "unpaidLeaves": payloadUnpaid,
                 }
         ],
         "approvers": [],

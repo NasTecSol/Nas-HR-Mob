@@ -230,6 +230,8 @@ class RequestData {
   dynamic date;
   dynamic effectiveDate;
   dynamic days;
+  dynamic paidLeaves;
+  dynamic unpaidLeaves;
 
   // Extra storage for any unrecognized keys
   Map<String, dynamic>? extra;
@@ -274,6 +276,8 @@ class RequestData {
     this.effectiveDate,
     this.days,
     this.extra,
+    this.paidLeaves,
+    this.unpaidLeaves,
   });
 
   /// ---------- FROM JSON ----------
@@ -329,6 +333,8 @@ class RequestData {
     date = json["date"];
     effectiveDate = json["effectiveDate"];
     days = json["days"];
+    paidLeaves = json["paidLeaves"];
+    unpaidLeaves = json["unpaidLeaves"];
 
     // Save extra unknown keys
     extra = {};
@@ -391,6 +397,8 @@ class RequestData {
     data["date"] = date;
     data["effectiveDate"] = effectiveDate;
     data["days"] = days;
+    data["paidLeaves"] = paidLeaves;
+    data["unpaidLeaves"] = unpaidLeaves;
 
     // Add unknown extra keys
     if (extra != null) {

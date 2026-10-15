@@ -448,28 +448,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     );
   }
 
-  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 40,
-        width: 40,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.12),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: NasColors.darkBlue, size: 18),
-      ),
-    );
-  }
-
   Widget _buildSummaryCard(BuildContext context, String date, String status, String subTypeFormatted) {
     final localizations = AppLocalizations.of(context);
     return Container(
@@ -1246,26 +1224,88 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         'icon': Icons.note_rounded,
       });
     } else if (reqType == 'leaveRequest') {
-      fields.add({
-        'label': localizations?.leaveType ?? 'Leave Type',
-        'value': data.leaveType?.toString() ?? '---',
-        'icon': Icons.beach_access_rounded,
-      });
-      fields.add({
-        'label': localizations?.startDate ?? 'Start Date',
-        'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
-        'icon': Icons.date_range_rounded,
-      });
-      fields.add({
-        'label': localizations?.endDate ?? 'End Date',
-        'value': data.endDate != null ? singletonClass.formatDate2(data.endDate.toString(), context) : '---',
-        'icon': Icons.date_range_rounded,
-      });
-      fields.add({
-        'label': localizations?.note ?? 'Note',
-        'value': widget.dataApprover.reason ?? '---',
-        'icon': Icons.description_rounded,
-      });
+      if(widget.dataApprover.subType  == 'shortleave'){
+        fields.add({
+          'label': localizations?.leaveType ?? 'Leave Type',
+          'value': data.leaveType?.toString() ?? '---',
+          'icon': Icons.beach_access_rounded,
+        });
+        fields.add({
+          'label': localizations?.date ?? 'Date',
+          'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.startTime ?? 'Start Time',
+          'value': data.startDate != null ? singletonClass.formatCheckInTime(data.startDate.toString(), context) : '---',
+          'icon': Icons.hourglass_bottom_rounded,
+        });
+        fields.add({
+          'label': localizations?.endTime ?? 'End Time',
+          'value': data.endDate != null ? singletonClass.formatCheckInTime(data.endDate.toString(), context) : '---',
+          'icon': Icons.timer_off_outlined,
+        });
+        fields.add({
+          'label': localizations?.note ?? 'Note',
+          'value': widget.dataApprover.reason ?? '---',
+          'icon': Icons.description_rounded,
+        });
+
+      }else if( widget.dataApprover.subType  == 'sickleave' ||
+          widget.dataApprover.subType  == 'casualleave'||
+          widget.dataApprover.subType  == 'annualleave'){
+        fields.add({
+          'label': localizations?.leaveType ?? 'Leave Type',
+          'value': data.leaveType?.toString() ?? '---',
+          'icon': Icons.beach_access_rounded,
+        });
+        fields.add({
+          'label': localizations?.startDate ?? 'Start Date',
+          'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.endDate ?? 'End Date',
+          'value': data.endDate != null ? singletonClass.formatDate2(data.endDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.paidLeaves ?? 'Paid Leave',
+          'value': widget.dataApprover.requestData!.first.paidLeaves.toString(),
+          'icon': Icons.paid_outlined,
+        });
+        fields.add({
+          'label': localizations?.unpaidLeave ?? 'Unpaid Leave',
+          'value': widget.dataApprover.requestData!.first.unpaidLeaves.toString(),
+          'icon': Icons.money_off,
+        });
+        fields.add({
+          'label': localizations?.note ?? 'Note',
+          'value': widget.dataApprover.reason ?? '---',
+          'icon': Icons.description_rounded,
+        });
+      } else {
+        fields.add({
+          'label': localizations?.leaveType ?? 'Leave Type',
+          'value': data.leaveType?.toString() ?? '---',
+          'icon': Icons.beach_access_rounded,
+        });
+        fields.add({
+          'label': localizations?.startDate ?? 'Start Date',
+          'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.endDate ?? 'End Date',
+          'value': data.endDate != null ? singletonClass.formatDate2(data.endDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.note ?? 'Note',
+          'value': widget.dataApprover.reason ?? '---',
+          'icon': Icons.description_rounded,
+        });
+      }
     } else if (reqType == 'specialLeaveRequest') {
       fields.add({
         'label': localizations?.leaveType ?? 'Leave Type',
@@ -1511,7 +1551,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       setState(() {
         isLoading = false;
       });
-      print('Failed to send data. Error: $error');
       if (mounted) {
         await QuickAlert.show(
           autoCloseDuration: const Duration(seconds: 2),
@@ -1600,6 +1639,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       final documentLabel = t?.document ?? 'Document';
       final nameLabel = t?.name ?? 'Name';
       final daysLabel = t?.days ?? 'days';
+      final paidLeavesLabel = t?.paidLeaves ?? 'Paid Leaves';
+      final unpaidLeavesLabel = t?.unpaidLeave ?? 'Unpaid Leave';
+      final startTimeLabel = t?.startTime ?? 'Start Time';
+      final endTimeLabel = t?.endTime ?? 'End Time';
 
       if (data.requestType == 'allowanceIncrement') {
         content += htmlRow(dateLabel, data.requestData != null && data.requestData!.isNotEmpty ? singletonClass.formatDate2(data.requestData!.first.date, context) : noDataLabel);
@@ -1652,11 +1695,16 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         content += htmlRow('Request Type', data.requestType ?? '---');
       } else if (data.requestType == 'leaveRequest') {
         final r = data.requestData?.first;
-        if (data.subType == 'shortLeave') {
+        if (data.subType == 'shortleave') {
           content += htmlRow(dateLabel, r != null ? singletonClass.formatDate2(r.startDate, context) : noDataLabel);
-          content += htmlRow(timeLabel, r != null ? "${singletonClass.formatDateTime(r.startDate)} - ${singletonClass.formatDateTime(r.endDate)}" : noDataLabel);
-          content += htmlRow(durationLabel, r != null ? "${r.duration ?? '---'} $hLabel" : '---');
-        } else {
+          content += htmlRow(startTimeLabel, r != null ? singletonClass.formatCheckInTime(r.startDate, context) : noDataLabel);
+          content += htmlRow(endTimeLabel, r != null ? singletonClass.formatCheckInTime(r.endDate , context) : noDataLabel);
+        } else if (data.subType == 'sickleave' || data.subType == 'casualleave' || data.subType == 'annualleave'){
+          content += htmlRow(dateLabel, r != null ? "${singletonClass.formatDate2(r.startDate, context)} - ${singletonClass.formatDate2(r.endDate, context)}" : noDataLabel);
+          content += htmlRow(durationLabel, r != null ? "${r.duration ?? '---'} $daysLabel" : '---');
+          content += htmlRow(paidLeavesLabel, r!.paidLeaves.toString());
+          content += htmlRow(unpaidLeavesLabel, r.unpaidLeaves.toString());
+        }else {
           content += htmlRow(dateLabel, r != null ? "${singletonClass.formatDate2(r.startDate, context)} - ${singletonClass.formatDate2(r.endDate, context)}" : noDataLabel);
           content += htmlRow(durationLabel, r != null ? "${r.duration ?? '---'} $daysLabel" : '---');
         }

@@ -53,6 +53,7 @@ class _RequestScreenState extends State<RequestScreen> {
   List<DataApprover>? _approver;
   List<Data1>? _request;
   Future<ApproverRequestData?>? _approvalsFuture;
+  Future<RequestDataModel?>? _requestsFuture;
   bool _isTeamChecked = false;
   int _totalApprovedRequestsCount = 0;
   int _totalPendingApprovalsCount = 0;
@@ -60,30 +61,19 @@ class _RequestScreenState extends State<RequestScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedOptionIndex = widget.selectedIndex;
     singletonClass.getSupervisorData();
     _fetchRequestData(0);
     _fetchApproverData(0);
-    _fetchTotalApprovedRequestsCount();
-    _fetchTotalPendingApprovalsCount();
-    getRequestData();
-    singletonClass.getApproverData();
-    setState(() {
-      getRequestData();
-      singletonClass.getApproverData();
-    });
-    setState(() {
-      _selectedOptionIndex = widget.selectedIndex;
-    });
   }
 
   Future<void> fetchLatestRequestData() async {
     try {
-      singletonClass.getApproverData();
-      getRequestData();
-      _fetchRequestData(0);
-      _fetchApproverData(0);
-      _fetchTotalApprovedRequestsCount();
-      _fetchTotalPendingApprovalsCount();
+      if (_selectedOptionIndex == 0) {
+        await _fetchRequestData(_requestCurrentPage);
+      } else {
+        await _fetchApproverData(_currentPage);
+      }
     } catch (e) {
       print("Error fetching data: $e");
     }
@@ -104,60 +94,38 @@ class _RequestScreenState extends State<RequestScreen> {
   }
 
   Future<ApproverRequestData?> _fetchApproverDataAsync(int page) async {
-    final grade = singletonClass.getJWTModel()?.grade;
-    final isTargetGrade = ['L0', 'L1'].contains(grade);
+    final companyId = singletonClass.selectedCompanyId ?? singletonClass.getJWTModel()?.companyId;
+    final branchId = singletonClass.branchID;
 
     ApproverRequestData? data;
-    if (isTargetGrade && !_isTeamChecked) {
-      final companyId = singletonClass.selectedCompanyId;
-      final branchId = singletonClass.branchID;
-      if (companyId != null && branchId != null && companyId.isNotEmpty && branchId.isNotEmpty) {
-        data = await singletonClass.getRequestByCompanyAndBranch(companyId, branchId, page: page);
-      }
+    if (!_isTeamChecked && branchId != null && branchId.isNotEmpty && companyId != null && companyId.isNotEmpty) {
+      data = await singletonClass.getRequestByCompanyAndBranch(companyId, branchId, page: page);
     } else {
+      singletonClass.branchID = null;
       data = await singletonClass.getApproverData(page: page);
     }
 
-    if (data != null && data.data != null) {
+    if (mounted) {
       setState(() {
-        _approver = data!.data!.data;
-        _totalPages = data.data!.totalPages ?? 1;
+        _approver = data?.data?.data ?? [];
+        _totalPages = data?.data?.totalPages ?? 1;
         _currentPage = page;
-      });
-    } else {
-      setState(() {
-        _approver = [];
-        _totalPages = 1;
-        _currentPage = 0;
+        _totalPendingApprovalsCount = singletonClass.totalPendingApprovalsCount;
       });
     }
     return data;
   }
 
-  Future<void> _fetchRequestData(int page) async {
-    setState(() {});
+  Future<RequestDataModel?> _fetchRequestData(int page) {
+    final future = _fetchRequestDataAsync(page);
+    setState(() {
+      _requestsFuture = future;
+    });
+    return future;
+  }
 
-    if (page == 0) {
-      _requestTotalPages = 1;
-    }
-
-    int apiPage = page;
-    if (_requestTotalPages > 1) {
-      apiPage = _requestTotalPages - 1 - page;
-    }
-
-    var data = await getRequestData(page: apiPage);
-
-    if (_requestTotalPages == 1 &&
-        data != null &&
-        data.data != null &&
-        data.data!.totalPages != null &&
-        data.data!.totalPages! > 1) {
-      final totalP = data.data!.totalPages!;
-      _requestTotalPages = totalP;
-      apiPage = totalP - 1 - page;
-      data = await getRequestData(page: apiPage);
-    }
+  Future<RequestDataModel?> _fetchRequestDataAsync(int page) async {
+    final data = await singletonClass.getRequestData(page: page);
 
     if (data != null && data.data != null) {
       final list = data.data!.data ?? [];
@@ -166,16 +134,24 @@ class _RequestScreenState extends State<RequestScreen> {
         final dateB = DateTime.tryParse(b.createdAt ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
         return dateB.compareTo(dateA);
       });
-      setState(() {
-        _request = list;
-        _requestTotalPages = data?.data?.totalPages ?? 1;
-        _requestCurrentPage = page;
-      });
+      if (mounted) {
+        setState(() {
+          _request = list;
+          _requestTotalPages = data.data?.totalPages ?? 1;
+          _requestCurrentPage = page;
+          _totalApprovedRequestsCount = singletonClass.totalApprovedRequestsCount;
+        });
+      }
     } else {
-      setState(() {
-        _request = [];
-      });
+      if (mounted) {
+        setState(() {
+          _request = [];
+          _requestTotalPages = 1;
+          _requestCurrentPage = 0;
+        });
+      }
     }
+    return data;
   }
 
   ///Overlay
@@ -742,7 +718,7 @@ class _RequestScreenState extends State<RequestScreen> {
               if (singletonClass.getJWTModel()?.grade == 'L4') ...[
                 Expanded(
                   child: FutureBuilder(
-                      future: getRequestData(),
+                      future: _requestsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -881,7 +857,7 @@ class _RequestScreenState extends State<RequestScreen> {
                 if (_selectedOptionIndex == 0) ...[
                   Expanded(
                     child: FutureBuilder(
-                        future: getRequestData(),
+                        future: _requestsFuture,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -1025,7 +1001,7 @@ class _RequestScreenState extends State<RequestScreen> {
                         _buildLabeledCheckbox(
                           label: AppLocalizations.of(context)!.teams,
                           value: _isTeamChecked,
-                          enabled: singletonClass.branchID != null,
+                          enabled: true,
                           onChanged: _onTeamCheckboxChanged,
                         ),
                       ],
@@ -1198,6 +1174,11 @@ class _RequestScreenState extends State<RequestScreen> {
         setState(() {
           _selectedOptionIndex = index;
         });
+        if (index == 0) {
+          _fetchRequestData(0);
+        } else if (index == 1) {
+          _fetchApproverData(0);
+        }
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -1421,64 +1402,6 @@ class _RequestScreenState extends State<RequestScreen> {
     }
   }
 
-  //Request
-  Future<RequestDataModel?> getRequestData(
-      {int page = 0, int limit = 100}) async {
-    String? employeeId = singletonClass.getJWTModel()?.employeeId;
-
-    // Request body with the required parameter
-    Map<String, dynamic> requestBody = {
-      "requestTypes": [
-        "leaveRequest",
-        "loanRequest",
-        "expenseRequest",
-        "allowance_Increment",
-        "documentRequest",
-        "specialLeaveRequest",
-        "attendanceRequest",
-        "overTimeRequest",
-        "remoteRequest",
-        "resignationRequest",
-        "complaintRequest"
-      ],
-    };
-
-    // Updated URI with query parameters
-    final uri = Uri.parse(
-      '${singletonClass.baseURL}/request/employee/$employeeId?limit=$limit&page=$page',
-    );
-    try {
-      final response = await http.post(
-        uri,
-        body: json.encode(requestBody),
-        headers: singletonClass.getHeaders(),
-      );
-
-      log("Request Log: ${response.body}");
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        // Parse the response body
-        var responseBody = json.decode(response.body);
-        var requestData = RequestDataModel.fromJson(responseBody);
-
-        // Set the data into the application state (singleton or other storage)
-        if (page == 0) {
-          singletonClass.setRequestData([requestData]);
-        } else {
-          final existing = singletonClass.requestDataList;
-          singletonClass.setRequestData([...existing, requestData]);
-        }
-        return requestData;
-      } else {
-        log("Error request Data: Received status code ${response.statusCode}");
-        return null;
-      }
-    } catch (e) {
-      log('Error request data: $e');
-      return null;
-    }
-  }
-
   Future<void> _onBranchSelected(String value) async {
     setState(() => isLoading = true);
     try {
@@ -1496,20 +1419,28 @@ class _RequestScreenState extends State<RequestScreen> {
 
       _isTeamChecked = false;
       await _fetchApproverData(0);
-      await _fetchTotalPendingApprovalsCount();
     } catch (e) {
       print("Error selecting branch: $e");
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
   Future<void> _onTeamCheckboxChanged(bool? value) async {
+    final isChecked = value ?? false;
     setState(() {
-      _isTeamChecked = value ?? false;
+      _isTeamChecked = isChecked;
+      if (isChecked) {
+        singletonClass.branchID = null;
+      } else if (singletonClass.availableBranches.isNotEmpty) {
+        final br = singletonClass.availableBranches.first;
+        singletonClass.branchID = br.branchId?.toString();
+        singletonClass.branchName = br.branchName ?? '';
+      }
     });
     await _fetchApproverData(0);
-    await _fetchTotalPendingApprovalsCount();
   }
 
   Widget _buildBranchDropdown(BuildContext context) {
@@ -1946,24 +1877,6 @@ class _RequestScreenState extends State<RequestScreen> {
     }
 
     return list;
-  }
-
-  Future<void> _fetchTotalApprovedRequestsCount() async {
-    final count = await singletonClass.fetchTotalApprovedRequestsCount();
-    if (mounted) {
-      setState(() {
-        _totalApprovedRequestsCount = count;
-      });
-    }
-  }
-
-  Future<void> _fetchTotalPendingApprovalsCount() async {
-    final count = await singletonClass.fetchTotalPendingApprovalsCount(isTeamChecked: _isTeamChecked);
-    if (mounted) {
-      setState(() {
-        _totalPendingApprovalsCount = count;
-      });
-    }
   }
 }
 

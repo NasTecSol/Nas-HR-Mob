@@ -477,27 +477,90 @@ class _SelfRequestDetailScreenState extends State<SelfRequestDetailScreen> {
         'icon': Icons.note_rounded,
       });
     } else if (reqType == 'leaveRequest') {
-      fields.add({
-        'label': localizations?.leaveType ?? 'Leave Type',
-        'value': data.leaveType?.toString() ?? '---',
-        'icon': Icons.beach_access_rounded,
-      });
-      fields.add({
-        'label': localizations?.startDate ?? 'Start Date',
-        'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
-        'icon': Icons.date_range_rounded,
-      });
-      fields.add({
-        'label': localizations?.endDate ?? 'End Date',
-        'value': data.endDate != null ? singletonClass.formatDate2(data.endDate.toString(), context) : '---',
-        'icon': Icons.date_range_rounded,
-      });
-      fields.add({
-        'label': localizations?.note ?? 'Note',
-        'value': widget.data1.reason ?? '---',
-        'icon': Icons.description_rounded,
-      });
-    } else if (reqType == 'specialLeaveRequest') {
+      if(widget.data1.subType  == 'shortleave'){
+        fields.add({
+          'label': localizations?.leaveType ?? 'Leave Type',
+          'value': data.leaveType?.toString() ?? '---',
+          'icon': Icons.beach_access_rounded,
+        });
+        fields.add({
+          'label': localizations?.date ?? 'Date',
+          'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.startTime ?? 'Start Time',
+          'value': data.startDate != null ? singletonClass.formatCheckInTime(data.startDate.toString(), context) : '---',
+          'icon': Icons.hourglass_bottom_rounded,
+        });
+        fields.add({
+          'label': localizations?.endTime ?? 'End Time',
+          'value': data.endDate != null ? singletonClass.formatCheckInTime(data.endDate.toString(), context) : '---',
+          'icon': Icons.timer_off_outlined,
+        });
+        fields.add({
+          'label': localizations?.note ?? 'Note',
+          'value': widget.data1.reason ?? '---',
+          'icon': Icons.description_rounded,
+        });
+
+      }else if( widget.data1.subType  == 'sickleave' ||
+          widget.data1.subType  == 'casualleave'||
+          widget.data1.subType  == 'annualleave'){
+        fields.add({
+          'label': localizations?.leaveType ?? 'Leave Type',
+          'value': data.leaveType?.toString() ?? '---',
+          'icon': Icons.beach_access_rounded,
+        });
+        fields.add({
+          'label': localizations?.startDate ?? 'Start Date',
+          'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.endDate ?? 'End Date',
+          'value': data.endDate != null ? singletonClass.formatDate2(data.endDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.paidLeaves ?? 'Paid Leave',
+          'value': widget.data1.requestData!.first.paidLeaves.toString(),
+          'icon': Icons.paid_outlined,
+        });
+        fields.add({
+          'label': localizations?.unpaidLeave ?? 'Unpaid Leave',
+          'value': widget.data1.requestData!.first.unpaidLeaves.toString(),
+          'icon': Icons.money_off,
+        });
+        fields.add({
+          'label': localizations?.note ?? 'Note',
+          'value': widget.data1.reason ?? '---',
+          'icon': Icons.description_rounded,
+        });
+      } else {
+        fields.add({
+          'label': localizations?.leaveType ?? 'Leave Type',
+          'value': data.leaveType?.toString() ?? '---',
+          'icon': Icons.beach_access_rounded,
+        });
+        fields.add({
+          'label': localizations?.startDate ?? 'Start Date',
+          'value': data.startDate != null ? singletonClass.formatDate2(data.startDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.endDate ?? 'End Date',
+          'value': data.endDate != null ? singletonClass.formatDate2(data.endDate.toString(), context) : '---',
+          'icon': Icons.date_range_rounded,
+        });
+        fields.add({
+          'label': localizations?.note ?? 'Note',
+          'value': widget.data1.reason ?? '---',
+          'icon': Icons.description_rounded,
+        });
+      }
+    } 
+    else if (reqType == 'specialLeaveRequest') {
       fields.add({
         'label': localizations?.leaveType ?? 'Leave Type',
         'value': data.leaveType?.toString() ?? '---',
