@@ -28,7 +28,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    
+
     final env = await Environment.detectEnv();
     await SingletonClass().init();
     await NotificationService.init();
