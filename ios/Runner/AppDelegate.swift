@@ -11,10 +11,8 @@ import Flutter
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
-        // FIX: Ensure FlutterViewController exists before channel
-        if self.window == nil {
-            self.window = UIWindow(frame: UIScreen.main.bounds)
-        }
+        GeneratedPluginRegistrant.register(with: self)
+        let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         // ---------------------------
         // ENVIRONMENT CHANNEL
@@ -36,7 +34,7 @@ import Flutter
         }
 
         // ---------------------------
-        // YOUR ORIGINAL CODE (UNCHANGED)
+        // PUSH NOTIFICATIONS SETUP
         // ---------------------------
         UNUserNotificationCenter.current().delegate = self
 
@@ -47,11 +45,13 @@ import Flutter
         )
 
         application.registerForRemoteNotifications()
-        FirebaseApp.configure()
+
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
         Messaging.messaging().delegate = self
 
-        GeneratedPluginRegistrant.register(with: self)
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        return result
     }
 
 
@@ -85,9 +85,10 @@ import Flutter
         )
     }
 
-    func application(application: UIApplication,
+    override func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
         print("Firebase registration token: \(deviceToken)")
+        super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
     }
 }
