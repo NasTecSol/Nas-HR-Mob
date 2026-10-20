@@ -39,7 +39,35 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
   SubTypes? _selectedSubType;
   DateTime? startDate;
   DateTime? endDate;
+  DateTime? _selectedAdvanceMonth;
   PlatformFile? selectedFile;
+
+  bool get _isAdvanceSalaryRequest {
+    if (_selectedSubType == null) return false;
+    final name = (_selectedSubType!.requestName ?? '').trim().toLowerCase();
+    final type = (_selectedSubType!.requestType ?? '').trim().toLowerCase();
+    return name.contains('advance salary') || type.contains('advancesalary');
+  }
+
+  double? get _userBaseSalary {
+    if (singletonClass.employeeDataList.isNotEmpty &&
+        singletonClass.employeeDataList.first.data.isNotEmpty) {
+      final salaryInfo = singletonClass.employeeDataList.first.data.first.salaryInfo;
+      if (salaryInfo?.baseSalary != null) {
+        return double.tryParse(salaryInfo!.baseSalary.toString());
+      }
+    }
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final subTypes = widget.selectedRequest?.subTypes ?? [];
+    if (subTypes.length == 1) {
+      _selectedSubType = subTypes.first;
+    }
+  }
 
   Widget _buildHeader(BuildContext context) {
     return Container(
@@ -113,6 +141,41 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
     );
   }
 
+  Future<void> _pickAndUploadFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
+    if (result != null && result.files.single.path != null) {
+      final PlatformFile file = result.files.single;
+      setState(() => selectedFile = file);
+
+      final results = await uploadDocuments(file);
+      final bool success = results["success"] as bool;
+      final String message = results["message"] as String;
+
+      if (!success && context.mounted) {
+        setState(() => selectedFile = null);
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: Colors.white,
+            title: Text(AppLocalizations.of(context)!.uploadFailedTitle),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  AppLocalizations.of(context)!.ok,
+                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } else {
+      if (kDebugMode) print('File selection canceled.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<SubTypes> subTypeList = widget.selectedRequest?.subTypes ?? [];
@@ -128,452 +191,850 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Request Details',
-                            style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: NasColors.darkBlue,
-                                letterSpacing: 0.3)),
-                        const SizedBox(height: 12),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade100),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              /// SubType Dropdown
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade200),
-                                ),
-                                child: DropdownButtonFormField<SubTypes>(
-                                  dropdownColor: Colors.white,
-                                  isExpanded: true,
-                                  value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return AppLocalizations.of(context)!.selectSubType;
-                                    }
-                                    return null;
-                                  },
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  ),
-                                  hint: Text(
-                                    _translateRequest(widget.selectedRequest?.requestName, context),
-                                    style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                                  ),
-                                  items: subTypeList.map((SubTypes subType) {
-                                    return DropdownMenuItem<SubTypes>(
-                                      value: subType,
-                                      child: Text(
-                                        _translateRequestSubtype(subType.requestName!, context),
-                                        style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              
-                              /// Duration
-                              Text(AppLocalizations.of(context)!.duration,
-                                  style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: Colors.grey[700])),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  /// Start Date
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: () async {
-                                        DateTime? date = await showDatePicker(
-                                          context: context,
-                                          initialDate: startDate ?? DateTime.now(),
-                                          firstDate: DateTime(2000),
-                                          lastDate: DateTime(2101),
-                                          builder: (BuildContext context, Widget? child) {
-                                            return Theme(
-                                              data: ThemeData.light().copyWith(
-                                                colorScheme: ColorScheme.light(
-                                                  primary: NasColors.darkBlue,
-                                                  onPrimary: Colors.white,
-                                                  onSurface: Colors.black,
-                                                ),
-                                                dialogBackgroundColor: Colors.white,
-                                                textButtonTheme: TextButtonThemeData(
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor: NasColors.darkBlue,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: child!,
-                                            );
-                                          },
-                                        );
-                                        if (date != null) {
-                                          setState(() {
-                                            startDate = date;
-                                          });
-                                          calculateInstallment();
-                                        }
-                                      },
-                                      child: Container(
-                                        height: 52,
-                                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Colors.grey.shade200),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              startDate == null
-                                                  ? AppLocalizations.of(context)!.selectDate
-                                                  : DateFormat('MMM yyyy').format(startDate!),
-                                              style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
-                                            ),
-                                            const Icon(Icons.calendar_today_outlined, color: Colors.grey, size: 18),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(AppLocalizations.of(context)!.to,
-                                      style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                          color: Colors.grey[700])),
-                                  const SizedBox(width: 8),
-                                  /// END DATE
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: () async {
-                                        DateTime? date = await showDatePicker(
-                                          context: context,
-                                          initialDate: endDate ?? DateTime.now(),
-                                          firstDate: DateTime(2000),
-                                          lastDate: DateTime(2101),
-                                          builder: (BuildContext context, Widget? child) {
-                                            return Theme(
-                                              data: ThemeData.light().copyWith(
-                                                colorScheme: ColorScheme.light(
-                                                  primary: NasColors.darkBlue,
-                                                  onPrimary: Colors.white,
-                                                  onSurface: Colors.black,
-                                                ),
-                                                dialogBackgroundColor: Colors.white,
-                                                textButtonTheme: TextButtonThemeData(
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor: NasColors.darkBlue,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: child!,
-                                            );
-                                          },
-                                        );
-                                        if (date != null) {
-                                          setState(() => endDate = date);
-                                          calculateInstallment();
-                                        }
-                                      },
-                                      child: Container(
-                                        height: 52,
-                                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Colors.grey.shade200),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              endDate == null
-                                                  ? AppLocalizations.of(context)!.selectDate
-                                                  : DateFormat('MMM yyyy').format(endDate!),
-                                              style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
-                                            ),
-                                            const Icon(Icons.calendar_today_outlined, color: Colors.grey, size: 18),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-
-                              /// Amount
-                              Text(AppLocalizations.of(context)!.amount,
-                                  style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: Colors.grey[700])),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                cursorColor: Colors.grey,
-                                controller: _amount,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return AppLocalizations.of(context)!.enterAmountValidation;
-                                  }
-                                  return null;
-                                },
-                                onChanged: (value) {
-                                  calculateInstallment();
-                                },
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!.enterAmountValidation,
-                                  hintStyle: GoogleFonts.inter(color: Colors.grey),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade200),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade200),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              /// Installment Amount
-                              Text(AppLocalizations.of(context)!.installmentAmount,
-                                  style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: Colors.grey[700])),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                controller: _installmentAmount,
-                                readOnly: true,
-                                cursorColor: Colors.grey,
-                                decoration: InputDecoration(
-                                  hintText: "0.00",
-                                  suffixText: "SAR / month",
-                                  suffixStyle: GoogleFonts.inter(
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade200),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade200),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
-                                  ),
-                                ),
-                                style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
-                              ),
-                              const SizedBox(height: 16),
-
-                              /// Notes
-                              Text(AppLocalizations.of(context)!.notes,
-                                  style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: Colors.grey[700])),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                cursorColor: Colors.grey,
-                                controller: _notes,
-                                maxLines: 3,
-                                textInputAction: TextInputAction.done,
-                                keyboardType: TextInputType.text,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return AppLocalizations.of(context)!.enterNotesValidation;
-                                  }
-                                  return null;
-                                },
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!.typeYourDescription,
-                                  hintStyle: GoogleFonts.inter(color: Colors.grey),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade200),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade200),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
-                                  ),
-                                ),
-                              ),
-
-                              if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
-                                const SizedBox(height: 16),
-                                TextButton(
-                                  onPressed: () async {
-                                    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
-                                    if (result != null && result.files.single.path != null) {
-                                      final PlatformFile file = result.files.single;
-                                      setState(() => selectedFile = file);
-
-                                      final results = await uploadDocuments(file);
-                                      final bool success = results["success"] as bool;
-                                      final String message = results["message"] as String;
-
-                                      if (!success && context.mounted) {
-                                        setState(() => selectedFile = null);
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) => AlertDialog(
-                                            backgroundColor: Colors.white,
-                                            title: Text(AppLocalizations.of(context)!.uploadFailedTitle),
-                                            content: Text(message),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.of(context).pop(),
-                                                child: Text(
-                                                  AppLocalizations.of(context)!.ok,
-                                                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }
-                                    } else {
-                                      if (kDebugMode) print('File selection canceled.');
-                                    }
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      const Icon(Icons.add, color: Colors.black, size: 20),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        AppLocalizations.of(context)!.attachDocuments,
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 15),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      if (selectedFile != null)
-                                        Stack(
-                                          clipBehavior: Clip.none,
-                                          alignment: Alignment.topRight,
-                                          children: [
-                                            ClipOval(
-                                              child: Image.file(
-                                                File(selectedFile!.path!),
-                                                width: 60,
-                                                height: 60,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: -5,
-                                              right: -5,
-                                              child: GestureDetector(
-                                                onTap: () => setState(() => selectedFile = null),
-                                                child: Container(
-                                                  width: 20,
-                                                  height: 20,
-                                                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                                                  child: const Icon(Icons.close, color: Colors.white, size: 14),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: DecoratedBox(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Request Details',
+                              style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: NasColors.darkBlue,
+                                  letterSpacing: 0.3)),
+                          const SizedBox(height: 12),
+                          Container(
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: [NasColors.darkBlue, NasColors.lightBlue]),
-                              borderRadius: BorderRadius.circular(14),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.06),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
                             ),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  postRequest();
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                /// SubType Dropdown
+                                Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade200),
+                                  ),
+                                  child: DropdownButtonFormField<SubTypes>(
+                                    dropdownColor: Colors.white,
+                                    isExpanded: true,
+                                    value: subTypeList.contains(_selectedSubType) ? _selectedSubType : null,
+                                    validator: (value) {
+                                      if (value == null) {
+                                        return AppLocalizations.of(context)!.selectSubType;
+                                      }
+                                      return null;
+                                    },
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    ),
+                                    hint: Text(
+                                      _translateRequest(widget.selectedRequest?.requestName, context),
+                                      style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                                    ),
+                                    items: subTypeList.map((SubTypes subType) {
+                                      return DropdownMenuItem<SubTypes>(
+                                        value: subType,
+                                        child: Text(
+                                          _translateRequestSubtype(subType.requestName!, context),
+                                          style: GoogleFonts.inter(fontSize: 15, color: Colors.black),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (SubTypes? newValue) => setState(() => _selectedSubType = newValue),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                if (_isAdvanceSalaryRequest) ...[
+                                  ..._buildAdvanceSalaryFields(context),
+                                ] else ...[
+                                  ..._buildStandardLoanFields(context),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [NasColors.darkBlue, NasColors.lightBlue]),
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              child: Text(
-                                AppLocalizations.of(context)!.requests,
-                                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    postRequest();
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                child: Text(
+                                  AppLocalizations.of(context)!.requests,
+                                  style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                )],
+              ],
             ),
             if (isLoading) const Loader(),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _buildAdvanceSalaryFields(BuildContext context) {
+    final now = DateTime.now();
+    final currentMonthDate = DateTime(now.year, now.month, 1);
+    final nextMonthDate = DateTime(now.year, now.month + 1, 1);
+
+    final isCurrentSelected = _selectedAdvanceMonth != null &&
+        _selectedAdvanceMonth!.year == currentMonthDate.year &&
+        _selectedAdvanceMonth!.month == currentMonthDate.month;
+    final isNextSelected = _selectedAdvanceMonth != null &&
+        _selectedAdvanceMonth!.year == nextMonthDate.year &&
+        _selectedAdvanceMonth!.month == nextMonthDate.month;
+
+    DateTime? deductionMonthDate;
+    if (_selectedAdvanceMonth != null) {
+      deductionMonthDate = DateTime(_selectedAdvanceMonth!.year, _selectedAdvanceMonth!.month + 1, 1);
+    }
+
+    return [
+      /// Advance Salary For Header
+      Text(
+        'Advance Salary For',
+        style: GoogleFonts.inter(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: Colors.grey[700],
+        ),
+      ),
+      const SizedBox(height: 10),
+
+      /// Month Selection Button Boxes
+      Row(
+        children: [
+          /// Current Month Box
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedAdvanceMonth = currentMonthDate;
+                });
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 66,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isCurrentSelected ? NasColors.darkBlue.withOpacity(0.08) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isCurrentSelected ? NasColors.darkBlue : Colors.grey.shade200,
+                    width: isCurrentSelected ? 1.5 : 1.0,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 13,
+                          color: isCurrentSelected ? NasColors.darkBlue : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Current Month',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isCurrentSelected ? NasColors.darkBlue : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat('MMMM yyyy').format(currentMonthDate),
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          /// Next Month Box
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedAdvanceMonth = nextMonthDate;
+                });
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 66,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isNextSelected ? NasColors.darkBlue.withOpacity(0.08) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isNextSelected ? NasColors.darkBlue : Colors.grey.shade200,
+                    width: isNextSelected ? 1.5 : 1.0,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 13,
+                          color: isNextSelected ? NasColors.darkBlue : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Next Month',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isNextSelected ? NasColors.darkBlue : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat('MMMM yyyy').format(nextMonthDate),
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+
+      /// Info Banner
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: NasColors.darkBlue.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: NasColors.darkBlue.withOpacity(0.15)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline_rounded,
+              color: NasColors.darkBlue,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _selectedAdvanceMonth == null
+                    ? 'Please select a salary period to proceed.'
+                    : 'Advance against ${DateFormat('MMMM').format(_selectedAdvanceMonth!)} with deduction in ${DateFormat('MMMM').format(deductionMonthDate!)}.',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: NasColors.darkBlue,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+
+      /// Advance Against & Deduction Month Summary Boxes
+      Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 58,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Advance Against',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _selectedAdvanceMonth == null
+                        ? '—'
+                        : DateFormat('MMMM yyyy').format(_selectedAdvanceMonth!),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              height: 58,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Deduction Month',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    deductionMonthDate == null
+                        ? '—'
+                        : DateFormat('MMMM yyyy').format(deductionMonthDate),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+
+      /// Advance Amount
+      Text(
+        'Advance Amount *',
+        style: GoogleFonts.inter(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: Colors.grey[700],
+        ),
+      ),
+      const SizedBox(height: 8),
+      TextFormField(
+        cursorColor: Colors.grey,
+        controller: _amount,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+        ],
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return AppLocalizations.of(context)!.enterAmountValidation;
+          }
+          final entered = double.tryParse(value.trim());
+          if (entered == null || entered <= 0) {
+            return AppLocalizations.of(context)!.enterAmountValidation;
+          }
+          final baseSalary = _userBaseSalary;
+          if (baseSalary != null && entered > baseSalary) {
+            return 'Amount cannot exceed base salary (${baseSalary.toStringAsFixed(0)} SAR)';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Enter an amount',
+          hintStyle: GoogleFonts.inter(color: Colors.grey),
+          suffixText: 'SAR',
+          suffixStyle: GoogleFonts.inter(
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w600,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
+          ),
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        'Enter the amount you need as an advance.',
+        style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
+      ),
+      const SizedBox(height: 16),
+
+      /// Notes
+      Text(
+        AppLocalizations.of(context)!.notes,
+        style: GoogleFonts.inter(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: Colors.grey[700],
+        ),
+      ),
+      const SizedBox(height: 8),
+      TextFormField(
+        cursorColor: Colors.grey,
+        controller: _notes,
+        maxLines: 3,
+        textInputAction: TextInputAction.done,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return AppLocalizations.of(context)!.enterNotesValidation;
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: 'Type your description here!',
+          hintStyle: GoogleFonts.inter(color: Colors.grey),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+
+      /// Attach Documents
+      TextButton(
+        onPressed: _pickAndUploadFile,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const Icon(Icons.add, color: Colors.black, size: 20),
+            const SizedBox(width: 5),
+            Text(
+              AppLocalizations.of(context)!.attachDocuments,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 15),
+            ),
+            const SizedBox(width: 10),
+            if (selectedFile != null)
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.topRight,
+                children: [
+                  ClipOval(
+                    child: Image.file(
+                      File(selectedFile!.path!),
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    top: -5,
+                    right: -5,
+                    child: GestureDetector(
+                      onTap: () => setState(() => selectedFile = null),
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                        child: const Icon(Icons.close, color: Colors.white, size: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildStandardLoanFields(BuildContext context) {
+    return [
+      /// Duration
+      Text(AppLocalizations.of(context)!.duration,
+          style: GoogleFonts.inter(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Colors.grey[700])),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          /// Start Date
+          Expanded(
+            child: InkWell(
+              onTap: () async {
+                DateTime? date = await showDatePicker(
+                  context: context,
+                  initialDate: startDate ?? DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2101),
+                  builder: (BuildContext context, Widget? child) {
+                    return Theme(
+                      data: ThemeData.light().copyWith(
+                        colorScheme: ColorScheme.light(
+                          primary: NasColors.darkBlue,
+                          onPrimary: Colors.white,
+                          onSurface: Colors.black,
+                        ),
+                        dialogBackgroundColor: Colors.white,
+                        textButtonTheme: TextButtonThemeData(
+                          style: TextButton.styleFrom(
+                            foregroundColor: NasColors.darkBlue,
+                          ),
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (date != null) {
+                  setState(() {
+                    startDate = date;
+                  });
+                  calculateInstallment();
+                }
+              },
+              child: Container(
+                height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      startDate == null
+                          ? AppLocalizations.of(context)!.selectDate
+                          : DateFormat('MMM yyyy').format(startDate!),
+                      style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
+                    ),
+                    const Icon(Icons.calendar_today_outlined, color: Colors.grey, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(AppLocalizations.of(context)!.to,
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Colors.grey[700])),
+          const SizedBox(width: 8),
+          /// END DATE
+          Expanded(
+            child: InkWell(
+              onTap: () async {
+                DateTime? date = await showDatePicker(
+                  context: context,
+                  initialDate: endDate ?? DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2101),
+                  builder: (BuildContext context, Widget? child) {
+                    return Theme(
+                      data: ThemeData.light().copyWith(
+                        colorScheme: ColorScheme.light(
+                          primary: NasColors.darkBlue,
+                          onPrimary: Colors.white,
+                          onSurface: Colors.black,
+                        ),
+                        dialogBackgroundColor: Colors.white,
+                        textButtonTheme: TextButtonThemeData(
+                          style: TextButton.styleFrom(
+                            foregroundColor: NasColors.darkBlue,
+                          ),
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (date != null) {
+                  setState(() => endDate = date);
+                  calculateInstallment();
+                }
+              },
+              child: Container(
+                height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      endDate == null
+                          ? AppLocalizations.of(context)!.selectDate
+                          : DateFormat('MMM yyyy').format(endDate!),
+                      style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
+                    ),
+                    const Icon(Icons.calendar_today_outlined, color: Colors.grey, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+
+      /// Amount
+      Text(AppLocalizations.of(context)!.amount,
+          style: GoogleFonts.inter(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Colors.grey[700])),
+      const SizedBox(height: 8),
+      TextFormField(
+        cursorColor: Colors.grey,
+        controller: _amount,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+        ],
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return AppLocalizations.of(context)!.enterAmountValidation;
+          }
+          return null;
+        },
+        onChanged: (value) {
+          calculateInstallment();
+        },
+        decoration: InputDecoration(
+          hintText: AppLocalizations.of(context)!.enterAmountValidation,
+          hintStyle: GoogleFonts.inter(color: Colors.grey),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+
+      /// Installment Amount
+      Text(AppLocalizations.of(context)!.installmentAmount,
+          style: GoogleFonts.inter(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Colors.grey[700])),
+      const SizedBox(height: 8),
+      TextFormField(
+        controller: _installmentAmount,
+        readOnly: true,
+        cursorColor: Colors.grey,
+        decoration: InputDecoration(
+          hintText: "0.00",
+          suffixText: "SAR / month",
+          suffixStyle: GoogleFonts.inter(
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w600,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
+          ),
+        ),
+        style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
+      ),
+      const SizedBox(height: 16),
+
+      /// Notes
+      Text(AppLocalizations.of(context)!.notes,
+          style: GoogleFonts.inter(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Colors.grey[700])),
+      const SizedBox(height: 8),
+      TextFormField(
+        cursorColor: Colors.grey,
+        controller: _notes,
+        maxLines: 3,
+        textInputAction: TextInputAction.done,
+        keyboardType: TextInputType.text,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return AppLocalizations.of(context)!.enterNotesValidation;
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: AppLocalizations.of(context)!.typeYourDescription,
+          hintStyle: GoogleFonts.inter(color: Colors.grey),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: NasColors.darkBlue, width: 1.5),
+          ),
+        ),
+      ),
+
+      if (_selectedSubType != null && _selectedSubType!.docRequired == true) ...[
+        const SizedBox(height: 16),
+        TextButton(
+          onPressed: _pickAndUploadFile,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const Icon(Icons.add, color: Colors.black, size: 20),
+              const SizedBox(width: 5),
+              Text(
+                AppLocalizations.of(context)!.attachDocuments,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 15),
+              ),
+              const SizedBox(width: 10),
+              if (selectedFile != null)
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.topRight,
+                  children: [
+                    ClipOval(
+                      child: Image.file(
+                        File(selectedFile!.path!),
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: -5,
+                      right: -5,
+                      child: GestureDetector(
+                        onTap: () => setState(() => selectedFile = null),
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                          child: const Icon(Icons.close, color: Colors.white, size: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ],
+    ];
   }
 
   ///Helper methods for translation of text values from english to arabic
@@ -805,16 +1266,30 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
         return;
       }
 
-      if (startDate == null && endDate == null) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: AppLocalizations.of(context)!.selectDate,
-          autoCloseDuration: const Duration(seconds: 5),
-          showCancelBtn: false,
-          showConfirmBtn: false,
-        );
-        return;
+      if (_isAdvanceSalaryRequest) {
+        if (_selectedAdvanceMonth == null) {
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            text: "Please select a salary period to proceed.",
+            autoCloseDuration: const Duration(seconds: 4),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+          );
+          return;
+        }
+      } else {
+        if (startDate == null || endDate == null) {
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            text: AppLocalizations.of(context)!.selectDate,
+            autoCloseDuration: const Duration(seconds: 5),
+            showCancelBtn: false,
+            showConfirmBtn: false,
+          );
+          return;
+        }
       }
       final List<Map<String, dynamic>> attachments = [];
       if (selectedFile != null) {
@@ -825,6 +1300,25 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
           });
         }
       }
+
+      final List<Map<String, dynamic>> requestData = [];
+      if (_isAdvanceSalaryRequest) {
+        requestData.add({
+          "loanAmount": int.tryParse(_amount.text.trim()) ?? (double.tryParse(_amount.text.trim())?.toInt() ?? 0),
+          "loanCycle": "Monthly",
+          "loanDuration": DateFormat('MMMM').format(_selectedAdvanceMonth!),
+          "loanType": selectedSubType,
+        });
+      } else {
+        requestData.add({
+          "loanAmount": int.tryParse(_amount.text.trim()) ?? (double.tryParse(_amount.text.trim())?.toInt() ?? 0),
+          "loanCycle": "Monthly",
+          "loanInstallment": _installmentAmount.text,
+          "loanDuration": calculateLoanDurationInMonths(startDate!, endDate!),
+          "loanType": selectedSubType,
+        });
+      }
+
       final Map<String, dynamic> data = {
         "empId": empId,
         "employeeId": employeeId,
@@ -834,15 +1328,7 @@ class _LoanRequestScreenState extends State<LoanRequestScreen> {
         "branchId": branchId,
         "requestType": selectedRequestType,
         "subType": selectedSubType,
-        "requestData": [
-          {
-            "loanAmount": _amount.text,
-            "loanCycle": "Monthly",
-            "loanInstallment": _installmentAmount.text,
-            "loanDuration": calculateLoanDurationInMonths(startDate!, endDate!),
-            "loanType": selectedSubType,
-          }
-        ],
+        "requestData": requestData,
         "approvers": [],
         "reason": _notes.text,
         "attachments": attachments,

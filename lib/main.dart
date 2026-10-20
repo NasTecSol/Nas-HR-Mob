@@ -28,7 +28,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    
+
     final env = await Environment.detectEnv();
     await SingletonClass().init();
     await NotificationService.init();
@@ -50,9 +50,13 @@ void main() {
       log("App is running in Profile mode.");
     }
 
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } catch (e) {
+      if (kDebugMode) print('Firebase init error: $e');
+    }
 
     MapboxOptions.setAccessToken("pk.eyJ1IjoibmFzdGVjc29sIiwiYSI6ImNtMm9qc3lzMTBnamMya3F6cmJsbWZ5MmsifQ.ExjMBEpuTJDstkVQTPeJTA");
 
@@ -113,7 +117,11 @@ void main() {
     );
 
     // Start New Relic (NO runApp inside)
-    await NewrelicMobile.instance.start(config , (){});
+    try {
+      await NewrelicMobile.instance.start(config , (){});
+    } catch (e) {
+      if (kDebugMode) print('NewRelic error: $e');
+    }
 
     // Now run the app safely in SAME zone
     runApp(
@@ -227,7 +235,7 @@ class NotificationService {
 
 ///background mode method
 Future<void> backgroundFetchTask(String taskId) async {
-  final locale = WidgetsBinding.instance.window.locale.languageCode;
+  final locale = PlatformDispatcher.instance.locale.languageCode;
   try {
     SocketService().initializeSocket(
       "${SingletonClass().tenantId}", locale,
@@ -238,18 +246,24 @@ Future<void> backgroundFetchTask(String taskId) async {
   BackgroundFetch.finish(taskId);
 }
 void initBackgroundFetch() {
-  BackgroundFetch.configure(
-    BackgroundFetchConfig(
-      minimumFetchInterval: 15,
-      stopOnTerminate: false,
-      enableHeadless: true,
-      startOnBoot: true,
-    ),
-    backgroundFetchTask,
-  ).then((status) {
-    debugPrint("[BackgroundFetch] Configured: $status");
-  }).catchError((e) {
-    debugPrint("[BackgroundFetch] ERROR: $e");
-  });
-  BackgroundFetch.registerHeadlessTask(backgroundFetchTask);
+  try {
+    BackgroundFetch.configure(
+      BackgroundFetchConfig(
+        minimumFetchInterval: 15,
+        stopOnTerminate: false,
+        enableHeadless: true,
+        startOnBoot: true,
+      ),
+      backgroundFetchTask,
+    ).then((status) {
+      debugPrint("[BackgroundFetch] Configured: $status");
+    }).catchError((e) {
+      debugPrint("[BackgroundFetch] ERROR: $e");
+    });
+    if (Platform.isAndroid) {
+      BackgroundFetch.registerHeadlessTask(backgroundFetchTask);
+    }
+  } catch (e) {
+    debugPrint("[BackgroundFetch] Config error: $e");
+  }
 }
